@@ -1,10 +1,10 @@
 import app.parameters as params
 from app.gan.discriminator import Discriminator
 from app.gan.generator import Generator
-import app.data_preparation.mq2008.preprocessing_mq2008 as mq
-import app.training_eval.train_discriminator as train_disc
-import app.training_eval.train_gen as train_gen
-import app.training_eval.eval as evaluator
+import app.data_preparation.mq2008.preprocessing_MQ2008 as mq
+import app.training_eval.train_discriminator_MQ2008 as train_disc
+import app.training_eval.train_gen_MQ2008 as train_gen
+import app.training_eval.eval_MQ2008 as evaluator
 import cPickle
 
 

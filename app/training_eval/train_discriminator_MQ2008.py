@@ -2,7 +2,7 @@ import numpy as np
 import random
 
 import app.parameters as params
-import app.data_preparation.mq2008.preprocessing_mq2008 as mq
+import app.data_preparation.mq2008.preprocessing_MQ2008 as mq
 
 
 def generate_for_discriminator(generator, query_url_features, query_index_urls, query_pos_train, negative_file):

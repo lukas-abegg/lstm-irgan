@@ -1,9 +1,9 @@
 import tensorflow as tf
 
-import app.eval.ndcg as ndcg_evaluator
-import app.eval.precision as precision_evaluator
-import app.eval.map as map_evaluator
-import app.eval.mrr as mrr_evaluator
+import app.eval.ndcg_MQ2008 as ndcg_evaluator
+import app.eval.precision_MQ2008 as precision_evaluator
+import app.eval.map_MQ2008 as map_evaluator
+import app.eval.mrr_MQ2008 as mrr_evaluator
 
 
 def evaluate(generator, query_url_features, query_pos_train, query_pos_test):

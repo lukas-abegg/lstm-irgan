@@ -2,9 +2,9 @@ import time
 import numpy as np
 
 import app.parameters as params
-import app.eval.current_bests as bests
-import app.eval.ndcg as ndcg_evaluator
-import app.eval.precision as p_evaluator
+import app.eval.current_bests_MQ2008 as bests
+import app.eval.ndcg_MQ2008 as ndcg_evaluator
+import app.eval.precision_MQ2008 as p_evaluator
 
 
 def train(generator, discriminator, query_url_features, query_urls, query_index_urls, query_pos_train, query_pos_test):
