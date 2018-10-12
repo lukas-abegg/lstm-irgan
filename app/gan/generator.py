@@ -1,18 +1,17 @@
-import os
-import numpy as np
 import tensorflow as tf
-from keras.layers import Input
+
+from keras.layers import Input, Concatenate, B
 from keras.models import Model
 from keras.layers.core import Reshape, Dense, Activation, Lambda
 from keras import backend as k
 from keras import regularizers
 from keras import optimizers
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+import app.parameters as params
 
 
 class Generator:
-    def __init__(self, feature_size, hidden_size, weight_decay, learning_rate, temperature=1.0, layer_0_param=None, layer_1_param=None):
+    def __init__(self, feature_size, hidden_size, weight_decay, learning_rate, temperature=1.0):
         self.feature_size = feature_size
         self.hidden_size = hidden_size
         self.weight_decay = weight_decay
@@ -23,13 +22,19 @@ class Generator:
         self.reward = Input(shape=(None,))
         self.important_sampling = Input(shape=(None,))
 
-        self.Dense_1_result = Dense(self.hidden_size, input_dim=self.feature_size, activation='tanh',
+        self.Dense_1_query = Dense(self.hidden_size, input_dim=self.feature_size, activation='tanh',
                                     weights=layer_0_param, kernel_regularizer=regularizers.l2(self.weight_decay))(self.pred_data)
-        self.Dense_2_result = Dense(1, input_dim=self.hidden_size,
-                                    weights=layer_1_param, kernel_regularizer=regularizers.l2(self.weight_decay))(self.Dense_1_result)
+        self.Dense_2_query = Dense(1, input_dim=self.hidden_size,
+                                    weights=layer_1_param, kernel_regularizer=regularizers.l2(self.weight_decay))(self.Dense_1_query)
+
+        self.Dense_1_document = Dense(self.hidden_size, input_dim=self.feature_size, activation='tanh',
+                                    weights=layer_0_param, kernel_regularizer=regularizers.l2(self.weight_decay))(self.pred_data)
+        self.Dense_2_document = Dense(1, input_dim=self.hidden_size,
+                                    weights=layer_1_param, kernel_regularizer=regularizers.l2(self.weight_decay))(self.Dense_1_document)
 
         # Given batch query-url pairs, calculate the matching score
         # For all urls of one query
+        self.Dense_Input = Concatenate([self.Dense_2_query, self.Dense_2_document], axis=-1)
         self.score = Lambda(lambda x: x / self.temperature)(self.Dense_2_result)
         self.score = Reshape([-1])(self.score)
         self.prob = Activation('softmax')(self.score)
@@ -55,38 +60,20 @@ class Generator:
         layer_outs = functor([pred_data, 0.])
         return layer_outs
 
-    def get_prob(self, pred_data):
+    def get_prob(self, documents):
         functor = k.function([self.model.layers[0].input] + [k.learning_phase()], [self.model.layers[5].output])
-        layer_outs = functor([pred_data, 0.])
+        layer_outs = functor([documents, 0.])
         return layer_outs
 
-    """
-    def __build_train_fn(self):
-        #self.model.train_on_batch([pred_data, gan_prob, reward.reshape([-1]), important_sampling], [score.reshape([-1])])
-        action_important_sampling_placeholder =  k.placeholder(shape=(None,), name="action_onehot")
-        action_prob_placeholder = self.model.output
-        discount_reward_placeholder = k.placeholder(shape=(None,) , name="discount_reward")
-        discount_sample_index_placeholder = k.placeholder(shape=(None,) , name="discount_reward", dtype = 'int32')
-        gan_prob = k.gather(k.reshape(action_prob_placeholder,[-1]), discount_sample_index_placeholder)
-        log_action_prob = k.slog(gan_prob)
-
-        loss = - log_action_prob * discount_reward_placeholder * action_important_sampling_placeholder
-        loss = k.mean(loss)
-        adam = optimizers.Adam(lr = self.learning_rate)
-        updates = adam.get_updates(params=self.model.trainable_weights,
-                                   loss=loss)
-        self.train_fn = k.function(inputs=[self.model.input,
-                                           discount_sample_index_placeholder,
-                                           action_important_sampling_placeholder,
-                                           discount_reward_placeholder],
-                                   outputs=[],
-                                   updates=updates)
-    def train(self, pre_data, sample_index, reward, important_sampling):
-        self.train_fn([pre_data, sample_index, reward, important_sampling])
-    """
-
-    def train(self, pre_data, reward, important_sampling):
-        self.model.train_on_batch([pre_data, reward, important_sampling], np.zeros([pre_data.shape[0]]))
+    def train(self, x, y):
+        self.model.fit(x=x, y=y, batch_size=None, epochs=1, verbose=1, callbacks=None, validation_split=0.0, validation_data=None, shuffle=True, class_weight=None, sample_weight=None, initial_epoch=0, steps_per_epoch=None, validation_steps=None)
 
     def save_model(self, filename):
         self.model.save_weights(filename)
+
+    @staticmethod
+    def create_model(feature_size):
+        # call discriminator, generator
+        gen = Generator(feature_size, params.DISC_HIDDEN_SIZE, params.DISC_WEIGHT_DECAY,
+                             params.DISC_LEARNING_RATE)
+        return gen

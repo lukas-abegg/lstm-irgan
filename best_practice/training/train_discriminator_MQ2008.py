@@ -1,8 +1,8 @@
 import numpy as np
 import random
 
-import app.parameters as params
-import app.data_preparation.mq2008.preprocessing_MQ2008 as mq
+import best_practice.parameters as params
+import best_practice.data_preparation.mq2008.preprocessing_MQ2008 as mq
 
 
 def generate_for_discriminator(generator, query_url_features, query_index_urls, query_pos_train, negative_file):
@@ -48,10 +48,9 @@ def generate_for_discriminator(generator, query_url_features, query_index_urls, 
 def train(generator, discriminator, query_url_features, query_urls, query_index_urls, query_pos_train, query_pos_train_file_size):
     for d_epoch in range(params.DISC_TRAIN_EPOCHS):
 
-        if d_epoch % 30 == 0:
+        if d_epoch % params.TRAIN_EPOCHS == 0:
             generate_for_discriminator(generator, query_url_features, query_index_urls, query_pos_train, params.TRAIN_DATA_FILE)
             train_size = query_pos_train_file_size
-
         index = 1
         while True:
             if index > train_size:

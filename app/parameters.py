@@ -1,10 +1,18 @@
 # Base dirs
-WORKDIR = 'home/lukas/lstm-irgan'
-TEMP = WORKDIR + '/TEMP/'
-GAN_MODEL_BEST_FILE = TEMP + 'gan_model'
+WORKDIR = '/home/lukas/git-projects/lstm-irgan'
+TEMP = WORKDIR + '/temp'
+GAN_MODEL_BEST_FILE = TEMP + '/gan_model'
+
+# Embeddings
+WORD2VEC = WORKDIR + '/data/embeddings/GoogleNews-vectors-negative300.bin.gz'
+
+EMBEDDINGS_MAX_NUM_WORDS = 20000
+EMBEDDINGS_MAX_SEQ_LENGTH = 20000
+EMBEDDINGS_DIM = 100
 
 # Discriminator
-DISC_TRAIN_EPOCHS = 100
+DISC_TRAIN_EPOCHS = 30
+DISC_TRAIN_GEN_EPOCHS = 100
 DISC_HIDDEN_SIZE = 46
 DISC_WEIGHT_DECAY = 0.01
 DISC_LEARNING_RATE = 0.001
@@ -20,23 +28,16 @@ GEN_TEMPERATURE = 0.2
 GEN_BATCH_SIZE = 8
 GEN_LAMBDA = 0.5
 
-# MQ2008 data
-MQ2008_FEATURE_SIZE = 46
-
-NORM_DATA_FILE = WORKDIR + '/MQ2008_test/Large_norm.txt'
-TRAIN_DATA_FILE = WORKDIR + '/MQ2008_test/train.txt'
-TEST_DATA_FILE = WORKDIR + '/MQ2008_test/test.txt'
-
 # Data
-MQ2008 = 'MQ2008'
+FEATURE_SIZE = 46
+DOCUMENTS_DIR = WORKDIR + '/data/documents/'
+QUERIES = WORKDIR + '/data/queries.txt'
+LABELLED_DATA = WORKDIR + '/data/labelled_data.txt'
 
 # General
-TRAIN_EPOCHS = 30
-DATA = MQ2008
-FEATURE_SIZE = MQ2008_FEATURE_SIZE
-
+KFOLD_SPLITS = 5
 TRAIN_MODE = 'train'
-EVAL_MODE = 'train'
+EVAL_MODE = 'eval'
 
 
 

@@ -48,7 +48,7 @@ def file_len(fname):
     return i + 1
 
 
-# Get batch data from training_eval set
+# Get batch data from training set
 def get_batch_data(file, index, size):
     pos = []
     neg = []
