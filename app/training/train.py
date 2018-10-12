@@ -63,21 +63,22 @@ def __train_model(disc, gen, x_train, y_train, x_val, y_val, documents_data, que
 
                 i += params.DISC_BATCH_SIZE
 
-                pred_data = []
                 # prepare pos and neg data
-                pred_data.extend(input_pos)
-                pred_data.extend(input_neg)
+                pos_data = [[queries_data.loc[x[0]].query, documents_data.loc[x[1]].text] for x in input_pos]
+                neg_data = [[queries_data.loc[x[0]].query, documents_data.loc[x[1]].text] for x in input_neg]
+
+                pred_data = []
+                pred_data.extend(pos_data)
+                pred_data.extend(neg_data)
                 pred_data = np.asarray(pred_data)
 
                 # prepara pos and neg label
-                pred_data_label = [1.0] * len(input_pos)
-                pred_data_label.extend([0.0] * len(input_neg))
+                pred_data_label = [1.0] * len(pos_data)
+                pred_data_label.extend([0.0] * len(neg_data))
                 pred_data_label = np.asarray(pred_data_label)
 
                 # train
                 disc.train(pred_data, pred_data_label)
-
-                disc.train_on_batch(pred_data, pred_data_label, sample_weight=None, class_weight=None)
 
         # Train Generator
         print('Training Generator ...')
@@ -113,19 +114,19 @@ def __generate_negatives_for_discriminator(gen, x_train, y_train, documents_data
         neg_list = np.random.choice(candidate_list.index, size=[len(x_pos_list)])
 
         for i in range(len(x_pos_list)):
-            data.append((queries_data.loc[query_id].query, x_pos_list.iloc[i].doc_id, neg_list[i]))
+            data.append((query_id, int(x_pos_list.iloc[i].doc_id), neg_list[i]))
 
     # shuffle
     random.shuffle(data)
     return data
 
 
-def __get_batch_data(file, index, size):
+def __get_batch_data(pos_neg_data, index, size):
     pos = []
     neg = []
     for i in range(index, index + size):
-        line = linecache.getline(file, i)
-        line = line.strip().split()
-        pos.append([float(x) for x in line[0].split(',')])
-        neg.append([float(x) for x in line[1].split(',')])
+        line = pos_neg_data[i]
+        pos.append([line[0], line[1]])
+        neg.append([line[0], line[2]])
     return pos, neg
+
