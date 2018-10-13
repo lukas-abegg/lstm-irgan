@@ -34,6 +34,9 @@ DOCUMENTS_DIR = WORKDIR + '/data/documents/'
 QUERIES = WORKDIR + '/data/queries.txt'
 LABELLED_DATA = WORKDIR + '/data/labelled_data.txt'
 
+# Evaluation
+EVAL_K = 5
+
 # General
 KFOLD_SPLITS = 5
 TRAIN_MODE = 'train'

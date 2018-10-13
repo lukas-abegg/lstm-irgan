@@ -33,10 +33,10 @@ class Discriminator:
         self.model.train_on_batch(pred_data, pred_data_label)
 
     def get_preresult(self, pred_data):
-        return ( self.model.predict(pred_data) - 0.5 ) *2
+        return (self.model.predict(pred_data) - 0.5 ) *2
 
     def get_reward(self, pred_data):
-        functor  = k.function([self.model.layers[0].input]+[ k.learning_phase()], [self.model.layers[3].output])
+        functor = k.function([self.model.layers[0].input]+[k.learning_phase()], [self.model.layers[3].output])
         layer_outs  = functor ([ pred_data, 1.])
         return (layer_outs[0]  - 0.5) * 2
 

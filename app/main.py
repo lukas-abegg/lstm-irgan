@@ -32,9 +32,9 @@ def __prepare_data():
 
 
 def __train(x_data, y_data, documents_data, queries_data, feature_size, sess, backend) -> (Discriminator, Generator):
-    disc_best, gen_best, x_test, y_test = train(x_data, y_data, documents_data, queries_data, feature_size, backend)
-    eval.evaluate(gen_best, sess, x_test, y_test)
-    return disc_best, gen_best
+    best_disc, best_gen, x_test, y_test = train(x_data, y_data, documents_data, queries_data, feature_size, backend)
+    eval.evaluate(best_gen, sess, x_test, y_test)
+    return best_disc, best_gen
 
 
 def __evaluate(generator, sess, dataset):
@@ -52,7 +52,7 @@ def main(mode):
     elif params.EVAL_MODE == mode:
         generator = Generator.create_model(feature_size)
         generator.load_from_file("/temp/gen")
-        #__evaluate(generator, sess, dataset)
+        # __evaluate(generator, sess, dataset)
     else:
         print("unknown MODE")
 

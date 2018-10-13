@@ -2,7 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ae51d939-a0a3-40fb-ab1a-aec9d4f4c72b" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/app/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/parameters.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/parameters.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/training/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/training/train.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/best_practice/gan/discriminator.py" beforeDir="false" afterPath="$PROJECT_DIR$/best_practice/gan/discriminator.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -17,7 +20,7 @@
     <session id="-726090517">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="3" />
+          <entry key="project.closed" value="4" />
           <entry key="project.open.time.3" value="1" />
           <entry key="project.open.time.5" value="3" />
           <entry key="project.opened" value="4" />
@@ -25,7 +28,7 @@
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
         <counts>
-          <entry key="py" value="172" />
+          <entry key="py" value="176" />
           <entry key="txt" value="20" />
           <entry key="utils_MQ2008py" value="1" />
         </counts>
@@ -33,21 +36,21 @@
       <usages-collector id="statistics.file.types.open">
         <counts>
           <entry key="PLAIN_TEXT" value="21" />
-          <entry key="Python" value="172" />
+          <entry key="Python" value="176" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
           <entry key="Python Console" value="17" />
           <entry key="dummy" value="55" />
-          <entry key="py" value="4304" />
+          <entry key="py" value="5226" />
           <entry key="txt" value="293" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="PLAIN_TEXT" value="348" />
-          <entry key="Python" value="4321" />
+          <entry key="Python" value="5243" />
         </counts>
       </usages-collector>
     </session>
@@ -59,14 +62,37 @@
           <provider selected="true" editor-type-id="text-editor" />
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/training/train.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="364">
-              <caret line="76" column="59" selection-start-line="76" selection-start-column="59" selection-end-line="76" selection-end-column="59" />
+            <state relative-caret-position="850">
+              <caret line="206" selection-start-line="206" selection-end-line="206" />
               <folding>
-                <marker date="1539361640969" expanded="true" signature="1362:1364" ph="..." />
-                <marker date="1539361640969" expanded="true" signature="1455:1456" ph="..." />
+                <element signature="e#0#41#0" expanded="true" />
+                <marker date="1539446446327" expanded="true" signature="1606:1608" ph="..." />
+                <marker date="1539446446327" expanded="true" signature="6554:6919" ph="..." />
+                <marker date="1539446446327" expanded="true" signature="7897:8266" ph="..." />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/parameters.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="410">
+              <caret line="37" column="10" selection-start-line="37" selection-start-column="10" selection-end-line="37" selection-end-column="10" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/best_practice/gan/discriminator.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="570">
+              <caret line="38" column="59" selection-start-line="38" selection-start-column="59" selection-end-line="38" selection-end-column="59" />
+              <folding>
+                <element signature="e#0#9#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -93,6 +119,20 @@
           </provider>
         </entry>
       </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/app/main.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="456">
+              <caret line="39" column="41" lean-forward="true" selection-start-line="39" selection-start-column="41" selection-end-line="39" selection-end-column="41" />
+              <folding>
+                <element signature="e#0#31#0" expanded="true" />
+                <marker date="1539446446332" expanded="true" signature="330:635" ph="..." />
+                <marker date="1539446446332" expanded="true" signature="952:1153" ph="..." />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
     </leaf>
   </component>
   <component name="FileTemplateManagerImpl">
@@ -109,6 +149,7 @@
       <find>opt</find>
       <find>iloc</find>
       <find>loc</find>
+      <find>pos_set</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -147,11 +188,12 @@
         <option value="$PROJECT_DIR$/app/utils.py" />
         <option value="$PROJECT_DIR$/app/data_preparation/init_data_mq2008.py" />
         <option value="$PROJECT_DIR$/data/labelled_data.txt" />
-        <option value="$PROJECT_DIR$/app/parameters.py" />
-        <option value="$PROJECT_DIR$/app/main.py" />
         <option value="$PROJECT_DIR$/app/gan/generator.py" />
         <option value="$PROJECT_DIR$/app/data_preparation/init_data.py" />
+        <option value="$PROJECT_DIR$/best_practice/gan/discriminator.py" />
+        <option value="$PROJECT_DIR$/app/parameters.py" />
         <option value="$PROJECT_DIR$/app/training/train.py" />
+        <option value="$PROJECT_DIR$/app/main.py" />
       </list>
     </option>
   </component>
@@ -162,7 +204,7 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="93" />
+    <option name="x" value="92" />
     <option name="y" value="23" />
     <option name="width" value="1732" />
     <option name="height" value="1015" />
@@ -384,7 +426,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="93" y="23" width="1732" height="1015" extended-state="0" />
+    <frame x="92" y="23" width="1732" height="1015" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.25857988" />
@@ -393,7 +435,7 @@
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32936078" />
       <window_info anchor="bottom" id="Run" order="2" />
-      <window_info anchor="bottom" id="Debug" order="3" visible="true" weight="0.3997833" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.3997833" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
@@ -443,13 +485,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$USER_HOME$/anaconda3/envs/lstm-irgan/lib/python3.6/site-packages/keras/preprocessing/text.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="165">
-          <caret line="11" selection-start-line="11" selection-end-line="11" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/training/train_discriminator.py" />
     <entry file="file://$PROJECT_DIR$/app/data_preparation/dataset.py" />
     <entry file="file://$USER_HOME$/anaconda3/envs/lstm-irgan/lib/python3.6/site-packages/keras/engine/sequential.py">
@@ -575,16 +610,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/best_practice/gan/discriminator.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="585">
-          <caret line="39" column="48" lean-forward="true" selection-start-line="39" selection-start-column="48" selection-end-line="39" selection-end-column="48" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/training/train_disc.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="641">
@@ -688,13 +713,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/parameters.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="327">
-          <caret line="37" column="12" selection-start-line="37" selection-end-line="37" selection-end-column="12" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/anaconda3/envs/lstm-irgan/lib/python3.6/site-packages/tensorflow/contrib/learn/python/learn/estimators/dnn.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="175">
@@ -706,18 +724,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="450">
           <caret line="1168" column="8" selection-start-line="1168" selection-start-column="8" selection-end-line="1168" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/main.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="184">
-          <caret line="28" column="58" lean-forward="true" selection-start-line="28" selection-start-column="58" selection-end-line="28" selection-end-column="58" />
-          <folding>
-            <element signature="e#0#31#0" expanded="true" />
-            <marker date="1539348565969" expanded="true" signature="330:635" ph="..." />
-            <marker date="1539348565969" expanded="true" signature="952:1153" ph="..." />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -765,13 +771,51 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/best_practice/gan/discriminator.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="570">
+          <caret line="38" column="59" selection-start-line="38" selection-start-column="59" selection-end-line="38" selection-end-column="59" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Library/Caches/PyCharm2018.2/python_stubs/1681452388/numpy/core/multiarray.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="176">
+          <caret line="53" column="4" selection-start-line="53" selection-start-column="4" selection-end-line="53" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/parameters.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="410">
+          <caret line="37" column="10" selection-start-line="37" selection-start-column="10" selection-end-line="37" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/app/training/train.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="364">
-          <caret line="76" column="59" selection-start-line="76" selection-start-column="59" selection-end-line="76" selection-end-column="59" />
+        <state relative-caret-position="850">
+          <caret line="206" selection-start-line="206" selection-end-line="206" />
           <folding>
-            <marker date="1539361640969" expanded="true" signature="1362:1364" ph="..." />
-            <marker date="1539361640969" expanded="true" signature="1455:1456" ph="..." />
+            <element signature="e#0#41#0" expanded="true" />
+            <marker date="1539446446327" expanded="true" signature="1606:1608" ph="..." />
+            <marker date="1539446446327" expanded="true" signature="6554:6919" ph="..." />
+            <marker date="1539446446327" expanded="true" signature="7897:8266" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="456">
+          <caret line="39" column="41" lean-forward="true" selection-start-line="39" selection-start-column="41" selection-end-line="39" selection-end-column="41" />
+          <folding>
+            <element signature="e#0#31#0" expanded="true" />
+            <marker date="1539446446332" expanded="true" signature="330:635" ph="..." />
+            <marker date="1539446446332" expanded="true" signature="952:1153" ph="..." />
           </folding>
         </state>
       </provider>
