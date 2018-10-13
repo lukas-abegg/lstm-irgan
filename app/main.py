@@ -59,3 +59,5 @@ def main(mode):
 
 if __name__ == '__main__':
     main(params.TRAIN_MODE)
+
+    main(params.EVAL_MODE)

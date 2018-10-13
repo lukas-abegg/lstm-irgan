@@ -39,8 +39,7 @@ def train(x_data, y_data, documents_data, queries_data, feature_size, backend):
     return best_disc, best_gen, x_test, y_test
 
 
-def __train_model(disc, gen, x_train, y_train, x_val, y_val, documents_data, queries_data) -> (
-Discriminator, Generator):
+def __train_model(disc, gen, x_train, y_train, x_val, y_val, documents_data, queries_data) -> (Discriminator, Generator):
     queries_ids, documents_ids, train_queries_data, train_documents_data = __build_train_data(x_train, queries_data,
                                                                                               documents_data)
 
