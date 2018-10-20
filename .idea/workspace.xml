@@ -1,20 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="ae51d939-a0a3-40fb-ab1a-aec9d4f4c72b" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/app/evaluation/eval_all_metrics.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/evaluation/eval_utils.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/evaluation/metrics/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/evaluation/metrics/map_k.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/evaluation/metrics/mrr_k.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/evaluation/metrics/ndcg_k.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/evaluation/metrics/precision_k.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/data_preparation/init_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/data_preparation/init_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/gan/generator.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/gan/generator.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/training/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/training/train.py" afterDir="false" />
-    </list>
+    <list default="true" id="ae51d939-a0a3-40fb-ab1a-aec9d4f4c72b" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -28,7 +15,7 @@
     <session id="-726090517">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="6" />
+          <entry key="project.closed" value="7" />
           <entry key="project.open.time.1" value="1" />
           <entry key="project.open.time.3" value="1" />
           <entry key="project.open.time.5" value="3" />
@@ -128,7 +115,7 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/evaluation/eval_all_metrics.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="90">
@@ -143,8 +130,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="591">
-              <caret line="48" column="8" selection-start-line="48" selection-start-column="8" selection-end-line="48" selection-end-column="8" />
+            <state relative-caret-position="585">
+              <caret line="39" column="4" selection-start-line="39" selection-start-column="4" selection-end-line="39" selection-end-column="4" />
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
                 <marker date="1540059871396" expanded="true" signature="342:647" ph="..." />
@@ -163,7 +150,7 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/gan/generator.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="772">
@@ -367,17 +354,6 @@
               <item name="app" type="462c0819:PsiDirectoryNode" />
               <item name="gan" type="462c0819:PsiDirectoryNode" />
             </path>
-            <path>
-              <item name="lstm-irgan" type="b2602c69:ProjectViewProjectNode" />
-              <item name="lstm-irgan" type="462c0819:PsiDirectoryNode" />
-              <item name="best_practice" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="lstm-irgan" type="b2602c69:ProjectViewProjectNode" />
-              <item name="lstm-irgan" type="462c0819:PsiDirectoryNode" />
-              <item name="best_practice" type="462c0819:PsiDirectoryNode" />
-              <item name="eval" type="462c0819:PsiDirectoryNode" />
-            </path>
           </expand>
           <select />
         </subPane>
@@ -464,7 +440,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="171" y="23" width="1732" height="1015" extended-state="0" />
-    <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.109467454" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -811,16 +786,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/evaluation/eval_all_metrics.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="6" column="7" lean-forward="true" selection-start-line="6" selection-start-column="7" selection-end-line="6" selection-end-column="7" />
-          <folding>
-            <element signature="e#2#53#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/training/train.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2010">
@@ -830,18 +795,6 @@
             <marker date="1540059871409" expanded="true" signature="1544:1546" ph="..." />
             <marker date="1540059871409" expanded="true" signature="6746:6748" ph="..." />
             <marker date="1540059871409" expanded="true" signature="7662:8077" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/main.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="591">
-          <caret line="48" column="8" selection-start-line="48" selection-start-column="8" selection-end-line="48" selection-end-column="8" />
-          <folding>
-            <element signature="e#0#31#0" expanded="true" />
-            <marker date="1540059871396" expanded="true" signature="342:647" ph="..." />
-            <marker date="1540059871396" expanded="true" signature="982:1225" ph="..." />
           </folding>
         </state>
       </provider>
@@ -859,6 +812,28 @@
           <caret line="78" lean-forward="true" selection-start-line="78" selection-end-line="78" />
           <folding>
             <element signature="e#0#23#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="585">
+          <caret line="39" column="4" selection-start-line="39" selection-start-column="4" selection-end-line="39" selection-end-column="4" />
+          <folding>
+            <element signature="e#0#31#0" expanded="true" />
+            <marker date="1540059871396" expanded="true" signature="342:647" ph="..." />
+            <marker date="1540059871396" expanded="true" signature="982:1225" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/evaluation/eval_all_metrics.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="90">
+          <caret line="6" column="7" lean-forward="true" selection-start-line="6" selection-start-column="7" selection-end-line="6" selection-end-column="7" />
+          <folding>
+            <element signature="e#2#53#0" expanded="true" />
           </folding>
         </state>
       </provider>
