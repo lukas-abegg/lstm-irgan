@@ -6,10 +6,12 @@ import random
 import app.parameters as params
 from app.gan.generator import Generator
 from app.gan.discriminator import Discriminator
+import app.evaluation.metrics.precision_k as p_k
+import app.evaluation.metrics.ndcg_k as ndcg_k
 
 
-def train(x_data, y_data, documents_data, queries_data, feature_size, backend):
-    x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size=0.33, random_state=42)
+def train(query_ids, ratings_data, queries_data, documents_data, feature_size, sess):
+    x_train, x_test = train_test_split(query_ids, test_size=0.33, random_state=42)
 
     # Initialize data for eval
     p_best_val = 0.0
@@ -21,27 +23,24 @@ def train(x_data, y_data, documents_data, queries_data, feature_size, backend):
     skf = KFold(n_splits=params.KFOLD_SPLITS, shuffle=True)
 
     # Loop through the indices the split() method returns
-    for index, (train_k_indices, val_k_indices) in enumerate(skf.split(x_train, y_train)):
+    for index, (train_k_indices, val_k_indices) in enumerate(skf.split(x_train)):
         # Generate batches from indices
-        x_train_k, x_val_k = x_data.iloc[train_k_indices], x_data.iloc[val_k_indices]
-        y_train_k, y_val_k = y_data.iloc[train_k_indices], y_data.iloc[val_k_indices]
+        x_train_k, x_val_k = np.array(x_train)[train_k_indices], np.array(x_train)[val_k_indices]
 
         # Clear model, and create it
         disc = Discriminator.create_model(feature_size)
         gen = Generator.create_model(feature_size)
 
-        gen, disc, p_val, ndcg_val = __train_model(disc, gen, x_train_k, y_train_k, x_val_k, y_val_k, documents_data,
-                                                   queries_data)
+        gen, disc, p_val, ndcg_val = __train_model(disc, gen, x_train_k, x_val_k, ratings_data, queries_data, documents_data, sess)
 
         best_disc, best_gen, p_best_val, ndcg_best_val = __get_best_eval_result(disc, best_disc, gen, best_gen, p_val,
                                                                                 p_best_val, ndcg_val, ndcg_best_val)
 
-    return best_disc, best_gen, x_test, y_test
+    return best_disc, best_gen, x_test
 
 
-def __train_model(disc, gen, x_train, y_train, x_val, y_val, documents_data, queries_data) -> (Discriminator, Generator):
-    queries_ids, documents_ids, train_queries_data, train_documents_data = __build_train_data(x_train, queries_data,
-                                                                                              documents_data)
+def __train_model(disc, gen, x_train, x_val, ratings_data, queries_data, documents_data, sess) -> (Discriminator, Generator):
+    train_ratings_data, train_queries_data, train_documents_data = __build_train_data(x_train, ratings_data, queries_data, documents_data)
 
     # Initialize data for eval
     p_best_val = 0.0
@@ -62,8 +61,7 @@ def __train_model(disc, gen, x_train, y_train, x_val, y_val, documents_data, que
             pos_neg_size = 0
             if d_epoch % params.DISC_TRAIN_EPOCHS == 0:
                 # Generator generate negative for Discriminator, then train Discriminator
-                pos_neg_data = __generate_negatives_for_discriminator(gen, x_train, y_train, train_documents_data,
-                                                                      train_queries_data)
+                pos_neg_data = __generate_negatives_for_discriminator(gen, x_train, train_ratings_data, documents_data)
                 pos_neg_size = len(pos_neg_data)
 
             i = 1
@@ -77,8 +75,8 @@ def __train_model(disc, gen, x_train, y_train, x_val, y_val, documents_data, que
                 i += params.DISC_BATCH_SIZE
 
                 # prepare pos and neg data
-                pos_data = [[queries_data.loc[x[0]].query, documents_data.loc[x[1]].text] for x in input_pos]
-                neg_data = [[queries_data.loc[x[0]].query, documents_data.loc[x[1]].text] for x in input_neg]
+                pos_data = [[queries_data[x[0]], documents_data[x[1]]] for x in input_pos]
+                neg_data = [[queries_data[x[0]], documents_data[x[1]]] for x in input_neg]
 
                 pred_data = []
                 pred_data.extend(pos_data)
@@ -101,8 +99,7 @@ def __train_model(disc, gen, x_train, y_train, x_val, y_val, documents_data, que
             for query_id in queries_data.index.values:
 
                 # get query specific rating and all relevant docs
-                x_pos_list, y_pos_list, candidate_list = __get_query_specific_data(query_id, x_train, y_train,
-                                                                                   documents_data)
+                x_pos_list, y_pos_list, candidate_list = __get_query_specific_data(query_id, ratings_data, documents_data)
                 x_pos_set = set(x_pos_list)
 
                 # Importance Sampling
@@ -137,60 +134,66 @@ def __train_model(disc, gen, x_train, y_train, x_val, y_val, documents_data, que
                           choose_IS[np.newaxis, :])
 
             # Evaluate
-            p_5 = precision_at_k(gen, x_val, y_val, k=params.EVAL_K)
-            ndcg_5 = ndcg_at_k(gen, x_val, y_val, k=params.EVAL_K)
+            p_step = p_k.measure_precision_at_k(gen, x_val, ratings_data, queries_data, documents_data, params.EVAL_K, sess)
+            ndcg_step = ndcg_k.measure_ndcg_at_k(gen, x_val, ratings_data, queries_data, documents_data, params.EVAL_K, sess)
 
-            best_disc, best_gen, p_best_val, ndcg_best_val = __get_best_eval_result(disc, best_disc, gen, best_gen, p_5,
-                                                                                    p_best_val, ndcg_5, ndcg_best_val)
+            best_disc, best_gen, p_best_val, ndcg_best_val = __get_best_eval_result(disc, best_disc, gen, best_gen, p_step,
+                                                                                    p_best_val, ndcg_step, ndcg_best_val)
 
     print("Best:", "gen p@5 ", p_best_val, "gen ndcg@5 ", ndcg_best_val)
 
     return best_disc, best_gen, p_best_val, ndcg_best_val
 
 
-def __build_train_data(x_train, queries_data, documents_data):
-    queries_ids = np.unique(x_train.query_id.astype(int))
-    train_queries_data = queries_data[(queries_data.index.isin(queries_ids))]
+def __build_train_data(x_train, ratings_data, queries_data, documents_data):
+    train_queries_data = {}
+    train_documents_data = {}
+    train_ratings_data = {}
 
-    documents_ids = np.unique(x_train.doc_id.astype(int))
-    train_documents_data = documents_data[(documents_data.index.isin(documents_ids))]
+    for query_id in x_train:
+        train_ratings_data[query_id] = ratings_data[query_id]
+        train_queries_data[query_id] = queries_data[query_id]
+        for key in ratings_data.keys():
+            train_documents_data[key] = documents_data[key]
 
-    return queries_ids, documents_ids, train_queries_data, train_documents_data
+    return train_ratings_data, train_queries_data, train_documents_data
 
 
-def __generate_negatives_for_discriminator(gen, x_train, y_train, documents_data, queries_data):
+def __generate_negatives_for_discriminator(gen, x_train, ratings_data, documents_data):
     data = []
 
     print('negative sampling for discriminator using generator')
-    for query_id in queries_data.index.values:
+    for query_id in x_train:
         # get query specific rating and all relevant docs
-        x_pos_list, y_pos_list, candidate_list = __get_query_specific_data(query_id, x_train, y_train, documents_data)
+        x_pos_list, y_pos_list, candidate_list = __get_query_specific_data(query_id, ratings_data, documents_data)
 
         # Importance Sampling
         # prob = gen.get_prob(candidate_list)
         # prob = prob[0]
         # prob = prob.reshape([-1])
         #
-        # neg_list = np.random.choice(candidate_list.index, size=[len(x_pos_list)], p=prob)
-        neg_list = np.random.choice(candidate_list.index, size=[len(x_pos_list)])
+        # neg_list = np.random.choice(candidate_list, size=[len(x_pos_list)], p=prob)
+        neg_list = np.random.choice(candidate_list, size=[len(x_pos_list)])
 
         for i in range(len(x_pos_list)):
-            data.append((query_id, int(x_pos_list.iloc[i].doc_id), neg_list[i]))
+            data.append([query_id, x_pos_list[i], neg_list[i]])
 
     # shuffle
     random.shuffle(data)
     return data
 
 
-def __get_query_specific_data(query_id, x_train, y_train, documents_data):
+def __get_query_specific_data(query_id, ratings_data, documents_data):
     # get all query specific ratings
-    idx = (x_train.query_id == query_id)
-    x_pos_list = x_train.loc[idx]
-    y_pos_list = y_train.loc[idx]
+    x_pos_list = list(ratings_data[query_id].keys())
+    y_pos_list = list(ratings_data[query_id].values())
 
     # get all other ratings
-    docs_pos_ids = np.unique(x_pos_list.doc_id.astype(int))
-    candidate_list = documents_data[(~documents_data.index.isin(docs_pos_ids))]
+    docs_pos_ids = np.unique(x_pos_list)
+    candidate_list = []
+    for doc_id in documents_data.keys():
+        if doc_id not in docs_pos_ids:
+            candidate_list.append(doc_id)
 
     return x_pos_list, y_pos_list, candidate_list
 

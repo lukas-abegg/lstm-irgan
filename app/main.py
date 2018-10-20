@@ -1,6 +1,6 @@
 import app.parameters as params
 import app.data_preparation.init_data as init
-import app.evaluation.evaluate_all as eval
+import app.evaluation.eval_all_metrics as eval_metrics
 from app.gan.discriminator import Discriminator
 from app.gan.generator import Generator
 
@@ -26,38 +26,36 @@ def __init_config():
 
 
 def __prepare_data():
-    x_data, y_data, documents_data, queries_data = init.get_data()
+    query_ids, ratings_data, documents_data, queries_data = init.get_data()
     feature_size = params.FEATURE_SIZE
-    return x_data, y_data, documents_data, queries_data, feature_size
+    return query_ids, ratings_data, documents_data, queries_data, feature_size
 
 
-def __train(x_data, y_data, documents_data, queries_data, feature_size, sess, backend) -> (Discriminator, Generator):
-    best_disc, best_gen, x_test, y_test = train(x_data, y_data, documents_data, queries_data, feature_size, backend)
-    eval.evaluate(best_gen, sess, x_test, y_test)
+def __train(query_ids, ratings_data, queries_data, documents_data, feature_size, sess) -> (Discriminator, Generator):
+    best_disc, best_gen, x_test = train(query_ids, ratings_data, queries_data, documents_data, feature_size, sess)
+    eval_metrics.evaluate(best_gen, x_test, ratings_data, documents_data, queries_data, sess)
     return best_disc, best_gen
 
 
-def __evaluate(generator, sess, dataset):
-    eval.evaluate(generator, sess, dataset)
+def __evaluate(gen, x_data, ratings_data, queries_data, documents_data, sess):
+    eval_metrics.evaluate(gen, x_data, ratings_data, queries_data, documents_data, sess)
 
 
 def main(mode):
     backend, sess = __init_config()
-    x_data, y_data, documents_data, queries_data, feature_size = __prepare_data()
+    query_ids, ratings_data, documents_data, queries_data, feature_size = __prepare_data()
 
     if params.TRAIN_MODE == mode:
-        discriminator, generator = __train(x_data, y_data, documents_data, queries_data, feature_size, sess, backend)
+        discriminator, generator = __train(query_ids, ratings_data, queries_data, documents_data, feature_size, sess)
         discriminator.save_model("/temp/disc")
         generator.save_model("/temp/gen")
     elif params.EVAL_MODE == mode:
         generator = Generator.create_model(feature_size)
         generator.load_from_file("/temp/gen")
-        # __evaluate(generator, sess, dataset)
+        __evaluate(generator, query_ids, ratings_data, queries_data, documents_data, sess)
     else:
         print("unknown MODE")
 
 
 if __name__ == '__main__':
     main(params.TRAIN_MODE)
-
-    main(params.EVAL_MODE)

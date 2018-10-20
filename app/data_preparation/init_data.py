@@ -1,6 +1,5 @@
 import os
 import sys
-import pandas as pd
 import app.parameters as params
 
 
@@ -26,6 +25,8 @@ def __get_documents():
 def __get_queries():
     path = params.QUERIES
     queries = {}
+    query_ids = []
+
     with open(path) as f:
         content = f.readlines()
         for line in content:
@@ -33,37 +34,35 @@ def __get_queries():
             id = int(values[0])
             text = values[1]
             queries[id] = text
-    return queries
+            query_ids.append(id)
+    return queries, query_ids
 
 
-def __get_labels():
+def __get_ratings():
     path = params.LABELLED_DATA
-    labels = []
+    ratings = {}
+
     with open(path) as f:
         content = f.readlines()
         for line in content:
-            labels.append((line.split()))
-    return labels
+            values = line.split()
+            query = int(values[0])
+            text = int(values[1])
+            rating = float(values[2])
+
+            if query in ratings.keys():
+                ratings[query][text] = rating
+            else:
+                ratings[query] = {text: rating}
+
+    return ratings
 
 
 def get_data():
-    documents_dict = __get_documents()
-    queries_dict = __get_queries()
-    labels = __get_labels()
+    documents_data = __get_documents()
+    queries_data, query_ids = __get_queries()
+    ratings_data = __get_ratings()
 
-    labels_data = pd.DataFrame(labels)
+    print('Found %s training data.' % len(ratings_data))
 
-    x_data = labels_data.drop(columns=[2])
-    x_data = x_data.rename(columns={0: 'query_id', 1: 'doc_id'})
-
-    y_data = labels_data.drop(columns=[0, 1])
-    y_data = y_data.rename(columns={2: 'relevance'})
-
-    documents_data = pd.DataFrame.from_dict(documents_dict, orient='index')
-    documents_data = documents_data.rename(columns={0: 'text'})
-    queries_data = pd.DataFrame.from_dict(queries_dict, orient='index')
-    queries_data = queries_data.rename(columns={0: 'query'})
-
-    print('Found %s training data.' % len(y_data))
-
-    return x_data, y_data, documents_data, queries_data
+    return query_ids, ratings_data, documents_data, queries_data

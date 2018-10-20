@@ -74,6 +74,5 @@ class Generator:
     @staticmethod
     def create_model(feature_size):
         # call discriminator, generator
-        gen = Generator(feature_size, params.DISC_HIDDEN_SIZE, params.DISC_WEIGHT_DECAY,
-                             params.DISC_LEARNING_RATE)
+        gen = Generator(feature_size, params.DISC_HIDDEN_SIZE, params.DISC_WEIGHT_DECAY, params.DISC_LEARNING_RATE)
         return gen
