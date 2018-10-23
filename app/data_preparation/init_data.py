@@ -2,6 +2,9 @@ import os
 import sys
 import app.parameters as params
 
+from keras.preprocessing.text import Tokenizer
+from keras.preprocessing.sequence import pad_sequences
+
 
 def __get_documents():
     path = params.DOCUMENTS_DIR
@@ -58,11 +61,35 @@ def __get_ratings():
     return ratings
 
 
+def __init_tokenizer(text_data, max_sequence_length):
+    texts = list(text_data.values())
+    ids = list(text_data.keys())
+
+    # finally, vectorize the text samples into a 2D integer tensor
+    tokenizer = Tokenizer(num_words=params.MAX_NUM_WORDS)
+    tokenizer.fit_on_texts(texts)
+    sequences = tokenizer.texts_to_sequences(texts)
+
+    word_index = tokenizer.word_index
+    print('Found %s unique tokens.' % len(word_index))
+
+    data = pad_sequences(sequences, maxlen=max_sequence_length)
+
+    text_data_sequenced = {}
+    for i, text in enumerate(data):
+        text_data_sequenced[ids[i]] = text
+
+    return tokenizer, text_data_sequenced
+
+
 def get_data():
     documents_data = __get_documents()
     queries_data, query_ids = __get_queries()
     ratings_data = __get_ratings()
 
+    tokenizer_q, queries_data = __init_tokenizer(queries_data, params.MAX_SEQUENCE_LENGTH_QUERIES)
+    tokenizer_d, documents_data = __init_tokenizer(documents_data, params.MAX_SEQUENCE_LENGTH_DOCUMENTS)
+
     print('Found %s training data.' % len(ratings_data))
 
-    return query_ids, ratings_data, documents_data, queries_data
+    return query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d

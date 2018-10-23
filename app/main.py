@@ -26,13 +26,12 @@ def __init_config():
 
 
 def __prepare_data():
-    query_ids, ratings_data, documents_data, queries_data = init.get_data()
-    feature_size = params.FEATURE_SIZE
-    return query_ids, ratings_data, documents_data, queries_data, feature_size
+    query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = init.get_data()
+    return query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d
 
 
-def __train(query_ids, ratings_data, queries_data, documents_data, feature_size, sess) -> (Discriminator, Generator):
-    best_disc, best_gen, x_test = train(query_ids, ratings_data, queries_data, documents_data, feature_size, sess)
+def __train(query_ids, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess) -> (Discriminator, Generator):
+    best_disc, best_gen, x_test = train(query_ids, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess)
     eval_metrics.evaluate(best_gen, x_test, ratings_data, documents_data, queries_data, sess)
     return best_disc, best_gen
 
@@ -43,15 +42,14 @@ def __evaluate(gen, x_data, ratings_data, queries_data, documents_data, sess):
 
 def main(mode):
     backend, sess = __init_config()
-    query_ids, ratings_data, documents_data, queries_data, feature_size = __prepare_data()
+    query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = __prepare_data()
 
     if params.TRAIN_MODE == mode:
-        discriminator, generator = __train(query_ids, ratings_data, queries_data, documents_data, feature_size, sess)
-        discriminator.save_model("/temp/disc")
-        generator.save_model("/temp/gen")
+        discriminator, generator = __train(query_ids, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess)
+        discriminator.save_model("/temp/disc.h5")
+        generator.save_model("/temp/gen.h5")
     elif params.EVAL_MODE == mode:
-        generator = Generator.create_model(feature_size)
-        generator.load_from_file("/temp/gen")
+        generator = Generator.load_model("/temp/gen.h5")
         __evaluate(generator, query_ids, ratings_data, queries_data, documents_data, sess)
     else:
         print("unknown MODE")

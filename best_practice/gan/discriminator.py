@@ -11,13 +11,11 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 
 class Discriminator:
-    def __init__(self, feature_size, hidden_size, weight_decay, learning_rate, layer_0_param = None, layer_1_param = None):
+    def __init__(self, feature_size, hidden_size, weight_decay, learning_rate):
         self.feature_size = feature_size
         self.hidden_size = hidden_size
         self.weight_decay = weight_decay
         self.learning_rate = learning_rate
-        self.layer_0_param = layer_0_param
-        self.layer_1_param = layer_1_param
 
         self.model = Sequential()
         self.model.add(Dense(self.hidden_size, input_dim = self.feature_size, activation='tanh',

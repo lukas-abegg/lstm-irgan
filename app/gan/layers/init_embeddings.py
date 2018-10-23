@@ -9,6 +9,8 @@ import app.parameters as params
 
 # based on: https://github.com/keras-team/keras/blob/master/examples/pretrained_word_embeddings.py
 
+# first, build index mapping words in the embeddings set
+# to their embedding vector
 def __build_index_mapping():
     print('Indexing word vectors.')
 
@@ -27,11 +29,11 @@ def __build_index_mapping():
 def __build_embeddings_matrix(tokenizer: Tokenizer, embeddings_index):
     print('Preparing embedding matrix.')
     word_index = tokenizer.word_index
-    num_words = min(params.EMBEDDINGS_MAX_NUM_WORDS, len(word_index)) + 1
-    embeddings_matrix = np.zeros((num_words, params.EMBEDDINGS_DIM))
+    num_words = min(params.MAX_NUM_WORDS, len(word_index)) + 1
+    embeddings_matrix = np.zeros((num_words, params.EMBEDDING_DIM))
 
     for word, i in word_index.items():
-        if i > params.EMBEDDINGS_MAX_NUM_WORDS:
+        if i > params.MAX_NUM_WORDS:
             continue
         embedding_vector = embeddings_index.get(word)
         if embedding_vector is not None:
@@ -40,17 +42,19 @@ def __build_embeddings_matrix(tokenizer: Tokenizer, embeddings_index):
     return num_words, embeddings_matrix
 
 
+# load pre-trained word embeddings into an Embedding layer
+# note that we set trainable = False so as to keep the embeddings fixed
 def __build_embeddings_layer(num_words, embeddings_matrix, max_sequence_length):
-    embeddings_layer = Embedding(num_words,
-                                 params.EMBEDDINGS_MAX_NUM_WORDS,
+    embeddings_layer = Embedding(input_dim=num_words,
+                                 output_dim=params.EMBEDDING_DIM,
                                  embeddings_initializer=Constant(embeddings_matrix),
                                  input_length=max_sequence_length,
                                  trainable=False)
     return embeddings_layer
 
 
-def init_embedding_layer(tokenizer: Tokenizer, max_sequence_length):
+def init_embedding_layer(tokenizer, max_sequence_length):
     embeddings_index = __build_index_mapping()
-    (num_words, embeddings_matrix) = __build_embeddings_matrix(tokenizer, embeddings_index)
+    num_words, embeddings_matrix = __build_embeddings_matrix(tokenizer, embeddings_index)
     embeddings_layer = __build_embeddings_layer(num_words, embeddings_matrix, max_sequence_length)
     return embeddings_layer

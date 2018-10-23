@@ -1,78 +1,111 @@
-import tensorflow as tf
-
-from keras.layers import Input, Concatenate, B
-from keras.models import Model
-from keras.layers.core import Reshape, Dense, Activation, Lambda
-from keras import backend as k
+from keras.layers.core import Reshape, Dropout
+from keras.layers import Bidirectional, Embedding, LSTM
+from keras import backend as K
 from keras import regularizers
-from keras import optimizers
+from keras.layers import Dense, Concatenate, Activation, Lambda
+from keras.models import Model, Input
+from keras.models import save_model, load_model
+
+import numpy as np
 
 import app.parameters as params
 
 
 class Generator:
-    def __init__(self, feature_size, hidden_size, weight_decay, learning_rate, temperature=1.0):
-        self.feature_size = feature_size
-        self.hidden_size = hidden_size
+    def __init__(self, weight_decay=None, learning_rate=None, embedding_layer_q=None, embedding_layer_d=None, model=None, temperature=1.0):
         self.weight_decay = weight_decay
         self.learning_rate = learning_rate
         self.temperature = temperature
-       
-        self.pred_data = Input(shape=(None, self.feature_size))
-        self.reward = Input(shape=(None,))
-        self.important_sampling = Input(shape=(None,))
+        self.embeddings_layer_q: Embedding = embedding_layer_q
+        self.embeddings_layer_d: Embedding = embedding_layer_d
+        self.model: Model = self.__get_model(model)
 
-        self.Dense_1_query = Dense(self.hidden_size, input_dim=self.feature_size, activation='tanh',
-                                    weights=layer_0_param, kernel_regularizer=regularizers.l2(self.weight_decay))(self.pred_data)
-        self.Dense_2_query = Dense(1, input_dim=self.hidden_size,
-                                    weights=layer_1_param, kernel_regularizer=regularizers.l2(self.weight_decay))(self.Dense_1_query)
+    def __get_model(self, model):
+        if model is None:
+            return self.__init_model()
+        else:
+            return model
 
-        self.Dense_1_document = Dense(self.hidden_size, input_dim=self.feature_size, activation='tanh',
-                                    weights=layer_0_param, kernel_regularizer=regularizers.l2(self.weight_decay))(self.pred_data)
-        self.Dense_2_document = Dense(1, input_dim=self.hidden_size,
-                                    weights=layer_1_param, kernel_regularizer=regularizers.l2(self.weight_decay))(self.Dense_1_document)
+    def __init_model(self):
+        # create model
+        reward = Input(shape=(None,))
+        important_sampling = Input(shape=(None,))
 
-        # Given batch query-url pairs, calculate the matching score
-        # For all urls of one query
-        self.Dense_Input = Concatenate([self.Dense_2_query, self.Dense_2_document], axis=-1)
-        self.score = Lambda(lambda x: x / self.temperature)(self.Dense_2_result)
-        self.score = Reshape([-1])(self.score)
-        self.prob = Activation('softmax')(self.score)
-        
-        self.model = Model(inputs=[self.pred_data, self.reward, self.important_sampling], outputs=[self.prob])
-        
-        self.model.summary()
-        self.model.compile(loss=self.__loss(self.reward, self.important_sampling),
-                           optimizer=optimizers.TFOptimizer(tf.train.GradientDescentOptimizer(self.learning_rate)),
-                           metrics=['accuracy'])
+        sequence_input_q = Input(shape=(params.MAX_SEQUENCE_LENGTH_QUERIES,), dtype='int32')
+        embedded_sequences_q = self.embeddings_layer_q(sequence_input_q)
+        lstm_q_1 = Bidirectional(LSTM(units=params.DISC_HIDDEN_SIZE_LSTM, input_dim=params.EMBEDDING_DIM))(
+            embedded_sequences_q)
+        lstm_q_2 = Bidirectional(LSTM(units=params.DISC_HIDDEN_SIZE_LSTM, input_dim=params.DISC_HIDDEN_SIZE_LSTM))(
+            lstm_q_1)
+        lstm_out_q = Dropout(0.2)(lstm_q_2)
 
-    def __loss(self, _reward, _important_sampling):
+        sequence_input_d = Input(shape=(params.MAX_SEQUENCE_LENGTH_DOCUMENTS,), dtype='int32')
+        embedded_sequences_d = self.embeddings_layer_q(sequence_input_d)
+        lstm_d_1 = Bidirectional(LSTM(units=params.DISC_HIDDEN_SIZE_LSTM, input_dim=params.EMBEDDING_DIM))(
+            embedded_sequences_d)
+        lstm_d_2 = Bidirectional(LSTM(units=params.DISC_HIDDEN_SIZE_LSTM, input_dim=params.DISC_HIDDEN_SIZE_LSTM))(
+            lstm_d_1)
+        lstm_out_d = Dropout(0.2)(lstm_d_2)
+
+        x = Concatenate([lstm_out_q, lstm_out_d])
+
+        x = Dense(units=params.DISC_HIDDEN_SIZE_DENSE,
+                  activation='tanh',
+                  kernel_regularizer=regularizers.l2(self.weight_decay))(x)
+        x = Dense(units=1,
+                  kernel_regularizer=regularizers.l2(self.weight_decay))(x)
+
+        score = Lambda(lambda z: z / self.temperature)(x)
+        score = Reshape([-1])(score)
+        prob = Activation('softmax')(score)
+
+        model = Model(inputs=[sequence_input_q, sequence_input_d, reward, important_sampling], outputs=[prob])
+        model.summary()
+        model.compile(loss=self.__loss(reward, important_sampling),
+                      optimizer='adam',
+                      metrics=['accuracy'])
+
+    @staticmethod
+    def __loss(_reward, _important_sampling):
         def _loss(y_true, y_pred):
-            log_action_prob = k.log(y_pred)
-            loss = - k.reshape(log_action_prob, [-1]) * k.reshape(_reward, [-1]) * k.reshape(_important_sampling, [-1])
-            loss = k.mean(loss)
+            log_action_prob = K.log(y_pred)
+            loss = - K.reshape(log_action_prob, [-1]) * K.reshape(y_true, [-1]) * K.reshape(y_pred, [-1])
+            loss = K.mean(loss)
             return loss
 
         return _loss(_reward, _important_sampling)
 
-    def get_score(self, pred_data):
-        functor = k.function([self.model.layers[0].input] + [k.learning_phase()], [self.model.layers[4].output])
-        layer_outs = functor([pred_data, 0.])
+    def train(self, train_data_queries, train_data_documents, reward, important_sampling):
+        self.model.train_on_batch([train_data_queries, train_data_documents, reward, important_sampling], np.zeros([train_data_queries.shape[0]]))
+
+    def get_score(self, train_data_queries, train_data_documents,):
+        inp = self.model.input
+        functor = K.function([inp] + [K.learning_phase()], [self.model.layers[13].output])
+        layer_outs = functor([[train_data_queries, train_data_documents], 0.])
         return layer_outs
 
-    def get_prob(self, documents):
-        functor = k.function([self.model.layers[0].input] + [k.learning_phase()], [self.model.layers[5].output])
-        layer_outs = functor([documents, 0.])
+    def get_prob(self, train_data_queries, train_data_documents,):
+        inp = self.model.input
+        functor = K.function([inp] + [K.learning_phase()], [self.model.layers[14].output])
+        layer_outs = functor([[train_data_queries, train_data_documents], 0.])
         return layer_outs
 
-    def train(self, x, y):
-        self.model.fit(x=x, y=y, batch_size=None, epochs=1, verbose=1, callbacks=None, validation_split=0.0, validation_data=None, shuffle=True, class_weight=None, sample_weight=None, initial_epoch=0, steps_per_epoch=None, validation_steps=None)
-
-    def save_model(self, filename):
-        self.model.save_weights(filename)
+    def save_model(self, filepath):
+        save_model(self.model, filepath)
+        print("Saved model to disk")
 
     @staticmethod
-    def create_model(feature_size):
-        # call discriminator, generator
-        gen = Generator(feature_size, params.DISC_HIDDEN_SIZE, params.DISC_WEIGHT_DECAY, params.DISC_LEARNING_RATE)
+    def load_model(filepath):
+        model = load_model(filepath)
+        print("Loaded model from disk")
+
+        disc = Generator(model=model)
+        return disc
+
+    @staticmethod
+    def create_model(embedding_layer_q, embedding_layer_d):
+
+        gen = Generator(params.DISC_WEIGHT_DECAY, params.DISC_LEARNING_RATE,
+                        embedding_layer_q, embedding_layer_d)
         return gen
+
