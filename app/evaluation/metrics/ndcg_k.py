@@ -9,13 +9,13 @@ def measure_ndcg_at_k(model, x_val, ratings_data, queries_data, documents_data, 
 
     for query_id in x_val:
         # get all query specific ratings
-        x_data, y_data, eval_documents, enough_data_for_eval = utils.get_query_specific_eval_data(query_id, ratings_data, queries_data, documents_data, k)
+        x_data, y_data, eval_queries, eval_documents, enough_data_for_eval = utils.get_query_specific_eval_data(query_id, ratings_data, queries_data, documents_data, k)
 
         if not enough_data_for_eval:
             continue
 
         # predict y-values for given x-values
-        pred_scores = sess.run(model.pred_score, feed_dict={model.pred_data: eval_documents})
+        pred_scores = sess.run(model.pred_score, feed_dict={model.pred_data: [eval_queries, eval_documents]})
 
         pred_document_scores_order, rated_document_scores_order = utils.sort_pred_val_data(x_data, y_data, pred_scores)
 
