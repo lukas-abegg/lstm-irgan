@@ -40,7 +40,8 @@ class Discriminator:
 
         x = Concatenate([lstm_out_q, lstm_out_d])
 
-        x = Dense(units=params.DISC_HIDDEN_SIZE_DENSE, activation='tanh',
+        x = Dense(units=params.DISC_HIDDEN_SIZE_DENSE,
+                  activation='tanh',
                   kernel_regularizer=regularizers.l2(self.weight_decay),
                   kernel_initializer=initializers.random_normal(stddev=0.01))(x)
         x = Dense(units=1,

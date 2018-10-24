@@ -33,23 +33,23 @@ class Generator:
 
         sequence_input_q = Input(shape=(params.MAX_SEQUENCE_LENGTH_QUERIES,), dtype='int32')
         embedded_sequences_q = self.embeddings_layer_q(sequence_input_q)
-        lstm_q_1 = Bidirectional(LSTM(units=params.DISC_HIDDEN_SIZE_LSTM, input_dim=params.EMBEDDING_DIM))(
+        lstm_q_1 = Bidirectional(LSTM(units=params.GEN_HIDDEN_SIZE_LSTM, input_dim=params.EMBEDDING_DIM))(
             embedded_sequences_q)
-        lstm_q_2 = Bidirectional(LSTM(units=params.DISC_HIDDEN_SIZE_LSTM, input_dim=params.DISC_HIDDEN_SIZE_LSTM))(
+        lstm_q_2 = Bidirectional(LSTM(units=params.GEN_HIDDEN_SIZE_LSTM, input_dim=params.GEN_HIDDEN_SIZE_LSTM))(
             lstm_q_1)
         lstm_out_q = Dropout(0.2)(lstm_q_2)
 
         sequence_input_d = Input(shape=(params.MAX_SEQUENCE_LENGTH_DOCUMENTS,), dtype='int32')
         embedded_sequences_d = self.embeddings_layer_q(sequence_input_d)
-        lstm_d_1 = Bidirectional(LSTM(units=params.DISC_HIDDEN_SIZE_LSTM, input_dim=params.EMBEDDING_DIM))(
+        lstm_d_1 = Bidirectional(LSTM(units=params.GEN_HIDDEN_SIZE_LSTM, input_dim=params.EMBEDDING_DIM))(
             embedded_sequences_d)
-        lstm_d_2 = Bidirectional(LSTM(units=params.DISC_HIDDEN_SIZE_LSTM, input_dim=params.DISC_HIDDEN_SIZE_LSTM))(
+        lstm_d_2 = Bidirectional(LSTM(units=params.GEN_HIDDEN_SIZE_LSTM, input_dim=params.GEN_HIDDEN_SIZE_LSTM))(
             lstm_d_1)
         lstm_out_d = Dropout(0.2)(lstm_d_2)
 
         x = Concatenate([lstm_out_q, lstm_out_d])
 
-        x = Dense(units=params.DISC_HIDDEN_SIZE_DENSE,
+        x = Dense(units=params.GEN_HIDDEN_SIZE_DENSE,
                   activation='tanh',
                   kernel_regularizer=regularizers.l2(self.weight_decay))(x)
         x = Dense(units=1,
@@ -105,7 +105,7 @@ class Generator:
     @staticmethod
     def create_model(embedding_layer_q, embedding_layer_d):
 
-        gen = Generator(params.DISC_WEIGHT_DECAY, params.DISC_LEARNING_RATE,
+        gen = Generator(params.GEN_WEIGHT_DECAY, params.GEN_LEARNING_RATE,
                         embedding_layer_q, embedding_layer_d)
         return gen
 
