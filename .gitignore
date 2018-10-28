@@ -94,6 +94,7 @@ htmlcov
 
 # Things specific to this project #
 ###################################
+data/wikiclir
 
 
 CHANGELOG.temp

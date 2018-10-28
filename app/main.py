@@ -1,14 +1,23 @@
-import app.parameters as params
-import app.data_preparation.init_data as init
-import app.evaluation.eval_all_metrics as eval_metrics
-from app.gan.discriminator import Discriminator
-from app.gan.generator import Generator
-
 import os
+import warnings
+
 import tensorflow as tf
 from keras import backend
+from comet_ml import Experiment
 
-from app.training.train import train
+from hyperopt import Trials, STATUS_OK, tpe
+from hyperas import optim
+from hyperas.distributions import uniform
+
+import app.data_preparation.init_data_example as init_example
+import app.evaluation.eval_all_metrics as eval_metrics
+import app.parameters as params
+import app.plotting.plot_model as plotting
+from app.gan.generator import Generator
+from app.training import train
+
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore", category=FutureWarning)
 
 
 def __init_config():
@@ -22,38 +31,110 @@ def __init_config():
 
     os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
-    return backend, sess
+    return sess
 
 
 def __prepare_data():
-    query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = init.get_data()
+
+    if params.DATA_SOURCE == params.DATA_SOURCE_EXAMPLE:
+        query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = init_example.get_data()
+    else:
+        query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = init_example.get_data()
+
     return query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d
 
 
-def __train(query_ids, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess) -> (Discriminator, Generator):
-    best_disc, best_gen, x_test = train(query_ids, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess)
-    eval_metrics.evaluate(best_gen, x_test, ratings_data, documents_data, queries_data, sess)
-    return best_disc, best_gen
+def get_env_data_with_x_data_splitted():
+    sess = __init_config()
+    query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = __prepare_data()
+    x_train, x_test = train.get_x_data(query_ids)
+    return sess, x_train, x_test, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d
 
 
-def __evaluate(gen, x_data, ratings_data, queries_data, documents_data, sess):
+def get_env_data_not_splitted():
+    sess = __init_config()
+    query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = __prepare_data()
+    return sess, query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d
+
+
+def train_model_without_hyperparam_opt(x_train, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess):
+    weight_decay = params.WEIGHT_DECAY
+    learning_rate = params.LEARNING_RATE
+    temperature = params.TEMPERATURE
+    dropout = params.DROPOUT
+
+    best_gen, validation_acc = train.train_model(x_train, ratings_data, queries_data, documents_data, tokenizer_q,
+                                                 tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout)
+
+    return best_gen
+
+
+def train_model_with_hyperparam_opt(x_train, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess):
+    weight_decay = {{uniform(params.OPT_MIN_WEIGHT_DECAY, params.OPT_MAX_WEIGHT_DECAY)}}
+    learning_rate = {{uniform(params.OPT_MIN_LEARNING_RATE, params.OPT_MAX_LEARNING_RATE)}}
+    temperature = {{uniform(params.OPT_MIN_TEMPERATURE, params.OPT_MAX_TEMPERATURE)}}
+    dropout = {{uniform(params.OPT_MIN_DROPOUT, params.OPT_MAX_DROPOUT)}}
+
+    best_gen, validation_acc = train.train_model(x_train, ratings_data, queries_data, documents_data, tokenizer_q,
+                                                 tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout)
+
+    return {'loss': -validation_acc, 'status': STATUS_OK, 'model': best_gen}
+
+
+def evaluate(gen, x_data, ratings_data, queries_data, documents_data, sess):
     eval_metrics.evaluate(gen, x_data, ratings_data, queries_data, documents_data, sess)
 
 
-def main(mode):
-    backend, sess = __init_config()
-    query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = __prepare_data()
+def save_model(model, path):
+    model.save_model(path)
 
+
+def load_model(model_class, path):
+    return model_class.load_model(path)
+
+
+def plot_model(gen):
+    plotting.plot_model(gen)
+
+
+def main(mode):
     if params.TRAIN_MODE == mode:
-        discriminator, generator = __train(query_ids, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess)
-        discriminator.save_model("/temp/disc.h5")
-        generator.save_model("/temp/gen.h5")
+        if params.USE_HYPERPARAM_OPT:
+            sess, x_train, x_test, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = get_env_data_with_x_data_splitted()
+            generator = train_model_without_hyperparam_opt(x_train, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess)
+
+        else:
+            best_run, best_model = optim.minimize(model=train_model_with_hyperparam_opt,
+                                                  data=get_env_data_with_x_data_splitted,
+                                                  algo=tpe.suggest,
+                                                  max_evals=5,
+                                                  trials=Trials())
+
+            sess, x_train, x_test, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = get_env_data_with_x_data_splitted()
+            generator = best_model
+            print("Best performing model chosen hyper-parameters:")
+            print(best_run)
+
+        eval_metrics.evaluate(generator, x_test, ratings_data, documents_data, queries_data, sess)
+        save_model(generator, params.SAVED_MODEL_GEN_FILE)
+
     elif params.EVAL_MODE == mode:
-        generator = Generator.load_model("/temp/gen.h5")
-        __evaluate(generator, query_ids, ratings_data, queries_data, documents_data, sess)
+        sess, x_data, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = get_env_data_not_splitted()
+        generator = Generator
+        generator = load_model(generator, params.SAVED_MODEL_GEN_FILE)
+        evaluate(generator, x_data, ratings_data, queries_data, documents_data, sess)
+
+    elif params.PLOT_MODEL_MODE == mode:
+        generator = Generator
+        generator = load_model(generator, params.SAVED_MODEL_GEN_FILE)
+        plot_model(generator)
+
     else:
         print("unknown MODE")
 
 
 if __name__ == '__main__':
-    main(params.TRAIN_MODE)
+    experiment = Experiment(api_key="tgrD5ElfTdvaGEmJB7AEZG8Ra",
+                            project_name="general", workspace="abeggluk")
+
+    main(params.USED_MODE)

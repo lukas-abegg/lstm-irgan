@@ -12,10 +12,11 @@ import app.parameters as params
 
 
 class Generator:
-    def __init__(self, weight_decay=None, learning_rate=None, embedding_layer_q=None, embedding_layer_d=None, model=None, temperature=1.0):
+    def __init__(self, weight_decay=None, learning_rate=None, temperature=1.0, dropout=0.0, embedding_layer_q=None, embedding_layer_d=None, model=None):
         self.weight_decay = weight_decay
         self.learning_rate = learning_rate
         self.temperature = temperature
+        self.dropout = dropout
         self.embeddings_layer_q: Embedding = embedding_layer_q
         self.embeddings_layer_d: Embedding = embedding_layer_d
         self.model: Model = self.__get_model(model)
@@ -37,7 +38,7 @@ class Generator:
             embedded_sequences_q)
         lstm_q_2 = Bidirectional(LSTM(units=params.GEN_HIDDEN_SIZE_LSTM, input_dim=params.GEN_HIDDEN_SIZE_LSTM))(
             lstm_q_1)
-        lstm_out_q = Dropout(0.2)(lstm_q_2)
+        lstm_out_q = Dropout(self.dropout)(lstm_q_2)
 
         sequence_input_d = Input(shape=(params.MAX_SEQUENCE_LENGTH_DOCUMENTS,), dtype='int32')
         embedded_sequences_d = self.embeddings_layer_q(sequence_input_d)
@@ -45,7 +46,7 @@ class Generator:
             embedded_sequences_d)
         lstm_d_2 = Bidirectional(LSTM(units=params.GEN_HIDDEN_SIZE_LSTM, input_dim=params.GEN_HIDDEN_SIZE_LSTM))(
             lstm_d_1)
-        lstm_out_d = Dropout(0.2)(lstm_d_2)
+        lstm_out_d = Dropout(self.dropout)(lstm_d_2)
 
         x = Concatenate([lstm_out_q, lstm_out_d])
 
@@ -99,13 +100,12 @@ class Generator:
         model = load_model(filepath)
         print("Loaded model from disk")
 
-        disc = Generator(model=model)
-        return disc
+        gen = Generator(model=model)
+        return gen
 
     @staticmethod
-    def create_model(embedding_layer_q, embedding_layer_d):
+    def create_model(weight_decay, learning_rate, temperature, dropout, embedding_layer_q, embedding_layer_d):
 
-        gen = Generator(params.GEN_WEIGHT_DECAY, params.GEN_LEARNING_RATE,
-                        embedding_layer_q, embedding_layer_d)
+        gen = Generator(weight_decay, learning_rate, temperature, dropout, embedding_layer_q, embedding_layer_d)
         return gen
 

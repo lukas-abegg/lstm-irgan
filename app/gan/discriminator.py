@@ -11,9 +11,10 @@ import app.parameters as params
 
 
 class Discriminator:
-    def __init__(self, weight_decay=None, learning_rate=None, embedding_layer_q=None, embedding_layer_d=None, model=None):
+    def __init__(self, weight_decay=None, learning_rate=None, dropout=0.0, embedding_layer_q=None, embedding_layer_d=None, model=None):
         self.weight_decay = weight_decay
         self.learning_rate = learning_rate
+        self.dropout = dropout
         self.embeddings_layer_q: Embedding = embedding_layer_q
         self.embeddings_layer_d: Embedding = embedding_layer_d
         self.model: Model = self.__get_model(model)
@@ -83,9 +84,8 @@ class Discriminator:
         return disc
 
     @staticmethod
-    def create_model(embedding_layer_q, embedding_layer_d):
+    def create_model(weight_decay, learning_rate, dropout, embedding_layer_q, embedding_layer_d):
 
-        disc = Discriminator(params.DISC_WEIGHT_DECAY, params.DISC_LEARNING_RATE,
-                             embedding_layer_q, embedding_layer_d)
+        disc = Discriminator(weight_decay, learning_rate, dropout, embedding_layer_q, embedding_layer_d)
         return disc
 

@@ -1,7 +1,8 @@
-from sklearn.model_selection import KFold
-from sklearn.model_selection import train_test_split
 import numpy as np
 import random
+
+from sklearn.model_selection import KFold
+from sklearn.model_selection import train_test_split
 
 import app.parameters as params
 from app.gan.generator import Generator
@@ -11,9 +12,12 @@ import app.evaluation.metrics.precision_k as p_k
 import app.evaluation.metrics.ndcg_k as ndcg_k
 
 
-def train(query_ids, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess):
+def get_x_data(query_ids):
     x_train, x_test = train_test_split(query_ids, test_size=0.33, random_state=42)
+    return x_train, x_test
 
+
+def train_model(x_train, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout):
     # Initialize data for eval
     p_best_val = 0.0
     ndcg_best_val = 0.0
@@ -29,23 +33,23 @@ def train(query_ids, ratings_data, queries_data, documents_data, tokenizer_q, to
         x_train_k, x_val_k = np.array(x_train)[train_k_indices], np.array(x_train)[val_k_indices]
 
         gen, disc, p_val, ndcg_val = __train_model(x_train_k, x_val_k, ratings_data, queries_data, documents_data,
-                                                   tokenizer_q, tokenizer_d, sess)
+                                                   tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout)
 
         best_disc, best_gen, p_best_val, ndcg_best_val = __get_best_eval_result(disc, best_disc, gen, best_gen, p_val,
                                                                                 p_best_val, ndcg_val, ndcg_best_val)
 
-    return best_disc, best_gen, x_test
+    return best_gen, p_best_val
 
 
-def __train_model(x_train, x_val, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess) -> (Discriminator, Generator):
+def __train_model(x_train, x_val, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout) -> (Discriminator, Generator):
     train_ratings_data, train_queries_data, train_documents_data = __build_train_data(x_train, ratings_data, queries_data, documents_data)
 
     # Clear models, and reinitialize them
     embedding_layer_q = init_embeddings.init_embedding_layer(tokenizer_q, params.MAX_SEQUENCE_LENGTH_QUERIES)
     embedding_layer_d = init_embeddings.init_embedding_layer(tokenizer_d, params.MAX_SEQUENCE_LENGTH_DOCUMENTS)
 
-    disc = Discriminator.create_model(embedding_layer_q, embedding_layer_d)
-    gen = Generator.create_model(embedding_layer_q, embedding_layer_d)
+    disc = Discriminator.create_model(weight_decay, learning_rate, dropout, embedding_layer_q, embedding_layer_d)
+    gen = Generator.create_model(weight_decay, learning_rate, temperature, dropout, embedding_layer_q, embedding_layer_d)
 
     # Initialize data for eval
     p_best_val = 0.0
