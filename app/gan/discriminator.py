@@ -88,4 +88,3 @@ class Discriminator:
 
         disc = Discriminator(weight_decay, learning_rate, dropout, embedding_layer_q, embedding_layer_d)
         return disc
-

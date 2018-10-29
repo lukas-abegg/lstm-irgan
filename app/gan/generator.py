@@ -108,4 +108,3 @@ class Generator:
 
         gen = Generator(weight_decay, learning_rate, temperature, dropout, embedding_layer_q, embedding_layer_d)
         return gen
-
