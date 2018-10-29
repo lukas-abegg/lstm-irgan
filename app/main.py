@@ -10,6 +10,7 @@ from hyperas import optim
 from hyperas.distributions import uniform
 
 import app.data_preparation.init_data_example as init_example
+import app.data_preparation.init_data_wikiclir as init_wikiclir
 import app.evaluation.eval_all_metrics as eval_metrics
 import app.parameters as params
 import app.plotting.plot_model as plotting
@@ -35,9 +36,8 @@ def __init_config():
 
 
 def __prepare_data():
-
-    if params.DATA_SOURCE == params.DATA_SOURCE_EXAMPLE:
-        query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = init_example.get_data()
+    if params.DATA_SOURCE == params.DATA_SOURCE_WIKICLIR:
+        query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = init_wikiclir.get_data()
     else:
         query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = init_example.get_data()
 

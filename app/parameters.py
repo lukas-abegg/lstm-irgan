@@ -45,7 +45,8 @@ GEN_BATCH_SIZE = 8
 GEN_LAMBDA = 0.5
 
 # Data
-DATA_SOURCE = 'example'
+DATA_SOURCE = 'wikiclir'
+DATA_SOURCE_WIKICLIR = 'wikiclir'
 DATA_SOURCE_EXAMPLE = 'example'
 
 DOCUMENTS_DIR = WORKDIR + '/data/example/documents/'
