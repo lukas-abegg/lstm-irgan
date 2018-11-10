@@ -1,10 +1,11 @@
 from keras.layers.core import Reshape, Dropout
-from keras.layers import Bidirectional, Embedding, LSTM
+from keras.layers import Bidirectional, Embedding, GRU
 from keras import backend as K
 from keras import regularizers
 from keras.layers import Dense, Concatenate, Activation, Lambda
 from keras.models import Model, Input
 from keras.models import save_model, load_model
+from app.gan.optimizer.AdamW import AdamW
 
 import numpy as np
 
@@ -12,8 +13,9 @@ import app.parameters as params
 
 
 class Generator:
-    def __init__(self, weight_decay=None, learning_rate=None, temperature=1.0, dropout=0.0, embedding_layer_q=None, embedding_layer_d=None, model=None):
+    def __init__(self, samples_per_epoch=0, weight_decay=None, learning_rate=None, temperature=1.0, dropout=0.0, embedding_layer_q=None, embedding_layer_d=None, model=None):
         self.weight_decay = weight_decay
+        self.samples_per_epoch = samples_per_epoch
         self.learning_rate = learning_rate
         self.temperature = temperature
         self.dropout = dropout
@@ -34,27 +36,28 @@ class Generator:
 
         sequence_input_q = Input(shape=(params.MAX_SEQUENCE_LENGTH_QUERIES,), dtype='int32')
         embedded_sequences_q = self.embeddings_layer_q(sequence_input_q)
-        lstm_q_1 = Bidirectional(LSTM(units=params.GEN_HIDDEN_SIZE_LSTM, input_dim=params.EMBEDDING_DIM))(
+        lstm_q_1 = Bidirectional(GRU(units=params.GEN_HIDDEN_SIZE_LSTM, activation='elu', input_dim=params.EMBEDDING_DIM))(
             embedded_sequences_q)
-        lstm_q_2 = Bidirectional(LSTM(units=params.GEN_HIDDEN_SIZE_LSTM, input_dim=params.GEN_HIDDEN_SIZE_LSTM))(
+        lstm_q_2 = Bidirectional(GRU(units=params.GEN_HIDDEN_SIZE_LSTM, activation='elu', input_dim=params.GEN_HIDDEN_SIZE_LSTM))(
             lstm_q_1)
         lstm_out_q = Dropout(self.dropout)(lstm_q_2)
 
         sequence_input_d = Input(shape=(params.MAX_SEQUENCE_LENGTH_DOCUMENTS,), dtype='int32')
         embedded_sequences_d = self.embeddings_layer_q(sequence_input_d)
-        lstm_d_1 = Bidirectional(LSTM(units=params.GEN_HIDDEN_SIZE_LSTM, input_dim=params.EMBEDDING_DIM))(
+        lstm_d_1 = Bidirectional(GRU(units=params.GEN_HIDDEN_SIZE_LSTM, activation='elu', input_dim=params.EMBEDDING_DIM))(
             embedded_sequences_d)
-        lstm_d_2 = Bidirectional(LSTM(units=params.GEN_HIDDEN_SIZE_LSTM, input_dim=params.GEN_HIDDEN_SIZE_LSTM))(
+        lstm_d_2 = Bidirectional(GRU(units=params.GEN_HIDDEN_SIZE_LSTM, activation='elu', input_dim=params.GEN_HIDDEN_SIZE_LSTM))(
             lstm_d_1)
         lstm_out_d = Dropout(self.dropout)(lstm_d_2)
 
         x = Concatenate([lstm_out_q, lstm_out_d])
 
         x = Dense(units=params.GEN_HIDDEN_SIZE_DENSE,
-                  activation='tanh',
-                  kernel_regularizer=regularizers.l2(self.weight_decay))(x)
+                  activation='elu',
+                  kernel_regularizer=regularizers.l2)(x)
         x = Dense(units=1,
-                  kernel_regularizer=regularizers.l2(self.weight_decay))(x)
+                  activation='elu',
+                  kernel_regularizer=regularizers.l2)(x)
 
         score = Lambda(lambda z: z / self.temperature)(x)
         score = Reshape([-1])(score)
@@ -62,8 +65,11 @@ class Generator:
 
         model = Model(inputs=[sequence_input_q, sequence_input_d, reward, important_sampling], outputs=[prob])
         model.summary()
+
+        adamw = AdamW(batch_size=params.GEN_BATCH_SIZE, samples_per_epoch=self.samples_per_epoch, epochs=params.GEN_TRAIN_EPOCHS)
+
         model.compile(loss=self.__loss(reward, important_sampling),
-                      optimizer='adam',
+                      optimizer=adamw,
                       metrics=['accuracy'])
 
     @staticmethod
@@ -104,7 +110,7 @@ class Generator:
         return gen
 
     @staticmethod
-    def create_model(weight_decay, learning_rate, temperature, dropout, embedding_layer_q, embedding_layer_d):
+    def create_model(samples_per_epoch, weight_decay, learning_rate, temperature, dropout, embedding_layer_q, embedding_layer_d):
 
-        gen = Generator(weight_decay, learning_rate, temperature, dropout, embedding_layer_q, embedding_layer_d)
+        gen = Generator(samples_per_epoch, weight_decay, learning_rate, temperature, dropout, embedding_layer_q, embedding_layer_d)
         return gen

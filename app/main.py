@@ -14,7 +14,7 @@ import app.data_preparation.init_data_wikiclir as init_wikiclir
 import app.evaluation.eval_all_metrics as eval_metrics
 import app.parameters as params
 import app.plotting.plot_model as plotting
-from app.gan.generator import Generator
+from app.gan.adverserial_nn.generator import Generator
 from app.training import train
 
 with warnings.catch_warnings():
@@ -70,7 +70,7 @@ def train_model_without_hyperparam_opt(x_train, ratings_data, queries_data, docu
 
 
 def train_model_with_hyperparam_opt(x_train, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess):
-    weight_decay = {{uniform(params.OPT_MIN_WEIGHT_DECAY, params.OPT_MAX_WEIGHT_DECAY)}}
+    weight_decay = params.WEIGHT_DECAY
     learning_rate = {{uniform(params.OPT_MIN_LEARNING_RATE, params.OPT_MAX_LEARNING_RATE)}}
     temperature = {{uniform(params.OPT_MIN_TEMPERATURE, params.OPT_MAX_TEMPERATURE)}}
     dropout = {{uniform(params.OPT_MIN_DROPOUT, params.OPT_MAX_DROPOUT)}}
