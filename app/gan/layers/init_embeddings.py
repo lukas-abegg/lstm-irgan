@@ -1,4 +1,5 @@
 import numpy as np
+import io
 
 from keras.preprocessing.text import Tokenizer
 from keras.layers import Embedding
@@ -11,16 +12,17 @@ import app.parameters as params
 
 # first, build index mapping words in the embeddings set
 # to their embedding vector
-def __build_index_mapping():
+def build_index_mapping():
     print('Indexing word vectors.')
 
     embeddings_index = {}
-    with open(params.WORD2VEC) as f:
-        for line in f:
-            values = line.split()
-            word = values[0]
-            coefs = np.asarray(values[1:], dtype='float32')
-            embeddings_index[word] = coefs
+    f = io.open(params.FASTTEXT, 'r', encoding='utf-8', newline='\n', errors='ignore')
+    n, d = map(int, f.readline().split())
+    for line in f:
+        values = line.split()
+        word = values[0]
+        coefs = np.asarray(values[1:], dtype='float32')
+        embeddings_index[word] = coefs
 
     print('Found %s word vectors.' % len(embeddings_index))
     return embeddings_index
@@ -47,14 +49,13 @@ def __build_embeddings_matrix(tokenizer: Tokenizer, embeddings_index):
 def __build_embeddings_layer(num_words, embeddings_matrix, max_sequence_length):
     embeddings_layer = Embedding(input_dim=num_words,
                                  output_dim=params.EMBEDDING_DIM,
-                                 embeddings_initializer=Constant(embeddings_matrix),
+                                 weights=[embeddings_matrix],
                                  input_length=max_sequence_length,
                                  trainable=False)
     return embeddings_layer
 
 
-def init_embedding_layer(tokenizer, max_sequence_length):
-    embeddings_index = __build_index_mapping()
+def init_embedding_layer(tokenizer, embeddings_index, max_sequence_length):
     num_words, embeddings_matrix = __build_embeddings_matrix(tokenizer, embeddings_index)
     embeddings_layer = __build_embeddings_layer(num_words, embeddings_matrix, max_sequence_length)
     return embeddings_layer

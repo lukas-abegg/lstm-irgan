@@ -1,7 +1,8 @@
 import numpy as np
 import random
 
-from sklearn.model_selection import StratifiedKFold
+#from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import KFold
 from sklearn.model_selection import train_test_split
 
 import app.parameters as params
@@ -25,7 +26,7 @@ def train_model(x_train, ratings_data, queries_data, documents_data, tokenizer_q
     best_disc = Discriminator
     best_gen = Generator
 
-    skf = StratifiedKFold(n_splits=params.KFOLD_SPLITS, shuffle=True)
+    skf = KFold(n_splits=params.KFOLD_SPLITS, shuffle=True)
 
     # Loop through the indices the split() method returns
     for index, (train_k_indices, val_k_indices) in enumerate(skf.split(x_train)):
@@ -48,12 +49,19 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
     train_ratings_data, train_queries_data, train_documents_data = __build_train_data(x_train, ratings_data, queries_data, documents_data)
 
     # Clear models, and reinitialize them
-    embedding_layer_q = init_embeddings.init_embedding_layer(tokenizer_q, params.MAX_SEQUENCE_LENGTH_QUERIES)
-    embedding_layer_d = init_embeddings.init_embedding_layer(tokenizer_d, params.MAX_SEQUENCE_LENGTH_DOCUMENTS)
 
+    print('Load embeddings')
+    embeddings_index = init_embeddings.build_index_mapping()
+    print('Prepare embedding-layer for queries')
+    embedding_layer_q = init_embeddings.init_embedding_layer(tokenizer_q, embeddings_index, params.MAX_SEQUENCE_LENGTH)
+    print('Prepare embedding-layer for documents')
+    embedding_layer_d = init_embeddings.init_embedding_layer(tokenizer_d, embeddings_index, params.MAX_SEQUENCE_LENGTH)
+
+    print('Build discriminator network')
     samples_per_epoc = len(x_train) * 2
     disc = Discriminator.create_model(samples_per_epoc, weight_decay, learning_rate, dropout, embedding_layer_q, embedding_layer_d)
 
+    print('Build generator network')
     samples_per_epoc = len(x_train) * 5
     gen = Generator.create_model(samples_per_epoc, weight_decay, learning_rate, temperature, dropout, embedding_layer_q, embedding_layer_d)
 
@@ -156,12 +164,17 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
 def __train_model(gen_pre, x_train, x_val, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout) -> (Discriminator, Generator):
     train_ratings_data, train_queries_data, train_documents_data = __build_train_data(x_train, ratings_data, queries_data, documents_data)
 
-    # Clear models, and reinitialize them
-    embedding_layer_q = init_embeddings.init_embedding_layer(tokenizer_q, params.MAX_SEQUENCE_LENGTH_QUERIES)
-    embedding_layer_d = init_embeddings.init_embedding_layer(tokenizer_d, params.MAX_SEQUENCE_LENGTH_DOCUMENTS)
+    print('Load embeddings')
+    embeddings_index = init_embeddings.build_index_mapping()
+    print('Prepare embedding-layer for queries')
+    embedding_layer_q = init_embeddings.init_embedding_layer(tokenizer_q, embeddings_index, params.MAX_SEQUENCE_LENGTH)
+    print('Prepare embedding-layer for documents')
+    embedding_layer_d = init_embeddings.init_embedding_layer(tokenizer_d, embeddings_index, params.MAX_SEQUENCE_LENGTH)
 
+    print('Build discriminator network')
     samples_per_epoc = len(x_train) * 2
     disc = Discriminator.create_model(samples_per_epoc, weight_decay, learning_rate, dropout, embedding_layer_q, embedding_layer_d)
+    print('Build generator network')
     samples_per_epoc = len(x_train) * 5
     gen = Generator.create_model(samples_per_epoc, weight_decay, learning_rate, temperature, dropout, embedding_layer_q, embedding_layer_d)
 
@@ -290,7 +303,8 @@ def __build_train_data(x_train, ratings_data, queries_data, documents_data):
         train_ratings_data[query_id] = ratings_data[query_id]
         train_queries_data[query_id] = queries_data[query_id]
         for key in ratings_data.keys():
-            train_documents_data[key] = documents_data[key]
+            if key in documents_data.keys():
+                train_documents_data[key] = documents_data[key]
 
     return train_ratings_data, train_queries_data, train_documents_data
 

@@ -1,18 +1,17 @@
 from keras import initializers
-from keras.layers.core import Reshape, Dropout
-from keras.layers import Bidirectional, Embedding, GRU
 from keras import backend as K
 from keras import regularizers
-from keras.layers import Dense, Concatenate, Activation
-from keras.models import Model, Input
-from keras.models import save_model, load_model
+from keras.layers import Dense, Activation, Bidirectional, Embedding, GRU, Concatenate
+from keras.layers.core import Reshape, Dropout
+from keras.models import Model, Input, save_model, load_model
+
 from app.gan.optimizer.AdamW import AdamW
 
 import app.parameters as params
 
 
 class Discriminator:
-    def __init__(self, samples_per_epoch=0, weight_decay=None, learning_rate=None, dropout=0.0, embedding_layer_q=None, embedding_layer_d=None, model=None):
+    def __init__(self, samples_per_epoch=0, weight_decay=None, learning_rate=None, dropout=0.2, embedding_layer_q=None, embedding_layer_d=None, model=None):
         self.weight_decay = weight_decay
         self.samples_per_epoch = samples_per_epoch
         self.learning_rate = learning_rate
@@ -29,30 +28,40 @@ class Discriminator:
 
     def __init_model(self):
         # create model
-        sequence_input_q = Input(shape=(params.MAX_SEQUENCE_LENGTH_QUERIES,), dtype='int32')
+        sequence_input_q = Input(shape=(params.MAX_SEQUENCE_LENGTH,), dtype='int32')
         embedded_sequences_q = self.embeddings_layer_q(sequence_input_q)
-        lstm_q_1 = Bidirectional(GRU(units=params.DISC_HIDDEN_SIZE_LSTM, activation='elu', input_dim=params.EMBEDDING_DIM))(embedded_sequences_q)
-        lstm_q_2 = Bidirectional(GRU(units=params.DISC_HIDDEN_SIZE_LSTM, activation='elu', input_dim=params.DISC_HIDDEN_SIZE_LSTM))(lstm_q_1)
-        lstm_out_q = Dropout(0.2)(lstm_q_2)
+        lstm_q_in = Bidirectional(GRU(params.DISC_HIDDEN_SIZE_LSTM, return_sequences=True, activation='elu', dropout=self.dropout, recurrent_dropout=self.dropout))(embedded_sequences_q)
+        # this LSTM will transform the vector sequence into a single vector,
+        # containing information about the entire sequence
+        lstm_q_out = Bidirectional(GRU(params.DISC_HIDDEN_SIZE_LSTM, return_sequences=False, activation='elu', dropout=self.dropout, recurrent_dropout=self.dropout))(lstm_q_in)
+        print("lstm_q_out: "+str(lstm_q_out))
 
-        sequence_input_d = Input(shape=(params.MAX_SEQUENCE_LENGTH_DOCUMENTS,), dtype='int32')
-        embedded_sequences_d = self.embeddings_layer_q(sequence_input_d)
-        lstm_d_1 = Bidirectional(GRU(units=params.DISC_HIDDEN_SIZE_LSTM, activation='elu', input_dim=params.EMBEDDING_DIM))(embedded_sequences_d)
-        lstm_d_2 = Bidirectional(GRU(units=params.DISC_HIDDEN_SIZE_LSTM, activation='elu', input_dim=params.DISC_HIDDEN_SIZE_LSTM))(lstm_d_1)
-        lstm_out_d = Dropout(0.2)(lstm_d_2)
+        sequence_input_d = Input(shape=(params.MAX_SEQUENCE_LENGTH,), dtype='int32')
+        embedded_sequences_d = self.embeddings_layer_d(sequence_input_d)
+        lstm_d_in = Bidirectional(GRU(params.DISC_HIDDEN_SIZE_LSTM, return_sequences=True, activation='elu', dropout=self.dropout, recurrent_dropout=self.dropout))(embedded_sequences_d)
+        # this LSTM will transform the vector sequence into a single vector,
+        # containing information about the entire sequence
+        lstm_d_out = Bidirectional(GRU(params.DISC_HIDDEN_SIZE_LSTM, return_sequences=False, activation='elu', dropout=self.dropout, recurrent_dropout=self.dropout))(lstm_d_in)
+        print("lstm_d_out: "+str(lstm_d_out))
 
-        x = Concatenate([lstm_out_q, lstm_out_d])
+        x = Concatenate([lstm_q_out, lstm_d_out])
+        print(x)
+        x = Dropout(self.dropout)(x)
+        print(x)
+        x = Reshape([-1])(x)
+        print(x)
 
-        x = Dense(units=params.DISC_HIDDEN_SIZE_DENSE,
+        x = Dense(params.DISC_HIDDEN_SIZE_DENSE,
                   activation='elu',
                   kernel_regularizer=regularizers.l2,
-                  kernel_initializer=initializers.random_normal(stddev=0.01))(x)
-        x = Dense(units=1,
+                  kernel_initializer=initializers.random_normal(stddev=0.01),
+                  name='merged_input')(x)
+        x = Dense(1,
                   activation='elu',
                   kernel_regularizer=regularizers.l2)(x)
 
         score = Reshape([-1])(x)
-        prob = Activation('sigmoid')(score)
+        prob = Activation('sigmoid', name='prob')(score)
 
         model = Model(inputs=[sequence_input_q, sequence_input_d], outputs=[prob])
         model.summary()
@@ -73,8 +82,9 @@ class Discriminator:
         return (self.model.predict([train_data_queries, train_data_documents]) - 0.5) * 2
 
     def get_reward(self, train_data_queries, train_data_documents):
-        inp = self.model.input
-        functor = K.function([inp] + [K.learning_phase()], [self.model.layers[13].output])
+        inp = self.model.get_layer("merged_input").input
+        out = self.model.get_layer("prob").output
+        functor = K.function([inp] + [K.learning_phase()], [out])
         layer_outs = functor([[train_data_queries, train_data_documents], 1.])
         return (layer_outs[0] - 0.5) * 2
 

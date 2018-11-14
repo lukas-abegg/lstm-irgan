@@ -1,9 +1,10 @@
 import os
 import warnings
 
+from comet_ml import Experiment
+
 import tensorflow as tf
 from keras import backend
-from comet_ml import Experiment
 
 from hyperopt import Trials, STATUS_OK, tpe
 from hyperas import optim
@@ -23,14 +24,14 @@ with warnings.catch_warnings():
 
 def __init_config():
     tf_config = tf.ConfigProto()
-    tf_config.gpu_options.allow_growth = True
+    tf_config.gpu_options.allow_growth = False #True
     tf_config.gpu_options.allocator_type = 'BFC'
 
     sess = tf.Session(graph=tf.get_default_graph(), config=tf_config)
 
     backend.set_session(sess)
 
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "-1" #""0"
 
     return sess
 
@@ -99,7 +100,7 @@ def plot_model(gen):
 
 def main(mode):
     if params.TRAIN_MODE == mode:
-        if params.USE_HYPERPARAM_OPT:
+        if not params.USE_HYPERPARAM_OPT:
             sess, x_train, x_test, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = get_env_data_with_x_data_splitted()
             generator = train_model_without_hyperparam_opt(x_train, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess)
 

@@ -6,12 +6,11 @@ TEMP = WORKDIR + '/temp'
 USE_HYPERPARAM_OPT = False
 
 # Embeddings / Tokenizer
-WORD2VEC = WORKDIR + '/data/embeddings/GoogleNews-vectors-negative300.bin.gz'
+FASTTEXT = '/home/lukas/Downloads/wiki-news-300d-1M.vec'
 
-MAX_SEQUENCE_LENGTH_QUERIES = 20000
-MAX_SEQUENCE_LENGTH_DOCUMENTS = 20000
+MAX_SEQUENCE_LENGTH = 20000
 MAX_NUM_WORDS = 20000
-EMBEDDING_DIM = 100
+EMBEDDING_DIM = 300
 
 # NN General
 WEIGHT_DECAY = 0.025
@@ -47,9 +46,9 @@ DATA_SOURCE = 'wikiclir'
 DATA_SOURCE_WIKICLIR = 'wikiclir'
 DATA_SOURCE_EXAMPLE = 'example'
 
-DOCUMENTS_DIR = WORKDIR + '/data/example/documents/'
-QUERIES = WORKDIR + '/data/example/queries.txt'
-LABELLED_DATA = WORKDIR + '/data/example/labelled_data.txt'
+DOCUMENTS_DIR = WORKDIR + '/data/wikiclir/dev.docs'  #'/data/example/documents/'
+QUERIES = WORKDIR + '/data/wikiclir/dev.queries' #'/data/example/queries.txt'
+LABELLED_DATA = WORKDIR + '/data/wikiclir/dev.qrel' #'/data/example/labelled_data.txt'
 
 # Evaluation
 EVAL_K = 5

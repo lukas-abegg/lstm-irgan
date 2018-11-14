@@ -1,5 +1,6 @@
-import os
-import sys
+import nltk
+from nltk.corpus import stopwords
+
 import app.parameters as params
 
 from keras.preprocessing.text import Tokenizer
@@ -58,9 +59,21 @@ def __get_ratings():
     return ratings
 
 
+def __filter_stop_words(texts, stop_words):
+    for i, text in enumerate(texts):
+        new_text = [word for word in text.split() if word not in stop_words]
+        texts[i] = ' '.join(new_text)
+    return texts
+
+
 def __init_tokenizer(text_data, max_sequence_length):
     texts = list(text_data.values())
     ids = list(text_data.keys())
+
+    nltk.download('stopwords')
+    stop_words = set(stopwords.words('english'))
+    stop_words.update(['.', ',', '"', "'", ':', ';', '(', ')', '[', ']', '{', '}'])
+    texts = __filter_stop_words(texts, stop_words)
 
     # finally, vectorize the text samples into a 2D integer tensor
     tokenizer = Tokenizer(num_words=params.MAX_NUM_WORDS)
@@ -84,8 +97,10 @@ def get_data():
     queries_data, query_ids = __get_queries()
     ratings_data = __get_ratings()
 
-    tokenizer_q, queries_data = __init_tokenizer(queries_data, params.MAX_SEQUENCE_LENGTH_QUERIES)
-    tokenizer_d, documents_data = __init_tokenizer(documents_data, params.MAX_SEQUENCE_LENGTH_DOCUMENTS)
+    print('Tokenize queries')
+    tokenizer_q, queries_data = __init_tokenizer(queries_data, params.MAX_SEQUENCE_LENGTH)
+    print('Tokenize documents')
+    tokenizer_d, documents_data = __init_tokenizer(documents_data, params.MAX_SEQUENCE_LENGTH)
 
     print('Found %s training data.' % len(ratings_data))
 
