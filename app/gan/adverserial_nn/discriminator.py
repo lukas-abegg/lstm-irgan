@@ -34,7 +34,6 @@ class Discriminator:
         # this LSTM will transform the vector sequence into a single vector,
         # containing information about the entire sequence
         lstm_q_out = Bidirectional(GRU(params.DISC_HIDDEN_SIZE_LSTM, return_sequences=False, activation='elu', dropout=self.dropout, recurrent_dropout=self.dropout))(lstm_q_in)
-        print("lstm_q_out: "+str(lstm_q_out))
 
         sequence_input_d = Input(shape=(params.MAX_SEQUENCE_LENGTH,), dtype='int32')
         embedded_sequences_d = self.embeddings_layer_d(sequence_input_d)
@@ -42,14 +41,9 @@ class Discriminator:
         # this LSTM will transform the vector sequence into a single vector,
         # containing information about the entire sequence
         lstm_d_out = Bidirectional(GRU(params.DISC_HIDDEN_SIZE_LSTM, return_sequences=False, activation='elu', dropout=self.dropout, recurrent_dropout=self.dropout))(lstm_d_in)
-        print("lstm_d_out: "+str(lstm_d_out))
 
-        x = Concatenate([lstm_q_out, lstm_d_out])
-        print(x)
+        x = Concatenate()([lstm_q_out, lstm_d_out])
         x = Dropout(self.dropout)(x)
-        print(x)
-        x = Reshape([-1])(x)
-        print(x)
 
         x = Dense(params.DISC_HIDDEN_SIZE_DENSE,
                   activation='elu',
