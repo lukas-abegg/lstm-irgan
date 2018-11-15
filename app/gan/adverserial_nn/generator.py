@@ -1,6 +1,5 @@
 from keras import backend as K
-from keras import regularizers
-from keras.layers import Bidirectional, Embedding, GRU, Dense, Activation, Lambda, merge
+from keras.layers import Bidirectional, Embedding, GRU, Dense, Activation, Lambda, Concatenate
 from keras.layers.core import Reshape, Dropout
 from keras.models import Model, Input, save_model, load_model
 
@@ -29,10 +28,10 @@ class Generator:
 
     def __init_model(self):
         # create model
-        reward = Input(shape=(None,))
-        important_sampling = Input(shape=(None,))
+        reward = Input(shape=(None,), name='input_reward')
+        important_sampling = Input(shape=(None,), name='input_imp_sampling')
 
-        sequence_input_q = Input(shape=(params.MAX_SEQUENCE_LENGTH,), dtype='int32')
+        sequence_input_q = Input(shape=(params.MAX_SEQUENCE_LENGTH,), dtype='int32', name='input_query')
         embedded_sequences_q = self.embeddings_layer_q(sequence_input_q)
 
         lstm_q_in = Bidirectional(GRU(params.GEN_HIDDEN_SIZE_LSTM, return_sequences=True, activation='elu', dropout=self.dropout, recurrent_dropout=self.dropout))(embedded_sequences_q)
@@ -40,23 +39,21 @@ class Generator:
         # containing information about the entire sequence
         lstm_q_out = Bidirectional(GRU(params.GEN_HIDDEN_SIZE_LSTM, return_sequences=False, activation='elu', dropout=self.dropout, recurrent_dropout=self.dropout))(lstm_q_in)
 
-        sequence_input_d = Input(shape=(params.MAX_SEQUENCE_LENGTH,), dtype='int32')
+        sequence_input_d = Input(shape=(params.MAX_SEQUENCE_LENGTH,), dtype='int32', name='input_doc')
         embedded_sequences_d = self.embeddings_layer_d(sequence_input_d)
+
         lstm_d_in = Bidirectional(GRU(params.GEN_HIDDEN_SIZE_LSTM, return_sequences=True, activation='elu', dropout=self.dropout, recurrent_dropout=self.dropout))(embedded_sequences_d)
         # this LSTM will transform the vector sequence into a single vector,
         # containing information about the entire sequence
         lstm_d_out = Bidirectional(GRU(params.GEN_HIDDEN_SIZE_LSTM, return_sequences=False, activation='elu', dropout=self.dropout, recurrent_dropout=self.dropout))(lstm_d_in)
 
-        x = merge.Concatenate([lstm_q_out, lstm_d_out], mode='concat')
+        x = Concatenate()([lstm_q_out, lstm_d_out])
+        x = Dropout(self.dropout)(x)
 
         # we stack a deep fully-connected network on top
         x = Dense(params.GEN_HIDDEN_SIZE_DENSE,
-                  activation='elu',
-                  kernel_regularizer=regularizers.l2,
-                  name='merged_input')(x)
-        x = Dense(1,
-                  activation='elu',
-                  kernel_regularizer=regularizers.l2)(x)
+                  activation='elu')(x)
+        x = Dense(1, activation='elu')(x)
 
         score = Lambda(lambda z: z / self.temperature, name='raw_score')(x)
         score = Reshape([-1], name='score')(score)
@@ -70,32 +67,33 @@ class Generator:
         model.compile(loss=self.__loss(reward, important_sampling),
                       optimizer=adamw,
                       metrics=['accuracy'])
+        return model
 
     @staticmethod
     def __loss(_reward, _important_sampling):
         def _loss(y_true, y_pred):
             log_action_prob = K.log(y_pred)
-            loss = - K.reshape(log_action_prob, [-1]) * K.reshape(y_true, [-1]) * K.reshape(y_pred, [-1])
+            loss = - K.reshape(log_action_prob, [-1]) * K.reshape(_reward, [-1]) * K.reshape(_important_sampling, [-1])
             loss = K.mean(loss)
             return loss
 
-        return _loss(_reward, _important_sampling)
+        return _loss
 
     def train(self, train_data_queries, train_data_documents, reward, important_sampling):
         self.model.train_on_batch([train_data_queries, train_data_documents, reward, important_sampling], np.zeros([train_data_queries.shape[0]]))
 
     def get_score(self, train_data_queries, train_data_documents,):
-        inp = self.model.get_layer('merged_input').input
+        inputs = self.model.inputs + [K.learning_phase()]
         out = self.model.get_layer('score').output
-        functor = K.function([inp] + [K.learning_phase()], [out])
-        layer_outs = functor([[train_data_queries, train_data_documents], 0.])
+        functor = K.function(inputs, [out])
+        layer_outs = functor([train_data_queries, train_data_documents, 0.])
         return layer_outs
 
     def get_prob(self, train_data_queries, train_data_documents,):
-        inp = self.model.get_layer('merged_input').input
+        inputs = self.model.inputs + [K.learning_phase()]
         out = self.model.get_layer('prob').output
-        functor = K.function([inp] + [K.learning_phase()], [out])
-        layer_outs = functor([[train_data_queries, train_data_documents], 0.])
+        functor = K.function(inputs, [out])
+        layer_outs = functor([train_data_queries, train_data_documents, 0.])
         return layer_outs
 
     def save_model(self, filepath):

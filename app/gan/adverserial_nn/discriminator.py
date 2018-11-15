@@ -1,6 +1,4 @@
-from keras import initializers
 from keras import backend as K
-from keras import regularizers
 from keras.layers import Dense, Activation, Bidirectional, Embedding, GRU, Concatenate
 from keras.layers.core import Reshape, Dropout
 from keras.models import Model, Input, save_model, load_model
@@ -28,15 +26,17 @@ class Discriminator:
 
     def __init_model(self):
         # create model
-        sequence_input_q = Input(shape=(params.MAX_SEQUENCE_LENGTH,), dtype='int32')
+        sequence_input_q = Input(shape=(params.MAX_SEQUENCE_LENGTH,), dtype='int32', name='input_query')
         embedded_sequences_q = self.embeddings_layer_q(sequence_input_q)
+
         lstm_q_in = Bidirectional(GRU(params.DISC_HIDDEN_SIZE_LSTM, return_sequences=True, activation='elu', dropout=self.dropout, recurrent_dropout=self.dropout))(embedded_sequences_q)
         # this LSTM will transform the vector sequence into a single vector,
         # containing information about the entire sequence
         lstm_q_out = Bidirectional(GRU(params.DISC_HIDDEN_SIZE_LSTM, return_sequences=False, activation='elu', dropout=self.dropout, recurrent_dropout=self.dropout))(lstm_q_in)
 
-        sequence_input_d = Input(shape=(params.MAX_SEQUENCE_LENGTH,), dtype='int32')
+        sequence_input_d = Input(shape=(params.MAX_SEQUENCE_LENGTH,), dtype='int32', name='input_doc')
         embedded_sequences_d = self.embeddings_layer_d(sequence_input_d)
+
         lstm_d_in = Bidirectional(GRU(params.DISC_HIDDEN_SIZE_LSTM, return_sequences=True, activation='elu', dropout=self.dropout, recurrent_dropout=self.dropout))(embedded_sequences_d)
         # this LSTM will transform the vector sequence into a single vector,
         # containing information about the entire sequence
@@ -47,12 +47,8 @@ class Discriminator:
 
         x = Dense(params.DISC_HIDDEN_SIZE_DENSE,
                   activation='elu',
-                  kernel_regularizer=regularizers.l2,
-                  kernel_initializer=initializers.random_normal(stddev=0.01),
                   name='merged_input')(x)
-        x = Dense(1,
-                  activation='elu',
-                  kernel_regularizer=regularizers.l2)(x)
+        x = Dense(1, activation='elu')(x)
 
         score = Reshape([-1])(x)
         prob = Activation('sigmoid', name='prob')(score)
@@ -76,10 +72,10 @@ class Discriminator:
         return (self.model.predict([train_data_queries, train_data_documents]) - 0.5) * 2
 
     def get_reward(self, train_data_queries, train_data_documents):
-        inp = self.model.get_layer("merged_input").input
+        inputs = self.model.inputs + [K.learning_phase()]
         out = self.model.get_layer("prob").output
-        functor = K.function([inp] + [K.learning_phase()], [out])
-        layer_outs = functor([[train_data_queries, train_data_documents], 1.])
+        functor = K.function(inputs, [out])
+        layer_outs = functor([train_data_queries, train_data_documents, 1.])
         return (layer_outs[0] - 0.5) * 2
 
     def save_model(self, filepath):

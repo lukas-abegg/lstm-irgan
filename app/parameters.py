@@ -50,6 +50,9 @@ DOCUMENTS_DIR = WORKDIR + '/data/wikiclir/dev.docs'  #'/data/example/documents/'
 QUERIES = WORKDIR + '/data/wikiclir/dev.queries' #'/data/example/queries.txt'
 LABELLED_DATA = WORKDIR + '/data/wikiclir/dev.qrel' #'/data/example/labelled_data.txt'
 
+# Training
+POS_TRAINING_DATA_PER_QUERY = 5
+
 # Evaluation
 EVAL_K = 5
 

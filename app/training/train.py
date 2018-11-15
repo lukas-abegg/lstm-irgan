@@ -58,11 +58,11 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
     embedding_layer_d = init_embeddings.init_embedding_layer(tokenizer_d, embeddings_index, params.MAX_SEQUENCE_LENGTH)
 
     print('Build discriminator network')
-    samples_per_epoc = len(x_train) * 2
+    samples_per_epoc = len(x_train) * params.POS_TRAINING_DATA_PER_QUERY * 2
     disc = Discriminator.create_model(samples_per_epoc, weight_decay, learning_rate, dropout, embedding_layer_q, embedding_layer_d)
 
     print('Build generator network')
-    samples_per_epoc = len(x_train) * 5
+    samples_per_epoc = len(x_train) * params.POS_TRAINING_DATA_PER_QUERY * 2
     gen = Generator.create_model(samples_per_epoc, weight_decay, learning_rate, temperature, dropout, embedding_layer_q, embedding_layer_d)
 
     print('Start pre-model training')
@@ -75,7 +75,7 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
         pos_neg_size = 0
         if d_epoch % params.DISC_TRAIN_EPOCHS == 0:
             # Generator generate negative for Discriminator, then train Discriminator
-            pos_neg_data = __generate_negatives_for_discriminator(x_train, train_ratings_data, queries_data, documents_data)
+            pos_neg_data = __generate_negatives_for_discriminator(gen, x_train, train_ratings_data, queries_data, documents_data)
             pos_neg_size = len(pos_neg_data)
 
         i = 1
@@ -136,8 +136,8 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
                 if data_documents[i] in x_pos_set:
                     prob_is[i] += (params.GEN_LAMBDA / (1.0 * len(x_pos_list)))
 
-            # G generate some url (5 * postive doc num)
-            choose_index = np.random.choice(np.arange(len(data_documents)), [5 * len(x_pos_list)], p=prob_is)
+            # G generate some url (2 * postive doc num)
+            choose_index = np.random.choice(np.arange(len(data_documents)), [2 * len(x_pos_list)], p=prob_is)
 
             # choose data
             choose_queries = np.array(data_queries)[choose_index]
@@ -155,8 +155,7 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
             choose_reward = disc.get_preresult(choose_queries, choose_documents)
 
             # train
-            gen.train(choose_queries[np.newaxis, :], choose_documents[np.newaxis, :],
-                      choose_reward.reshape([-1])[np.newaxis, :], choose_is[np.newaxis, :])
+            gen.train(choose_queries, choose_documents, choose_reward.reshape([-1]), choose_is)
 
     return gen
 
@@ -172,10 +171,10 @@ def __train_model(gen_pre, x_train, x_val, ratings_data, queries_data, documents
     embedding_layer_d = init_embeddings.init_embedding_layer(tokenizer_d, embeddings_index, params.MAX_SEQUENCE_LENGTH)
 
     print('Build discriminator network')
-    samples_per_epoc = len(x_train) * 2
+    samples_per_epoc = len(x_train) * params.POS_TRAINING_DATA_PER_QUERY * 2
     disc = Discriminator.create_model(samples_per_epoc, weight_decay, learning_rate, dropout, embedding_layer_q, embedding_layer_d)
     print('Build generator network')
-    samples_per_epoc = len(x_train) * 5
+    samples_per_epoc = len(x_train) * params.POS_TRAINING_DATA_PER_QUERY * 2
     gen = Generator.create_model(samples_per_epoc, weight_decay, learning_rate, temperature, dropout, embedding_layer_q, embedding_layer_d)
 
     # Initialize data for eval
@@ -261,8 +260,8 @@ def __train_model(gen_pre, x_train, x_val, ratings_data, queries_data, documents
                     if data_documents[i] in x_pos_set:
                         prob_is[i] += (params.GEN_LAMBDA / (1.0 * len(x_pos_list)))
 
-                # G generate some url (5 * postive doc num)
-                choose_index = np.random.choice(np.arange(len(data_documents)), [5 * len(x_pos_list)], p=prob_is)
+                # G generate some url (2 * postive doc num)
+                choose_index = np.random.choice(np.arange(len(data_documents)), [2 * len(x_pos_list)], p=prob_is)
 
                 # choose data
                 choose_queries = np.array(data_queries)[choose_index]
@@ -280,7 +279,7 @@ def __train_model(gen_pre, x_train, x_val, ratings_data, queries_data, documents
                 choose_reward = disc.get_preresult(choose_queries, choose_documents)
 
                 # train
-                gen.train(choose_queries[np.newaxis, :], choose_documents[np.newaxis, :], choose_reward.reshape([-1])[np.newaxis, :], choose_is[np.newaxis, :])
+                gen.train(choose_queries, choose_documents, choose_reward.reshape([-1]), choose_is)
 
             # Evaluate
             p_step = p_k.measure_precision_at_k(gen, x_val, ratings_data, queries_data, documents_data, params.EVAL_K, sess)
@@ -376,8 +375,8 @@ def __get_rand_batch_from_candidates_for_generator(gen, query_id, queries_data, 
 
 def __get_query_specific_data(query_id, ratings_data, documents_data):
     # get all query specific ratings
-    x_pos_list = list(ratings_data[query_id].keys())
-    y_pos_list = list(ratings_data[query_id].values())
+    x_pos_list = list(ratings_data[query_id].keys())[:params.POS_TRAINING_DATA_PER_QUERY]
+    y_pos_list = list(ratings_data[query_id].values())[:params.POS_TRAINING_DATA_PER_QUERY]
 
     # get all other ratings
     docs_pos_ids = np.unique(x_pos_list)
