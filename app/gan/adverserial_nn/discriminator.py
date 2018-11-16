@@ -46,8 +46,7 @@ class Discriminator:
         x = Dropout(self.dropout)(x)
 
         x = Dense(params.DISC_HIDDEN_SIZE_DENSE,
-                  activation='elu',
-                  name='merged_input')(x)
+                  activation='elu')(x)
         x = Dense(1, activation='elu')(x)
 
         score = Reshape([-1])(x)
