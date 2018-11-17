@@ -48,7 +48,7 @@ def __prepare_data():
 def get_env_data_with_x_data_splitted():
     sess = __init_config()
     query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = __prepare_data()
-    x_train, x_test = train.get_x_data(query_ids)
+    x_train, x_test = train.get_x_data_splitted(query_ids)
     return sess, x_train, x_test, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d
 
 
@@ -101,7 +101,7 @@ def plot_model(gen):
 def main(mode):
     if params.TRAIN_MODE == mode:
         if not params.USE_HYPERPARAM_OPT:
-            sess, x_train, x_test, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = get_env_data_with_x_data_splitted()
+            sess, x_train, x_val, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = get_env_data_with_x_data_splitted()
             generator = train_model_without_hyperparam_opt(x_train, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess)
 
         else:
@@ -111,12 +111,12 @@ def main(mode):
                                                   max_evals=5,
                                                   trials=Trials())
 
-            sess, x_train, x_test, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = get_env_data_with_x_data_splitted()
+            sess, x_train, x_val, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = get_env_data_with_x_data_splitted()
             generator = best_model
             print("Best performing model chosen hyper-parameters:")
             print(best_run)
 
-        eval_metrics.evaluate(generator, x_test, ratings_data, documents_data, queries_data, sess)
+        eval_metrics.evaluate(generator, x_val, ratings_data, documents_data, queries_data, sess)
         save_model(generator, params.SAVED_MODEL_GEN_FILE)
 
     elif params.EVAL_MODE == mode:

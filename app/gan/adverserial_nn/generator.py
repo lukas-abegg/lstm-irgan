@@ -10,7 +10,7 @@ import app.parameters as params
 
 
 class Generator:
-    def __init__(self, samples_per_epoch=0, weight_decay=None, learning_rate=None, temperature=1.0, dropout=0.2, embedding_layer_q=None, embedding_layer_d=None, model=None):
+    def __init__(self, samples_per_epoch=0, weight_decay=None, learning_rate=None, temperature=1.0, dropout=0.2, embedding_layer_q=None, embedding_layer_d=None, model=None, sess=None):
         self.weight_decay = weight_decay
         self.samples_per_epoch = samples_per_epoch
         self.learning_rate = learning_rate
@@ -19,6 +19,7 @@ class Generator:
         self.embeddings_layer_q: Embedding = embedding_layer_q
         self.embeddings_layer_d: Embedding = embedding_layer_d
         self.model: Model = self.__get_model(model)
+        self.sess = sess
 
     def __get_model(self, model):
         if model is None:
@@ -109,7 +110,7 @@ class Generator:
         return gen
 
     @staticmethod
-    def create_model(samples_per_epoch, weight_decay, learning_rate, temperature, dropout, embedding_layer_q, embedding_layer_d):
+    def create_model(samples_per_epoch, weight_decay, learning_rate, temperature, dropout, embedding_layer_q, embedding_layer_d, sess):
 
-        gen = Generator(samples_per_epoch, weight_decay, learning_rate, temperature, dropout, embedding_layer_q, embedding_layer_d)
+        gen = Generator(samples_per_epoch, weight_decay, learning_rate, temperature, dropout, embedding_layer_q, embedding_layer_d, sess)
         return gen

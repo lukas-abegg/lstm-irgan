@@ -3,7 +3,6 @@ import io
 
 from keras.preprocessing.text import Tokenizer
 from keras.layers import Embedding
-from keras.initializers import Constant
 
 import app.parameters as params
 
@@ -17,7 +16,6 @@ def build_index_mapping():
 
     embeddings_index = {}
     f = io.open(params.FASTTEXT, 'r', encoding='utf-8', newline='\n', errors='ignore')
-    n, d = map(int, f.readline().split())
     for line in f:
         values = line.split()
         word = values[0]

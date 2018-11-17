@@ -1,8 +1,6 @@
 import numpy as np
 import random
 
-#from sklearn.model_selection import StratifiedKFold
-from sklearn.model_selection import KFold
 from sklearn.model_selection import train_test_split
 
 import app.parameters as params
@@ -13,35 +11,24 @@ import app.evaluation.metrics.precision_k as p_k
 import app.evaluation.metrics.ndcg_k as ndcg_k
 
 
-def get_x_data(query_ids):
-    x_train, x_test = train_test_split(query_ids, test_size=0.15, random_state=42)
+def get_x_data_splitted(query_ids):
+    x_train, x_test = train_test_split(query_ids, test_size=0.10, random_state=42)
     return x_train, x_test
 
 
 def train_model(x_train, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout):
-    # Initialize data for eval
-    p_best_val = 0.0
-    ndcg_best_val = 0.0
 
-    best_disc = Discriminator
-    best_gen = Generator
+    train_x_indices, test_x_indices = get_x_data_splitted(x_train)
 
-    skf = KFold(n_splits=params.KFOLD_SPLITS, shuffle=True)
+    # Generate batches from indices
+    x_train_k, x_test_k = np.array(train_x_indices), np.array(test_x_indices)
 
-    # Loop through the indices the split() method returns
-    for index, (train_k_indices, val_k_indices) in enumerate(skf.split(x_train)):
-        # Generate batches from indices
-        x_train_k, x_val_k = np.array(x_train)[train_k_indices], np.array(x_train)[val_k_indices]
+    gen_pre = __pretrain_model(x_train_k, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout)
 
-        gen_pre = __pretrain_model(x_train_k, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout)
-
-        gen, disc, p_val, ndcg_val = __train_model(gen_pre, x_train_k, x_val_k, ratings_data, queries_data, documents_data,
+    gen, disc, p_val, ndcg_val = __train_model(gen_pre, x_train_k, x_test_k, ratings_data, queries_data, documents_data,
                                                    tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout)
 
-        best_disc, best_gen, p_best_val, ndcg_best_val = __get_best_eval_result(disc, best_disc, gen, best_gen, p_val,
-                                                                                p_best_val, ndcg_val, ndcg_best_val)
-
-    return best_gen, p_best_val
+    return gen, p_val
 
 
 def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout) -> (Generator):
@@ -59,11 +46,11 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
 
     print('Build discriminator network')
     samples_per_epoc = len(x_train) * params.POS_TRAINING_DATA_PER_QUERY * 2
-    disc = Discriminator.create_model(samples_per_epoc, weight_decay, learning_rate, dropout, embedding_layer_q, embedding_layer_d)
+    disc = Discriminator.create_model(samples_per_epoc, weight_decay, learning_rate, dropout, embedding_layer_q, embedding_layer_d, sess)
 
     print('Build generator network')
     samples_per_epoc = len(x_train) * params.POS_TRAINING_DATA_PER_QUERY * 2
-    gen = Generator.create_model(samples_per_epoc, weight_decay, learning_rate, temperature, dropout, embedding_layer_q, embedding_layer_d)
+    gen = Generator.create_model(samples_per_epoc, weight_decay, learning_rate, temperature, dropout, embedding_layer_q, embedding_layer_d, sess)
 
     print('Start pre-model training')
     # Train Discriminator
@@ -172,10 +159,10 @@ def __train_model(gen_pre, x_train, x_val, ratings_data, queries_data, documents
 
     print('Build discriminator network')
     samples_per_epoc = len(x_train) * params.POS_TRAINING_DATA_PER_QUERY * 2
-    disc = Discriminator.create_model(samples_per_epoc, weight_decay, learning_rate, dropout, embedding_layer_q, embedding_layer_d)
+    disc = Discriminator.create_model(samples_per_epoc, weight_decay, learning_rate, dropout, embedding_layer_q, embedding_layer_d, sess)
     print('Build generator network')
     samples_per_epoc = len(x_train) * params.POS_TRAINING_DATA_PER_QUERY * 2
-    gen = Generator.create_model(samples_per_epoc, weight_decay, learning_rate, temperature, dropout, embedding_layer_q, embedding_layer_d)
+    gen = Generator.create_model(samples_per_epoc, weight_decay, learning_rate, temperature, dropout, embedding_layer_q, embedding_layer_d, sess)
 
     # Initialize data for eval
     p_best_val = 0.0
