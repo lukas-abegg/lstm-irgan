@@ -6,11 +6,12 @@ TEMP = WORKDIR + '/temp'
 USE_HYPERPARAM_OPT = False
 
 # Embeddings / Tokenizer
-FASTTEXT = '/home/lukas/Downloads/wiki-news-300d-1M.vec'
+USE_FASTTEXT_MODEL = False
+FASTTEXT = '/home/lukas/Downloads/BioWordVec_PubMed_MIMICIII_d200.vec.bin'
 
 MAX_SEQUENCE_LENGTH = 20000
 MAX_NUM_WORDS = 20000
-EMBEDDING_DIM = 300
+EMBEDDING_DIM = 200
 
 # NN General
 WEIGHT_DECAY = 0.025

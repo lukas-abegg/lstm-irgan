@@ -1,12 +1,14 @@
 import numpy as np
 import random
 
+from keras.layers import Embedding
+
 from sklearn.model_selection import train_test_split
 
 import app.parameters as params
 from app.gan.adverserial_nn.generator import Generator
 from app.gan.adverserial_nn.discriminator import Discriminator
-from app.gan.layers import init_embeddings
+from app.gan.layers import init_w2v_embeddings, init_fasttext_model_embeddings
 import app.evaluation.metrics.precision_k as p_k
 import app.evaluation.metrics.ndcg_k as ndcg_k
 
@@ -31,18 +33,34 @@ def train_model(x_train, ratings_data, queries_data, documents_data, tokenizer_q
     return gen, p_val
 
 
+def __get_embedding_layers(tokenizer_q, tokenizer_d) -> (Embedding, Embedding):
+    if params.USE_FASTTEXT_MODEL:
+        print('Load embeddings')
+        embedding_model = init_fasttext_model_embeddings.load_model()
+        print('Prepare embedding-layer for queries')
+        embedding_layer_q = init_fasttext_model_embeddings.init_embedding_layer(tokenizer_q, embedding_model,
+                                                                     params.MAX_SEQUENCE_LENGTH)
+        print('Prepare embedding-layer for documents')
+        embedding_layer_d = init_fasttext_model_embeddings.init_embedding_layer(tokenizer_d, embedding_model,
+                                                                     params.MAX_SEQUENCE_LENGTH)
+    else:
+        print('Load embeddings')
+        embedding_index = init_w2v_embeddings.build_index_mapping()
+        print('Prepare embedding-layer for queries')
+        embedding_layer_q = init_w2v_embeddings.init_embedding_layer(tokenizer_q, embedding_index,
+                                                                     params.MAX_SEQUENCE_LENGTH)
+        print('Prepare embedding-layer for documents')
+        embedding_layer_d = init_w2v_embeddings.init_embedding_layer(tokenizer_d, embedding_index,
+                                                                     params.MAX_SEQUENCE_LENGTH)
+    return embedding_layer_q, embedding_layer_d
+
+
 def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout) -> (Generator):
 
     train_ratings_data, train_queries_data, train_documents_data = __build_train_data(x_train, ratings_data, queries_data, documents_data)
 
     # Clear models, and reinitialize them
-
-    print('Load embeddings')
-    embeddings_index = init_embeddings.build_index_mapping()
-    print('Prepare embedding-layer for queries')
-    embedding_layer_q = init_embeddings.init_embedding_layer(tokenizer_q, embeddings_index, params.MAX_SEQUENCE_LENGTH)
-    print('Prepare embedding-layer for documents')
-    embedding_layer_d = init_embeddings.init_embedding_layer(tokenizer_d, embeddings_index, params.MAX_SEQUENCE_LENGTH)
+    embedding_layer_q, embedding_layer_d = __get_embedding_layers(tokenizer_q, tokenizer_d)
 
     print('Build discriminator network')
     samples_per_epoc = len(x_train) * params.POS_TRAINING_DATA_PER_QUERY * 2
@@ -150,12 +168,7 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
 def __train_model(gen_pre, x_train, x_val, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout) -> (Discriminator, Generator):
     train_ratings_data, train_queries_data, train_documents_data = __build_train_data(x_train, ratings_data, queries_data, documents_data)
 
-    print('Load embeddings')
-    embeddings_index = init_embeddings.build_index_mapping()
-    print('Prepare embedding-layer for queries')
-    embedding_layer_q = init_embeddings.init_embedding_layer(tokenizer_q, embeddings_index, params.MAX_SEQUENCE_LENGTH)
-    print('Prepare embedding-layer for documents')
-    embedding_layer_d = init_embeddings.init_embedding_layer(tokenizer_d, embeddings_index, params.MAX_SEQUENCE_LENGTH)
+    embedding_layer_q, embedding_layer_d = __get_embedding_layers(tokenizer_q, tokenizer_d)
 
     print('Build discriminator network')
     samples_per_epoc = len(x_train) * params.POS_TRAINING_DATA_PER_QUERY * 2
