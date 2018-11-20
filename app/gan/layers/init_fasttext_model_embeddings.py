@@ -2,8 +2,7 @@ import numpy as np
 
 from keras.preprocessing.text import Tokenizer
 from keras.layers import Embedding
-
-import fasttext
+from gensim.models.wrappers import FastText
 
 import app.parameters as params
 
@@ -12,7 +11,7 @@ import app.parameters as params
 
 def load_model():
     print('load fasttext model from', params.FASTTEXT)
-    model = fasttext.load_model(params.FASTTEXT)
+    model = FastText.load_fasttext_format(params.FASTTEXT)
     return model
 
 

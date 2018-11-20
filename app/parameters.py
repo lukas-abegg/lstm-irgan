@@ -7,6 +7,7 @@ USE_HYPERPARAM_OPT = False
 
 # Embeddings / Tokenizer
 USE_FASTTEXT_MODEL = False
+FASTTEXT_BINARY = True
 FASTTEXT = '/home/lukas/Downloads/BioWordVec_PubMed_MIMICIII_d200.vec.bin'
 
 MAX_SEQUENCE_LENGTH = 20000

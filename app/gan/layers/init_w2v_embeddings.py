@@ -1,5 +1,5 @@
 import numpy as np
-import io
+from gensim.models import KeyedVectors
 
 from keras.preprocessing.text import Tokenizer
 from keras.layers import Embedding
@@ -13,16 +13,8 @@ import app.parameters as params
 # to their embedding vector
 def build_index_mapping():
     print('Indexing word vectors.')
-
-    embeddings_index = {}
-    f = io.open(params.FASTTEXT, 'r', encoding='utf-8', newline='\n', errors='ignore')
-    for line in f:
-        values = line.split()
-        word = values[0]
-        coefs = np.asarray(values[1:], dtype='float32')
-        embeddings_index[word] = coefs
-
-    print('Found %s word vectors.' % len(embeddings_index))
+    embeddings_index = KeyedVectors.load_word2vec_format(params.FASTTEXT, binary=params.FASTTEXT_BINARY)
+    print('Found %s word vectors.' % len(embeddings_index.vocab))
     return embeddings_index
 
 
@@ -35,7 +27,7 @@ def __build_embeddings_matrix(tokenizer: Tokenizer, embeddings_index):
     for word, i in word_index.items():
         if i > params.MAX_NUM_WORDS:
             continue
-        embedding_vector = embeddings_index.get(word)
+        embedding_vector = embeddings_index[word]
         if embedding_vector is not None:
             # words not found in embedding index will be all-zeros.
             embeddings_matrix[i] = embedding_vector
