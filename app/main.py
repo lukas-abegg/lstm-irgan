@@ -32,7 +32,7 @@ def __init_config():
 
     backend.set_session(sess)
 
-    os.environ["CUDA_VISIBLE_DEVICES"] = "-1" #""0"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
     return sess
 
