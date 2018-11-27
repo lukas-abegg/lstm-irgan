@@ -12,6 +12,7 @@ from hyperas.distributions import uniform
 
 import app.data_preparation.init_data_example as init_example
 import app.data_preparation.init_data_wikiclir as init_wikiclir
+import app.data_preparation.init_data_nfcorpus as init_nfcorpus
 import app.evaluation.eval_all_metrics as eval_metrics
 import app.parameters as params
 import app.plotting.plot_model as plotting
@@ -24,7 +25,7 @@ with warnings.catch_warnings():
 
 def __init_config():
     tf_config = tf.ConfigProto()
-    tf_config.gpu_options.allow_growth = False #True
+    tf_config.gpu_options.allow_growth = True
     tf_config.gpu_options.allocator_type = 'BFC'
 
     sess = tf.Session(graph=tf.get_default_graph(), config=tf_config)
@@ -39,6 +40,8 @@ def __init_config():
 def __prepare_data():
     if params.DATA_SOURCE == params.DATA_SOURCE_WIKICLIR:
         query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = init_wikiclir.get_data()
+    elif params.DATA_SOURCE == params.DATA_SOURCE_NFCORPUS:
+        query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = init_nfcorpus.get_data()
     else:
         query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = init_example.get_data()
 

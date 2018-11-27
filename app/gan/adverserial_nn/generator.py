@@ -68,6 +68,7 @@ class Generator:
         model.compile(loss=self.__loss(reward, important_sampling),
                       optimizer=adamw,
                       metrics=['accuracy'])
+
         return model
 
     @staticmethod
@@ -83,14 +84,14 @@ class Generator:
     def train(self, train_data_queries, train_data_documents, reward, important_sampling):
         self.model.train_on_batch([train_data_queries, train_data_documents, reward, important_sampling], np.zeros([train_data_queries.shape[0]]))
 
-    def get_score(self, train_data_queries, train_data_documents,):
+    def get_score(self, train_data_queries, train_data_documents):
         inputs = self.model.inputs + [K.learning_phase()]
         out = self.model.get_layer('score').output
         functor = K.function(inputs, [out])
         layer_outs = functor([train_data_queries, train_data_documents, 0.])
         return layer_outs
 
-    def get_prob(self, train_data_queries, train_data_documents,):
+    def get_prob(self, train_data_queries, train_data_documents):
         inputs = self.model.inputs + [K.learning_phase()]
         out = self.model.get_layer('prob').output
         functor = K.function(inputs, [out])
@@ -112,5 +113,5 @@ class Generator:
     @staticmethod
     def create_model(samples_per_epoch, weight_decay, learning_rate, temperature, dropout, embedding_layer_q, embedding_layer_d, sess):
 
-        gen = Generator(samples_per_epoch, weight_decay, learning_rate, temperature, dropout, embedding_layer_q, embedding_layer_d, sess)
+        gen = Generator(samples_per_epoch, weight_decay, learning_rate, temperature, dropout, embedding_layer_q, embedding_layer_d, sess=sess)
         return gen

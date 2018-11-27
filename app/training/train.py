@@ -64,11 +64,11 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
 
     print('Build discriminator network')
     samples_per_epoc = len(x_train) * params.POS_TRAINING_DATA_PER_QUERY * 2
-    disc = Discriminator.create_model(samples_per_epoc, weight_decay, learning_rate, dropout, embedding_layer_q, embedding_layer_d, sess)
+    disc = Discriminator.create_model(samples_per_epoc, weight_decay, learning_rate, dropout, embedding_layer_q, embedding_layer_d, sess=sess)
 
     print('Build generator network')
     samples_per_epoc = len(x_train) * params.POS_TRAINING_DATA_PER_QUERY * 2
-    gen = Generator.create_model(samples_per_epoc, weight_decay, learning_rate, temperature, dropout, embedding_layer_q, embedding_layer_d, sess)
+    gen = Generator.create_model(samples_per_epoc, weight_decay, learning_rate, temperature, dropout, embedding_layer_q, embedding_layer_d, sess=sess)
 
     print('Start pre-model training')
     # Train Discriminator
@@ -110,7 +110,7 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
             pred_data_documents = np.asarray(pred_data_documents)
 
             # prepare pos and neg label
-            pred_data_label = [1.0] * len(pos_data_queries)
+            pred_data_label = [train_ratings_data[x[0]][x[1]] / params.MAX_RELEVANCE for x in input_pos]
             pred_data_label.extend([0.0] * len(neg_data_queries))
             pred_data_label = np.asarray(pred_data_label)
 
@@ -125,10 +125,10 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
         for query_id in x_train:
 
             # get all query specific ratings
-            x_pos_list, y_pos_list, candidate_list = __get_query_specific_data(query_id, ratings_data, documents_data)
+            x_pos_list, candidate_list = __get_query_specific_data(query_id, ratings_data, documents_data)
             x_pos_set = set(x_pos_list)
 
-            prob, data_queries, data_documents = __get_rand_batch_from_candidates_for_generator(gen, query_id,
+            prob, doc_ids, data_queries, data_documents = __get_rand_batch_from_candidates_for_generator(gen, query_id,
                                                                                                 queries_data,
                                                                                                 documents_data,
                                                                                                 candidate_list,
@@ -137,12 +137,13 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
             # important sampling, change doc prob
             prob_is = prob * (1.0 - params.GEN_LAMBDA)
 
-            for i in range(len(data_documents)):
-                if data_documents[i] in x_pos_set:
+            for i in range(len(doc_ids)):
+                if doc_ids[i] in x_pos_set:
                     prob_is[i] += (params.GEN_LAMBDA / (1.0 * len(x_pos_list)))
 
             # G generate some url (2 * postive doc num)
-            choose_index = np.random.choice(np.arange(len(data_documents)), [2 * len(x_pos_list)], p=prob_is)
+            prob_is_rand = np.asarray(prob_is) / np.asarray(prob_is).sum(axis=0, keepdims=1)
+            choose_index = np.random.choice(np.arange(len(doc_ids)), [2 * len(x_pos_list)], p=prob_is_rand)
 
             # choose data
             choose_queries = np.array(data_queries)[choose_index]
@@ -172,10 +173,10 @@ def __train_model(gen_pre, x_train, x_val, ratings_data, queries_data, documents
 
     print('Build discriminator network')
     samples_per_epoc = len(x_train) * params.POS_TRAINING_DATA_PER_QUERY * 2
-    disc = Discriminator.create_model(samples_per_epoc, weight_decay, learning_rate, dropout, embedding_layer_q, embedding_layer_d, sess)
+    disc = Discriminator.create_model(samples_per_epoc, weight_decay, learning_rate, dropout, embedding_layer_q, embedding_layer_d, sess=sess)
     print('Build generator network')
     samples_per_epoc = len(x_train) * params.POS_TRAINING_DATA_PER_QUERY * 2
-    gen = Generator.create_model(samples_per_epoc, weight_decay, learning_rate, temperature, dropout, embedding_layer_q, embedding_layer_d, sess)
+    gen = Generator.create_model(samples_per_epoc, weight_decay, learning_rate, temperature, dropout, embedding_layer_q, embedding_layer_d, sess=sess)
 
     # Initialize data for eval
     p_best_val = 0.0
@@ -229,7 +230,7 @@ def __train_model(gen_pre, x_train, x_val, ratings_data, queries_data, documents
                 pred_data_documents = np.asarray(pred_data_documents)
 
                 # prepare pos and neg label
-                pred_data_label = [1.0] * len(pos_data_queries)
+                pred_data_label = [train_ratings_data[x[0]][x[1]] / params.MAX_RELEVANCE for x in input_pos]
                 pred_data_label.extend([0.0] * len(neg_data_queries))
                 pred_data_label = np.asarray(pred_data_label)
 
@@ -244,10 +245,10 @@ def __train_model(gen_pre, x_train, x_val, ratings_data, queries_data, documents
             for query_id in x_train:
 
                 # get all query specific ratings
-                x_pos_list, y_pos_list, candidate_list = __get_query_specific_data(query_id, ratings_data, documents_data)
+                x_pos_list, candidate_list = __get_query_specific_data(query_id, ratings_data, documents_data)
                 x_pos_set = set(x_pos_list)
 
-                prob, data_queries, data_documents = __get_rand_batch_from_candidates_for_generator(gen, query_id,
+                prob, doc_ids, data_queries, data_documents = __get_rand_batch_from_candidates_for_generator(gen, query_id,
                                                                                                     queries_data,
                                                                                                     documents_data,
                                                                                                     candidate_list,
@@ -256,12 +257,13 @@ def __train_model(gen_pre, x_train, x_val, ratings_data, queries_data, documents
                 # important sampling, change doc prob
                 prob_is = prob * (1.0 - params.GEN_LAMBDA)
 
-                for i in range(len(data_documents)):
-                    if data_documents[i] in x_pos_set:
+                for i in range(len(doc_ids)):
+                    if doc_ids[i] in x_pos_set:
                         prob_is[i] += (params.GEN_LAMBDA / (1.0 * len(x_pos_list)))
 
                 # G generate some url (2 * postive doc num)
-                choose_index = np.random.choice(np.arange(len(data_documents)), [2 * len(x_pos_list)], p=prob_is)
+                prob_is_rand = np.asarray(prob_is) / np.asarray(prob_is).sum(axis=0, keepdims=1)
+                choose_index = np.random.choice(np.arange(len(doc_ids)), [2 * len(x_pos_list)], p=prob_is_rand)
 
                 # choose data
                 choose_queries = np.array(data_queries)[choose_index]
@@ -285,10 +287,11 @@ def __train_model(gen_pre, x_train, x_val, ratings_data, queries_data, documents
             p_step = p_k.measure_precision_at_k(gen, x_val, ratings_data, queries_data, documents_data, params.EVAL_K, sess)
             ndcg_step = ndcg_k.measure_ndcg_at_k(gen, x_val, ratings_data, queries_data, documents_data, params.EVAL_K, sess)
 
+            print("Epoch", g_epoch, "measure:", "gen p@5 =", p_best_val, "gen ndcg@5 =", ndcg_best_val)
             best_disc, best_gen, p_best_val, ndcg_best_val = __get_best_eval_result(disc, best_disc, gen, best_gen, p_step,
                                                                                     p_best_val, ndcg_step, ndcg_best_val)
 
-    print("Best:", "gen p@5 ", p_best_val, "gen ndcg@5 ", ndcg_best_val)
+    print("Best:", "gen p@5 =", p_best_val, "gen ndcg@5 =", ndcg_best_val)
 
     return best_disc, best_gen, p_best_val, ndcg_best_val
 
@@ -314,11 +317,12 @@ def __generate_negatives_for_discriminator(gen, x_train, ratings_data, queries_d
     print('negative sampling for discriminator using generator')
     for query_id in x_train:
         # get query specific rating and all relevant docs
-        x_pos_list, y_pos_list, candidate_list = __get_query_specific_data(query_id, ratings_data, documents_data)
+        x_pos_list, candidate_list = __get_query_specific_data(query_id, ratings_data, documents_data)
 
-        prob, data_queries, data_documents = __get_rand_batch_from_candidates_for_negatives(gen, query_id, queries_data, documents_data, candidate_list, x_pos_list)
+        prob, doc_ids, data_queries, data_documents = __get_rand_batch_from_candidates_for_negatives(gen, query_id, queries_data, documents_data, candidate_list, x_pos_list)
 
-        neg_list = np.random.choice(candidate_list, size=[len(x_pos_list)], p=prob)
+        prob = np.asarray(prob) / np.asarray(prob).sum(axis=0, keepdims=1)
+        neg_list = np.random.choice(doc_ids, size=[len(x_pos_list)], p=prob)
 
         for i in range(len(x_pos_list)):
             data.append([query_id, x_pos_list[i], neg_list[i]])
@@ -349,7 +353,7 @@ def __get_rand_batch_from_candidates_for_negatives(gen, query_id, queries_data, 
     prob = prob[0]
     prob = prob.reshape([-1])
 
-    return prob, data_queries, data_documents
+    return prob, doc_ids, data_queries, data_documents
 
 
 def __get_rand_batch_from_candidates_for_generator(gen, query_id, queries_data, documents_data, candidate_list, x_pos_list):
@@ -370,13 +374,16 @@ def __get_rand_batch_from_candidates_for_generator(gen, query_id, queries_data, 
     prob = prob[0]
     prob = prob.reshape([-1])
 
-    return prob, data_queries, data_documents
+    doc_ids_collected = []
+    doc_ids_collected.extend(doc_ids)
+    doc_ids_collected.extend(x_pos_list)
+
+    return prob, doc_ids_collected, data_queries, data_documents
 
 
 def __get_query_specific_data(query_id, ratings_data, documents_data):
     # get all query specific ratings
     x_pos_list = list(ratings_data[query_id].keys())[:params.POS_TRAINING_DATA_PER_QUERY]
-    y_pos_list = list(ratings_data[query_id].values())[:params.POS_TRAINING_DATA_PER_QUERY]
 
     # get all other ratings
     docs_pos_ids = np.unique(x_pos_list)
@@ -385,7 +392,7 @@ def __get_query_specific_data(query_id, ratings_data, documents_data):
         if doc_id not in docs_pos_ids:
             candidate_list.append(doc_id)
 
-    return x_pos_list, y_pos_list, candidate_list
+    return x_pos_list, candidate_list
 
 
 def __get_batch_data(pos_neg_data, index, size):

@@ -1,5 +1,5 @@
 # Base dirs
-WORKDIR = '/home/lukas/git-projects/lstm-irgan'
+WORKDIR = '~/lstm-irgan'
 TEMP = WORKDIR + '/temp'
 
 # Hyperparameter Optimization
@@ -8,7 +8,7 @@ USE_HYPERPARAM_OPT = False
 # Embeddings / Tokenizer
 USE_FASTTEXT_MODEL = False
 FASTTEXT_BINARY = True
-FASTTEXT = '/home/lukas/Downloads/BioWordVec_PubMed_MIMICIII_d200.vec.bin'
+FASTTEXT = '~/BioWordVec_PubMed_MIMICIII_d200.vec.bin'
 
 MAX_SEQUENCE_LENGTH = 20000
 MAX_NUM_WORDS = 20000
@@ -44,19 +44,22 @@ GEN_BATCH_SIZE = 8
 GEN_LAMBDA = 0.5
 
 # Data
-DATA_SOURCE = 'wikiclir'
+DATA_SOURCE = 'nfcorpus'
+DATA_SOURCE_NFCORPUS = 'nfcorpus'
 DATA_SOURCE_WIKICLIR = 'wikiclir'
 DATA_SOURCE_EXAMPLE = 'example'
 
-DOCUMENTS_DIR = WORKDIR + '/data/wikiclir/dev.docs'  #'/data/example/documents/'
-QUERIES = WORKDIR + '/data/wikiclir/dev.queries' #'/data/example/queries.txt'
-LABELLED_DATA = WORKDIR + '/data/wikiclir/dev.qrel' #'/data/example/labelled_data.txt'
+DOCUMENTS_DIR = WORKDIR + '/data/nfcorpus/all_docs/merged.docs'
+QUERIES = WORKDIR + '/data/nfcorpus/all_queries/merged.all.queries'
+LABELLED_DATA = WORKDIR + '/data/nfcorpus/all_qrels/3-2-1/merged.3-2-1.qrel'
 
 # Training
-POS_TRAINING_DATA_PER_QUERY = 5
+POS_TRAINING_DATA_PER_QUERY = 25
+MAX_RELEVANCE = 3
 
 # Evaluation
 EVAL_K = 5
+EVAL_N_DOCS = 1000
 
 # Save models
 SAVED_MODEL_DISC_FILE = TEMP + "/disc_model.h5"
@@ -66,7 +69,6 @@ SAVED_MODEL_GEN_FILE = TEMP + "/gen_model.h5"
 PLOTTED_MODEL_FILE = TEMP + "/plot_model.png"
 
 # General
-KFOLD_SPLITS = 5
 USED_MODE = 'train'
 
 TRAIN_MODE = 'train'

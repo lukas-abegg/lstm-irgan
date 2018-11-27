@@ -93,5 +93,5 @@ class Discriminator:
     @staticmethod
     def create_model(samples_per_epoch, weight_decay, learning_rate, dropout, embedding_layer_q, embedding_layer_d, sess):
 
-        disc = Discriminator(samples_per_epoch, weight_decay, learning_rate, dropout, embedding_layer_q, embedding_layer_d, sess)
+        disc = Discriminator(samples_per_epoch, weight_decay, learning_rate, dropout, embedding_layer_q, embedding_layer_d, sess=sess)
         return disc

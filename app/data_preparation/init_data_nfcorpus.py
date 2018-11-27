@@ -18,7 +18,7 @@ def __get_documents():
         content = f.readlines()
         for line in content:
             values = line.split("\t", 1)
-            id = int(values[0])
+            id = values[0]
             text = values[1]
             documents[id] = text
             doc_ids.append(id)
@@ -34,7 +34,7 @@ def __get_queries():
         content = f.readlines()
         for line in content:
             values = line.split("\t", 1)
-            id = int(values[0])
+            id = values[0]
             text = values[1]
             queries[id] = text
             query_ids.append(id)
@@ -49,8 +49,8 @@ def __get_ratings():
         content = f.readlines()
         for line in content:
             values = line.split("\t")
-            query = int(values[0])
-            text = int(values[2])
+            query = values[0]
+            text = values[2]
             rating = float(values[3])
 
             if query in ratings.keys():
