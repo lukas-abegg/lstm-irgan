@@ -77,7 +77,7 @@ def __init_tokenizer(text_data, max_sequence_length):
     ids = list(text_data.keys())
 
     stop_words = set(stopwords.words("english"))
-    stop_words.update(['.', ',', '"', "'", ':', ';', '(', ')', '[', ']', '{', '}'])
+    stop_words.update(['.', ',', '"', "'", ':', ';', '(', ')', '[', ']', '{', '’'])
     texts = __filter_stop_words(texts, stop_words)
 
     # finally, vectorize the text samples into a 2D integer tensor
