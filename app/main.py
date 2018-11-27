@@ -1,9 +1,10 @@
 import os
 import warnings
 
+from comet_ml import Experiment
+
 import tensorflow as tf
 from keras import backend
-from comet_ml import Experiment
 
 from hyperopt import Trials, STATUS_OK, tpe
 from hyperas import optim
@@ -11,6 +12,7 @@ from hyperas.distributions import uniform
 
 import app.data_preparation.init_data_example as init_example
 import app.data_preparation.init_data_wikiclir as init_wikiclir
+import app.data_preparation.init_data_nfcorpus as init_nfcorpus
 import app.evaluation.eval_all_metrics as eval_metrics
 import app.parameters as params
 import app.plotting.plot_model as plotting
@@ -30,15 +32,20 @@ def __init_config():
 
     backend.set_session(sess)
 
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "-1" #""0"
 
     return sess
 
 
 def __prepare_data():
     if params.DATA_SOURCE == params.DATA_SOURCE_WIKICLIR:
+        print("Init WikiClir")
         query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = init_wikiclir.get_data()
+    elif params.DATA_SOURCE == params.DATA_SOURCE_NFCORPUS:
+        print("Init NFCorpus")
+        query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = init_nfcorpus.get_data()
     else:
+        print("Init Example")
         query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = init_example.get_data()
 
     return query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d
@@ -47,7 +54,7 @@ def __prepare_data():
 def get_env_data_with_x_data_splitted():
     sess = __init_config()
     query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = __prepare_data()
-    x_train, x_test = train.get_x_data(query_ids)
+    x_train, x_test = train.get_x_data_splitted(query_ids)
     return sess, x_train, x_test, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d
 
 
@@ -99,8 +106,8 @@ def plot_model(gen):
 
 def main(mode):
     if params.TRAIN_MODE == mode:
-        if params.USE_HYPERPARAM_OPT:
-            sess, x_train, x_test, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = get_env_data_with_x_data_splitted()
+        if not params.USE_HYPERPARAM_OPT:
+            sess, x_train, x_val, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = get_env_data_with_x_data_splitted()
             generator = train_model_without_hyperparam_opt(x_train, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess)
 
         else:
@@ -110,12 +117,12 @@ def main(mode):
                                                   max_evals=5,
                                                   trials=Trials())
 
-            sess, x_train, x_test, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = get_env_data_with_x_data_splitted()
+            sess, x_train, x_val, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = get_env_data_with_x_data_splitted()
             generator = best_model
             print("Best performing model chosen hyper-parameters:")
             print(best_run)
 
-        eval_metrics.evaluate(generator, x_test, ratings_data, documents_data, queries_data, sess)
+        eval_metrics.evaluate(generator, x_val, ratings_data, documents_data, queries_data, sess)
         save_model(generator, params.SAVED_MODEL_GEN_FILE)
 
     elif params.EVAL_MODE == mode:

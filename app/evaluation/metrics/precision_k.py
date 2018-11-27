@@ -13,11 +13,13 @@ def measure_precision_at_k(model, x_val, ratings_data, queries_data, documents_d
             continue
 
         # predict y-values for given x-values
-        pred_scores = sess.run(model.pred_score, feed_dict={model.pred_data: [eval_queries, eval_documents]})
+        pred_scores = model.get_prob(eval_queries, eval_documents)
+        pred_scores = pred_scores[0]
+        pred_scores = pred_scores.reshape([-1])
 
         pred_document_scores_order, rated_document_scores_order = utils.sort_pred_val_data(x_data, y_data, pred_scores)
 
-        relevant_k_rated_docs = set(rated_document_scores_order[:5])
+        relevant_k_rated_docs = set(rated_document_scores_order[:k])
         relevant_doc_set = [doc_id for doc_id, rating_score in relevant_k_rated_docs]
 
         num = 0.0
@@ -25,6 +27,7 @@ def measure_precision_at_k(model, x_val, ratings_data, queries_data, documents_d
             doc_id, score = pred_document_scores_order[i]
             if doc_id in relevant_doc_set:
                 num += 1.0
+
         num /= (k * 1.0)
 
         p += num
