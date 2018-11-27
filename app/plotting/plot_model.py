@@ -1,5 +1,5 @@
 from keras.utils import plot_model
-import app.parameters as params
+import parameters as params
 
 
 def plot_model(model):

@@ -2,12 +2,12 @@ import os
 import sys
 from nltk.corpus import stopwords
 
-import app.parameters as params
+import parameters as params
 
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 
-from app.data_preparation.preprocessing.preprocess_tokenizer import TokenizePreprocessor
+from data_preparation.preprocessing.preprocess_tokenizer import TokenizePreprocessor
 
 
 def __get_documents():

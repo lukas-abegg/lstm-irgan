@@ -1,6 +1,6 @@
 import numpy as np
 
-import app.evaluation.eval_utils as utils
+import evaluation.eval_utils as utils
 
 
 def measure_ndcg_at_k(model, x_val, ratings_data, queries_data, documents_data, k, sess):

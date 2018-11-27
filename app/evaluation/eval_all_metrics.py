@@ -1,8 +1,8 @@
-import app.evaluation.metrics.precision_k as p_eval
-import app.evaluation.metrics.r_precision_k as r_p_eval
-import app.evaluation.metrics.ndcg_k as ndcg_eval
-import app.evaluation.metrics.map_k as map_eval
-import app.evaluation.metrics.mrr_k as mrr_eval
+import evaluation.metrics.precision_k as p_eval
+import evaluation.metrics.r_precision_k as r_p_eval
+import evaluation.metrics.ndcg_k as ndcg_eval
+import evaluation.metrics.map_k as map_eval
+import evaluation.metrics.mrr_k as mrr_eval
 
 
 def evaluate(model, x_val, ratings_data, queries_data, documents_data, sess):

@@ -10,14 +10,14 @@ from hyperopt import Trials, STATUS_OK, tpe
 from hyperas import optim
 from hyperas.distributions import uniform
 
-import app.data_preparation.init_data_example as init_example
-import app.data_preparation.init_data_wikiclir as init_wikiclir
-import app.data_preparation.init_data_nfcorpus as init_nfcorpus
-import app.evaluation.eval_all_metrics as eval_metrics
-import app.parameters as params
-import app.plotting.plot_model as plotting
-from app.gan.adverserial_nn.generator import Generator
-from app.training import train
+import data_preparation.init_data_example as init_example
+import data_preparation.init_data_wikiclir as init_wikiclir
+import data_preparation.init_data_nfcorpus as init_nfcorpus
+import evaluation.eval_all_metrics as eval_metrics
+import parameters as params
+import plotting.plot_model as plotting
+from gan.adverserial_nn.generator import Generator
+from training import train
 
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=FutureWarning)

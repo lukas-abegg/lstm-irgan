@@ -1,5 +1,5 @@
 import numpy as np
-import app.parameters as params
+import parameters as params
 
 
 def get_query_specific_eval_data(query_id, ratings_data, queries_data, documents_data, k=0):

@@ -5,12 +5,12 @@ from keras.layers import Embedding
 
 from sklearn.model_selection import train_test_split
 
-import app.parameters as params
-from app.gan.adverserial_nn.generator import Generator
-from app.gan.adverserial_nn.discriminator import Discriminator
-from app.gan.layers import init_w2v_embeddings, init_fasttext_model_embeddings
-import app.evaluation.metrics.precision_k as p_k
-import app.evaluation.metrics.ndcg_k as ndcg_k
+import parameters as params
+from gan.adverserial_nn.generator import Generator
+from gan.adverserial_nn.discriminator import Discriminator
+from gan.layers import init_w2v_embeddings, init_fasttext_model_embeddings
+import evaluation.metrics.precision_k as p_k
+import evaluation.metrics.ndcg_k as ndcg_k
 
 
 def get_x_data_splitted(query_ids):
