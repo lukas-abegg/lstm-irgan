@@ -3,9 +3,9 @@ from keras.layers import Dense, Activation, Bidirectional, Embedding, GRU, Conca
 from keras.layers.core import Reshape, Dropout
 from keras.models import Model, Input, save_model, load_model
 
-from app.gan.optimizer.AdamW import AdamW
+from gan.optimizer.AdamW import AdamW
 
-import app.parameters as params
+import parameters as params
 
 
 class Discriminator:

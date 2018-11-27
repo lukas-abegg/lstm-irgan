@@ -4,7 +4,7 @@ from gensim.models import KeyedVectors
 from keras.preprocessing.text import Tokenizer
 from keras.layers import Embedding
 
-import app.parameters as params
+import parameters as params
 
 
 # based on: https://github.com/keras-team/keras/blob/master/examples/pretrained_word_embeddings.py

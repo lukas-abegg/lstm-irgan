@@ -4,7 +4,7 @@ from keras.preprocessing.text import Tokenizer
 from keras.layers import Embedding
 from gensim.models.wrappers import FastText
 
-import app.parameters as params
+import parameters as params
 
 # based on: https://pypi.org/project/fasttext/
 

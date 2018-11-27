@@ -18,7 +18,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.svm import LinearSVC
 from unidecode import unidecode
 
-from app.data_preparation.preprocessing import helpers
+from data_preparation.preprocessing import helpers
 
 # ----------------------------------------------------------------
 # Required globals

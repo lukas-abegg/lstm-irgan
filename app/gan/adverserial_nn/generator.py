@@ -3,10 +3,10 @@ from keras.layers import Bidirectional, Embedding, GRU, Dense, Activation, Lambd
 from keras.layers.core import Reshape, Dropout
 from keras.models import Model, Input, save_model, load_model
 
-from app.gan.optimizer.AdamW import AdamW
+from gan.optimizer.AdamW import AdamW
 
 import numpy as np
-import app.parameters as params
+import parameters as params
 
 
 class Generator:
