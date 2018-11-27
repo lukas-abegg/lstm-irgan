@@ -24,12 +24,14 @@ def __build_embeddings_matrix(tokenizer: Tokenizer, embeddings_index):
     num_words = min(params.MAX_NUM_WORDS, len(word_index)) + 1
     embeddings_matrix = np.zeros((num_words, params.EMBEDDING_DIM))
 
-    filtered_word_index = dict((key, value) for key, value in word_index.items() if key in embeddings_index.vocab)
-
-    for word, i in filtered_word_index:
+    for word, i in word_index.items():
         if i > params.MAX_NUM_WORDS:
             continue
-        embedding_vector = embeddings_index[word]
+        embedding_vector = None
+        try:
+            embedding_vector = embeddings_index[word]
+        except:
+            print("word not found in embeddings_index:", word)
         if embedding_vector is not None:
             # words not found in embedding index will be all-zeros.
             embeddings_matrix[i] = embedding_vector
