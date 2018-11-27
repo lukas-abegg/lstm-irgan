@@ -39,10 +39,13 @@ def __init_config():
 
 def __prepare_data():
     if params.DATA_SOURCE == params.DATA_SOURCE_WIKICLIR:
+        print("Init WikiClir")
         query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = init_wikiclir.get_data()
     elif params.DATA_SOURCE == params.DATA_SOURCE_NFCORPUS:
+        print("Init NFCorpus")
         query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = init_nfcorpus.get_data()
     else:
+        print("Init Example")
         query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = init_example.get_data()
 
     return query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d
