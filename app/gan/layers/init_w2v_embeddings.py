@@ -24,9 +24,7 @@ def __build_embeddings_matrix(tokenizer: Tokenizer, embeddings_index):
     num_words = min(params.MAX_NUM_WORDS, len(word_index)) + 1
     embeddings_matrix = np.zeros((num_words, params.EMBEDDING_DIM))
 
-    print("Unfiltered word-index:", len(word_index))
     filtered_word_index = dict((key, value) for key, value in word_index.items() if key in embeddings_index.vocab)
-    print("Filtered word-index:", len(filtered_word_index))
 
     for word, i in filtered_word_index:
         if i > params.MAX_NUM_WORDS:
