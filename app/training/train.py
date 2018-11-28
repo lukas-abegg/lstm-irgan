@@ -114,6 +114,7 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
             pred_data_label.extend([0.0] * len(neg_data_queries))
             pred_data_label = np.asarray(pred_data_label)
 
+            print("Discriminator epoch: ", str(d_epoch), "with batch: ", str(batch_index), " to ", str(i))
             # train
             disc.train(pred_data_queries, pred_data_documents, pred_data_label)
 
@@ -160,6 +161,7 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
             # get reward((prob  - 0.5) * 2 )
             choose_reward = disc.get_preresult(choose_queries, choose_documents)
 
+            print("Generator epoch: ", str(g_epoch), " with query: ", str(query_id))
             # train
             gen.train(choose_queries, choose_documents, choose_reward.reshape([-1]), choose_is)
 
@@ -234,6 +236,7 @@ def __train_model(gen_pre, x_train, x_val, ratings_data, queries_data, documents
                 pred_data_label.extend([0.0] * len(neg_data_queries))
                 pred_data_label = np.asarray(pred_data_label)
 
+                print("Discriminator epoch: ", str(d_epoch), "with batch: ", str(batch_index), " to ", str(i))
                 # train
                 disc.train(pred_data_queries, pred_data_documents, pred_data_label)
 
@@ -280,6 +283,7 @@ def __train_model(gen_pre, x_train, x_val, ratings_data, queries_data, documents
                 # get reward((prob  - 0.5) * 2 )
                 choose_reward = disc.get_preresult(choose_queries, choose_documents)
 
+                print("Generator epoch: ", str(g_epoch), " with query: ", str(query_id))
                 # train
                 gen.train(choose_queries, choose_documents, choose_reward.reshape([-1]), choose_is)
 
