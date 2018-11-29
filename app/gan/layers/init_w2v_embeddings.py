@@ -31,7 +31,7 @@ def __build_embeddings_matrix(tokenizer: Tokenizer, embeddings_index):
         try:
             embedding_vector = embeddings_index[word]
         except:
-            print("word not found in embeddings_index:", word)
+            pass
         if embedding_vector is not None:
             # words not found in embedding index will be all-zeros.
             embeddings_matrix[i] = embedding_vector
