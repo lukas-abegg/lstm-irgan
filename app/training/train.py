@@ -328,10 +328,12 @@ def __generate_negatives_for_discriminator(gen, x_train, ratings_data, queries_d
         # get query specific rating and all relevant docs
         x_pos_list, candidate_list = __get_query_specific_data(query_id, ratings_data, documents_data)
 
-        prob, doc_ids, data_queries, data_documents = __get_rand_batch_from_candidates_for_negatives(gen, query_id, queries_data, documents_data, candidate_list, x_pos_list)
+        # prob, doc_ids, data_queries, data_documents = __get_rand_batch_from_candidates_for_negatives(gen, query_id, queries_data, documents_data, candidate_list, x_pos_list)
+        doc_ids, data_queries, data_documents = __get_rand_batch_from_candidates_for_negatives(gen, query_id, queries_data, documents_data, candidate_list, x_pos_list)
 
-        prob = np.asarray(prob) / np.asarray(prob).sum(axis=0, keepdims=1)
-        neg_list = np.random.choice(doc_ids, size=[len(x_pos_list)], p=prob)
+        # prob = np.asarray(prob) / np.asarray(prob).sum(axis=0, keepdims=1)
+        # neg_list = np.random.choice(doc_ids, size=[len(x_pos_list)], p=prob)
+        neg_list = np.random.choice(doc_ids, size=[len(x_pos_list)])
 
         for i in range(len(x_pos_list)):
             data.append([query_id, x_pos_list[i], neg_list[i]])
@@ -350,19 +352,20 @@ def __get_batch_data_for_pretrain(query_id, queries_data, documents_data, x_pos_
 
 
 def __get_rand_batch_from_candidates_for_negatives(gen, query_id, queries_data, documents_data, candidate_list, x_pos_list):
-    rand_batch = np.random.choice(np.arange(len(candidate_list)), [2 * len(x_pos_list)])
+    rand_batch = np.random.choice(np.arange(len(candidate_list)), [5 * len(x_pos_list)])
 
     # prepare pos and neg data
     data_queries = [queries_data[query_id]] * len(rand_batch)
     doc_ids = np.array(candidate_list)[rand_batch]
     data_documents = [documents_data[x] for x in doc_ids]
 
-    # Importance Sampling
-    prob = gen.get_prob(data_queries, data_documents)
-    prob = prob[0]
-    prob = prob.reshape([-1])
+    # # Importance Sampling
+    # prob = gen.get_prob(data_queries, data_documents)
+    # prob = prob[0]
+    # prob = prob.reshape([-1])
 
-    return prob, doc_ids, data_queries, data_documents
+    # return prob, doc_ids, data_queries, data_documents
+    return doc_ids, data_queries, data_documents
 
 
 def __get_rand_batch_from_candidates_for_generator(gen, query_id, queries_data, documents_data, candidate_list, x_pos_list):
