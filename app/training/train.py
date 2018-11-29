@@ -115,7 +115,7 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
             pred_data_label.extend([0.0] * len(neg_data_queries))
             pred_data_label = np.asarray(pred_data_label)
 
-            print("Discriminator epoch: ", str(d_epoch), "with batch: ", str(batch_index), " to ", str(i))
+            print("Discriminator epoch: ", str(d_epoch), "with batch: ", str(batch_index), " to ", str(i-1))
             # train
             disc.train(pred_data_queries, pred_data_documents, pred_data_label)
 
@@ -239,7 +239,7 @@ def __train_model(gen_pre, x_train, x_val, ratings_data, queries_data, documents
                 pred_data_label.extend([0.0] * len(neg_data_queries))
                 pred_data_label = np.asarray(pred_data_label)
 
-                print("Discriminator epoch: ", str(d_epoch), "with batch: ", str(batch_index), " to ", str(i))
+                print("Discriminator epoch: ", str(d_epoch), "with batch: ", str(batch_index), " to ", str(i-1))
                 # train
                 disc.train(pred_data_queries, pred_data_documents, pred_data_label)
 
