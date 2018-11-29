@@ -80,7 +80,7 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
         pos_neg_size = 0
         if d_epoch % params.DISC_TRAIN_EPOCHS == 0:
             # Generator generate negative for Discriminator, then train Discriminator
-            pos_neg_data = __generate_negatives_for_discriminator(gen, x_train, train_ratings_data, queries_data, documents_data)
+            pos_neg_data = __generate_negatives_for_discriminator_pretrain(x_train, train_ratings_data, queries_data, documents_data)
             pos_neg_size = len(pos_neg_data)
 
         print('train on batches of size: ', params.DISC_BATCH_SIZE)
@@ -319,6 +319,26 @@ def __build_train_data(x_train, ratings_data, queries_data, documents_data):
     return train_ratings_data, train_queries_data, train_documents_data
 
 
+def __generate_negatives_for_discriminator_pretrain(x_train, ratings_data, queries_data, documents_data):
+    data = []
+
+    print('start negative sampling for discriminator using generator')
+    for query_id in x_train:
+        # get query specific rating and all relevant docs
+        x_pos_list, candidate_list = __get_query_specific_data(query_id, ratings_data, documents_data)
+
+        doc_ids, data_queries, data_documents = __get_rand_batch_from_candidates_for_negatives_pretrain(query_id, queries_data, documents_data, candidate_list, x_pos_list)
+
+        neg_list = np.random.choice(doc_ids, size=[len(x_pos_list)])
+
+        for i in range(len(x_pos_list)):
+            data.append([query_id, x_pos_list[i], neg_list[i]])
+
+    # shuffle
+    random.shuffle(data)
+    return data
+
+
 def __generate_negatives_for_discriminator(gen, x_train, ratings_data, queries_data, documents_data):
     data = []
 
@@ -338,7 +358,7 @@ def __generate_negatives_for_discriminator(gen, x_train, ratings_data, queries_d
         for i in range(len(x_pos_list)):
             data.append([query_id, x_pos_list[i], neg_list[i]])
 
-        i += 1
+        x += 1
         print("query: ", str(x), " of ", str(len_queries))
 
     # shuffle
@@ -346,12 +366,15 @@ def __generate_negatives_for_discriminator(gen, x_train, ratings_data, queries_d
     return data
 
 
-def __get_batch_data_for_pretrain(query_id, queries_data, documents_data, x_pos_list):
-    # prepare pos and neg data
-    data_queries = queries_data[query_id]
-    data_documents = [documents_data[x] for x in x_pos_list]
+def __get_rand_batch_from_candidates_for_negatives_pretrain(query_id, queries_data, documents_data, candidate_list, x_pos_list):
+    rand_batch = np.random.choice(np.arange(len(candidate_list)), [3 * len(x_pos_list)])
 
-    return data_queries, data_documents
+    # prepare pos and neg data
+    data_queries = [queries_data[query_id]] * len(rand_batch)
+    doc_ids = np.array(candidate_list)[rand_batch]
+    data_documents = [documents_data[x] for x in doc_ids]
+
+    return doc_ids, data_queries, data_documents
 
 
 def __get_rand_batch_from_candidates_for_negatives(gen, query_id, queries_data, documents_data, candidate_list, x_pos_list):
