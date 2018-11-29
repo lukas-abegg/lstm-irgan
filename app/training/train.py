@@ -25,9 +25,9 @@ def train_model(x_train, ratings_data, queries_data, documents_data, tokenizer_q
     # Generate batches from indices
     x_train_k, x_test_k = np.array(train_x_indices), np.array(test_x_indices)
 
-    gen_pre = __pretrain_model(x_train_k, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout)
+    gen_pre, disc_pre = __pretrain_model(x_train_k, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout)
 
-    gen, disc, p_val, ndcg_val = __train_model(gen_pre, x_train_k, x_test_k, ratings_data, queries_data, documents_data,
+    gen, disc, p_val, ndcg_val = __train_model(gen_pre, disc_pre, x_train_k, x_test_k, ratings_data, queries_data, documents_data,
                                                    tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout)
 
     return gen, p_val
@@ -55,7 +55,7 @@ def __get_embedding_layers(tokenizer_q, tokenizer_d) -> (Embedding, Embedding):
     return embedding_layer_q, embedding_layer_d
 
 
-def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout) -> (Generator):
+def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout) -> (Generator, Discriminator):
 
     train_ratings_data, train_queries_data, train_documents_data = __build_train_data(x_train, ratings_data, queries_data, documents_data)
 
@@ -176,27 +176,21 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
 
             i += 1
 
-    return gen
+    return gen, disc
 
 
-def __train_model(gen_pre, x_train, x_val, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout) -> (Discriminator, Generator):
+def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout) -> (Discriminator, Generator):
     train_ratings_data, train_queries_data, train_documents_data = __build_train_data(x_train, ratings_data, queries_data, documents_data)
 
-    embedding_layer_q, embedding_layer_d = __get_embedding_layers(tokenizer_q, tokenizer_d)
-
-    print('Build discriminator network')
-    samples_per_epoc = params.QUERIES_TRAINING_EPOCH * params.POS_TRAINING_DATA_PER_QUERY * 2
-    disc = Discriminator.create_model(samples_per_epoc, weight_decay, learning_rate, dropout, embedding_layer_q, embedding_layer_d, sess=sess)
-    print('Build generator network')
-    samples_per_epoc = params.QUERIES_TRAINING_EPOCH * params.POS_TRAINING_DATA_PER_QUERY * 2
-    gen = Generator.create_model(samples_per_epoc, weight_decay, learning_rate, temperature, dropout, embedding_layer_q, embedding_layer_d, sess=sess)
+    disc = gen_pre
+    gen = disc_pre
 
     # Initialize data for eval
     p_best_val = 0.0
     ndcg_best_val = 0.0
 
-    best_disc = Discriminator
-    best_gen = Generator
+    best_disc = gen_pre
+    best_gen = disc_pre
 
     print('Start adversarial training')
     for epoch in range(params.DISC_TRAIN_EPOCHS):
@@ -210,10 +204,7 @@ def __train_model(gen_pre, x_train, x_val, ratings_data, queries_data, documents
             pos_neg_size = 0
             if d_epoch % params.DISC_TRAIN_EPOCHS == 0:
                 # Generator generate negative for Discriminator, then train Discriminator
-                if d_epoch == 0:
-                    pos_neg_data = __generate_negatives_for_discriminator(gen_pre, x_train, train_ratings_data, queries_data, documents_data)
-                else:
-                    pos_neg_data = __generate_negatives_for_discriminator(best_gen, x_train, train_ratings_data, queries_data, documents_data)
+                pos_neg_data = __generate_negatives_for_discriminator(best_gen, x_train, train_ratings_data, queries_data, documents_data)
                 pos_neg_size = len(pos_neg_data)
 
             print('train on batches of size: ', params.DISC_BATCH_SIZE)
