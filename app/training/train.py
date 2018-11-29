@@ -83,6 +83,7 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
             pos_neg_data = __generate_negatives_for_discriminator(gen, x_train, train_ratings_data, queries_data, documents_data)
             pos_neg_size = len(pos_neg_data)
 
+        print('train on batches of size: ', params.DISC_BATCH_SIZE)
         i = 1
         while i <= pos_neg_size:
             batch_index = i - 1
@@ -135,6 +136,7 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
                                                                                                 candidate_list,
                                                                                                 x_pos_list)
 
+            print('start important sampling')
             # important sampling, change doc prob
             prob_is = prob * (1.0 - params.GEN_LAMBDA)
 
@@ -205,6 +207,7 @@ def __train_model(gen_pre, x_train, x_val, ratings_data, queries_data, documents
                     pos_neg_data = __generate_negatives_for_discriminator(best_gen, x_train, train_ratings_data, queries_data, documents_data)
                 pos_neg_size = len(pos_neg_data)
 
+            print('train on batches of size: ', params.DISC_BATCH_SIZE)
             i = 1
             while i <= pos_neg_size:
                 batch_index = i - 1
@@ -257,6 +260,7 @@ def __train_model(gen_pre, x_train, x_val, ratings_data, queries_data, documents
                                                                                                     candidate_list,
                                                                                                     x_pos_list)
 
+                print('start important sampling')
                 # important sampling, change doc prob
                 prob_is = prob * (1.0 - params.GEN_LAMBDA)
 
@@ -287,6 +291,7 @@ def __train_model(gen_pre, x_train, x_val, ratings_data, queries_data, documents
                 # train
                 gen.train(choose_queries, choose_documents, choose_reward.reshape([-1]), choose_is)
 
+            print('Evaluate models')
             # Evaluate
             p_step = p_k.measure_precision_at_k(gen, x_val, ratings_data, queries_data, documents_data, params.EVAL_K, sess)
             ndcg_step = ndcg_k.measure_ndcg_at_k(gen, x_val, ratings_data, queries_data, documents_data, params.EVAL_K, sess)
@@ -318,7 +323,7 @@ def __build_train_data(x_train, ratings_data, queries_data, documents_data):
 def __generate_negatives_for_discriminator(gen, x_train, ratings_data, queries_data, documents_data):
     data = []
 
-    print('negative sampling for discriminator using generator')
+    print('start negative sampling for discriminator using generator')
     for query_id in x_train:
         # get query specific rating and all relevant docs
         x_pos_list, candidate_list = __get_query_specific_data(query_id, ratings_data, documents_data)
@@ -345,7 +350,7 @@ def __get_batch_data_for_pretrain(query_id, queries_data, documents_data, x_pos_
 
 
 def __get_rand_batch_from_candidates_for_negatives(gen, query_id, queries_data, documents_data, candidate_list, x_pos_list):
-    rand_batch = np.random.choice(np.arange(len(candidate_list)), [5 * len(x_pos_list)])
+    rand_batch = np.random.choice(np.arange(len(candidate_list)), [2 * len(x_pos_list)])
 
     # prepare pos and neg data
     data_queries = [queries_data[query_id]] * len(rand_batch)
@@ -361,10 +366,10 @@ def __get_rand_batch_from_candidates_for_negatives(gen, query_id, queries_data, 
 
 
 def __get_rand_batch_from_candidates_for_generator(gen, query_id, queries_data, documents_data, candidate_list, x_pos_list):
-    rand_batch = np.random.choice(np.arange(len(candidate_list)), [4 * len(x_pos_list)])
+    rand_batch = np.random.choice(np.arange(len(candidate_list)), [2 * len(x_pos_list)])
 
     # prepare pos and neg data
-    data_queries = [queries_data[query_id]] * (5 * len(x_pos_list))
+    data_queries = [queries_data[query_id]] * (3 * len(x_pos_list))
     doc_ids = np.array(candidate_list)[rand_batch]
     data_documents_cand = [documents_data[x] for x in doc_ids]
     data_documents_pos = [documents_data[x] for x in x_pos_list]
