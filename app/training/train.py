@@ -63,11 +63,11 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
     embedding_layer_q, embedding_layer_d = __get_embedding_layers(tokenizer_q, tokenizer_d)
 
     print('Build discriminator network')
-    samples_per_epoc = params.QUERIES_TRAINING_EPOCH * params.POS_TRAINING_DATA_PER_QUERY * 2
+    samples_per_epoc = len(x_train) * params.POS_TRAINING_DATA_PER_QUERY * 2
     disc = Discriminator.create_model(samples_per_epoc, weight_decay, learning_rate, dropout, embedding_layer_q, embedding_layer_d, sess=sess)
 
     print('Build generator network')
-    samples_per_epoc = params.QUERIES_TRAINING_EPOCH * params.POS_TRAINING_DATA_PER_QUERY * 2
+    samples_per_epoc = len(x_train) * params.POS_TRAINING_DATA_PER_QUERY * 2
     gen = Generator.create_model(samples_per_epoc, weight_decay, learning_rate, temperature, dropout, embedding_layer_q, embedding_layer_d, sess=sess)
 
     print('Start pre-model training')
@@ -124,14 +124,10 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
     for g_epoch in range(params.GEN_TRAIN_EPOCHS):
         print('now_ G_epoch : ', str(g_epoch))
 
-        queries = x_train
-        random.shuffle(queries)
-        queries = queries[:params.QUERIES_TRAINING_EPOCH]
-
         i = 0
-        len_queries = len(queries)
+        len_queries = len(x_train)
 
-        for query_id in queries:
+        for query_id in x_train:
 
             # get all query specific ratings
             x_pos_list, candidate_list = __get_query_specific_data(query_id, ratings_data, documents_data)
@@ -248,12 +244,8 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
         for g_epoch in range(params.GEN_TRAIN_EPOCHS):
             print('now_ G_epoch : ', str(g_epoch))
 
-            queries = x_train
-            random.shuffle(queries)
-            queries = queries[:params.QUERIES_TRAINING_EPOCH]
-
             i = 0
-            len_queries = len(queries)
+            len_queries = len(x_train)
 
             for query_id in x_train:
 
@@ -332,21 +324,15 @@ def __build_train_data(x_train, ratings_data, queries_data, documents_data):
 def __generate_negatives_for_discriminator(gen, x_train, ratings_data, queries_data, documents_data):
     data = []
 
-    queries = x_train
-    random.shuffle(queries)
-    queries = queries[:params.QUERIES_TRAINING_EPOCH]
-
     print('start negative sampling for discriminator using generator')
-    for query_id in queries:
+    for query_id in x_train:
         # get query specific rating and all relevant docs
         x_pos_list, candidate_list = __get_query_specific_data(query_id, ratings_data, documents_data)
 
-        # prob, doc_ids, data_queries, data_documents = __get_rand_batch_from_candidates_for_negatives(gen, query_id, queries_data, documents_data, candidate_list, x_pos_list)
-        doc_ids, data_queries, data_documents = __get_rand_batch_from_candidates_for_negatives(gen, query_id, queries_data, documents_data, candidate_list, x_pos_list)
+        prob, doc_ids, data_queries, data_documents = __get_rand_batch_from_candidates_for_negatives(gen, query_id, queries_data, documents_data, candidate_list, x_pos_list)
 
-        # prob = np.asarray(prob) / np.asarray(prob).sum(axis=0, keepdims=1)
-        # neg_list = np.random.choice(doc_ids, size=[len(x_pos_list)], p=prob)
-        neg_list = np.random.choice(doc_ids, size=[len(x_pos_list)])
+        prob = np.asarray(prob) / np.asarray(prob).sum(axis=0, keepdims=1)
+        neg_list = np.random.choice(doc_ids, size=[len(x_pos_list)], p=prob)
 
         for i in range(len(x_pos_list)):
             data.append([query_id, x_pos_list[i], neg_list[i]])
@@ -372,20 +358,19 @@ def __get_rand_batch_from_candidates_for_negatives(gen, query_id, queries_data, 
     doc_ids = np.array(candidate_list)[rand_batch]
     data_documents = [documents_data[x] for x in doc_ids]
 
-    # # Importance Sampling
-    # prob = gen.get_prob(data_queries, data_documents)
-    # prob = prob[0]
-    # prob = prob.reshape([-1])
+    # Importance Sampling
+    prob = gen.get_prob(data_queries, data_documents)
+    prob = prob[0]
+    prob = prob.reshape([-1])
 
-    # return prob, doc_ids, data_queries, data_documents
-    return doc_ids, data_queries, data_documents
+    return prob, doc_ids, data_queries, data_documents
 
 
 def __get_rand_batch_from_candidates_for_generator(gen, query_id, queries_data, documents_data, candidate_list, x_pos_list):
-    rand_batch = np.random.choice(np.arange(len(candidate_list)), [2 * len(x_pos_list)])
+    rand_batch = np.random.choice(np.arange(len(candidate_list)), [4 * len(x_pos_list)])
 
     # prepare pos and neg data
-    data_queries = [queries_data[query_id]] * (3 * len(x_pos_list))
+    data_queries = [queries_data[query_id]] * (5 * len(x_pos_list))
     doc_ids = np.array(candidate_list)[rand_batch]
     data_documents_cand = [documents_data[x] for x in doc_ids]
     data_documents_pos = [documents_data[x] for x in x_pos_list]
