@@ -1,5 +1,5 @@
 # Base dirs
-WORKDIR = '~/lstm-irgan'
+WORKDIR = '/home/abeggluk/lstm-irgan'
 TEMP = WORKDIR + '/temp'
 
 # Hyperparameter Optimization
@@ -8,9 +8,9 @@ USE_HYPERPARAM_OPT = False
 # Embeddings / Tokenizer
 USE_FASTTEXT_MODEL = False
 FASTTEXT_BINARY = True
-FASTTEXT = '~/BioWordVec_PubMed_MIMICIII_d200.vec.bin'
+FASTTEXT = '/home/abeggluk/BioWordVec_PubMed_MIMICIII_d200.vec.bin'
 
-MAX_SEQUENCE_LENGTH = 10000
+MAX_SEQUENCE_LENGTH = 20000
 MAX_NUM_WORDS = 20000
 EMBEDDING_DIM = 200
 
@@ -29,15 +29,15 @@ OPT_MAX_TEMPERATURE = 0.2
 OPT_MAX_DROPOUT = 0.2
 
 # Discriminator
-DISC_TRAIN_EPOCHS = 30
-DISC_TRAIN_GEN_EPOCHS = 100
+DISC_TRAIN_EPOCHS = 3
+DISC_TRAIN_GEN_EPOCHS = 3
 DISC_HIDDEN_SIZE_LSTM = 64
 DISC_HIDDEN_SIZE_DENSE = 46
 
 DISC_BATCH_SIZE = 8
 
 # Generator
-GEN_TRAIN_EPOCHS = 10
+GEN_TRAIN_EPOCHS = 3
 GEN_HIDDEN_SIZE_LSTM = 64
 GEN_HIDDEN_SIZE_DENSE = 46
 GEN_BATCH_SIZE = 8
@@ -54,7 +54,8 @@ QUERIES = WORKDIR + '/data/nfcorpus/all_queries/merged.all.queries'
 LABELLED_DATA = WORKDIR + '/data/nfcorpus/all_qrels/3-2-1/merged.3-2-1.qrel'
 
 # Training
-POS_TRAINING_DATA_PER_QUERY = 10
+QUERIES_TRAINING_EPOCH = 500
+POS_TRAINING_DATA_PER_QUERY = 5
 MAX_RELEVANCE = 3
 
 # Evaluation

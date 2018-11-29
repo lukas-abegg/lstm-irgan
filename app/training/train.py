@@ -63,11 +63,11 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
     embedding_layer_q, embedding_layer_d = __get_embedding_layers(tokenizer_q, tokenizer_d)
 
     print('Build discriminator network')
-    samples_per_epoc = len(x_train) * params.POS_TRAINING_DATA_PER_QUERY * 2
+    samples_per_epoc = params.QUERIES_TRAINING_EPOCH * params.POS_TRAINING_DATA_PER_QUERY * 2
     disc = Discriminator.create_model(samples_per_epoc, weight_decay, learning_rate, dropout, embedding_layer_q, embedding_layer_d, sess=sess)
 
     print('Build generator network')
-    samples_per_epoc = len(x_train) * params.POS_TRAINING_DATA_PER_QUERY * 2
+    samples_per_epoc = params.QUERIES_TRAINING_EPOCH * params.POS_TRAINING_DATA_PER_QUERY * 2
     gen = Generator.create_model(samples_per_epoc, weight_decay, learning_rate, temperature, dropout, embedding_layer_q, embedding_layer_d, sess=sess)
 
     print('Start pre-model training')
@@ -115,7 +115,7 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
             pred_data_label.extend([0.0] * len(neg_data_queries))
             pred_data_label = np.asarray(pred_data_label)
 
-            print("Discriminator epoch: ", str(d_epoch), "with batch: ", str(batch_index), " to ", str(i-1))
+            print("Discriminator epoch: ", str(d_epoch), "with batch: ", str(batch_index), " to ", str(i-1), " of ", str(pos_neg_size*2))
             # train
             disc.train(pred_data_queries, pred_data_documents, pred_data_label)
 
@@ -124,7 +124,14 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
     for g_epoch in range(params.GEN_TRAIN_EPOCHS):
         print('now_ G_epoch : ', str(g_epoch))
 
-        for query_id in x_train:
+        queries = x_train
+        random.shuffle(queries)
+        queries = queries[:params.QUERIES_TRAINING_EPOCH]
+
+        i = 0
+        len_queries = len(queries)
+
+        for query_id in queries:
 
             # get all query specific ratings
             x_pos_list, candidate_list = __get_query_specific_data(query_id, ratings_data, documents_data)
@@ -163,9 +170,11 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
             # get reward((prob  - 0.5) * 2 )
             choose_reward = disc.get_preresult(choose_queries, choose_documents)
 
-            print("Generator epoch: ", str(g_epoch), " with query: ", str(query_id))
+            print("Generator epoch: ", str(g_epoch), " with query: ", str(i), " of ", str(len_queries))
             # train
             gen.train(choose_queries, choose_documents, choose_reward.reshape([-1]), choose_is)
+
+            i += 1
 
     return gen
 
@@ -176,10 +185,10 @@ def __train_model(gen_pre, x_train, x_val, ratings_data, queries_data, documents
     embedding_layer_q, embedding_layer_d = __get_embedding_layers(tokenizer_q, tokenizer_d)
 
     print('Build discriminator network')
-    samples_per_epoc = len(x_train) * params.POS_TRAINING_DATA_PER_QUERY * 2
+    samples_per_epoc = params.QUERIES_TRAINING_EPOCH * params.POS_TRAINING_DATA_PER_QUERY * 2
     disc = Discriminator.create_model(samples_per_epoc, weight_decay, learning_rate, dropout, embedding_layer_q, embedding_layer_d, sess=sess)
     print('Build generator network')
-    samples_per_epoc = len(x_train) * params.POS_TRAINING_DATA_PER_QUERY * 2
+    samples_per_epoc = params.QUERIES_TRAINING_EPOCH * params.POS_TRAINING_DATA_PER_QUERY * 2
     gen = Generator.create_model(samples_per_epoc, weight_decay, learning_rate, temperature, dropout, embedding_layer_q, embedding_layer_d, sess=sess)
 
     # Initialize data for eval
@@ -239,7 +248,7 @@ def __train_model(gen_pre, x_train, x_val, ratings_data, queries_data, documents
                 pred_data_label.extend([0.0] * len(neg_data_queries))
                 pred_data_label = np.asarray(pred_data_label)
 
-                print("Discriminator epoch: ", str(d_epoch), "with batch: ", str(batch_index), " to ", str(i-1))
+                print("Discriminator epoch: ", str(d_epoch), "with batch: ", str(batch_index), " to ", str(i-1), " of ", str(pos_neg_size * 2))
                 # train
                 disc.train(pred_data_queries, pred_data_documents, pred_data_label)
 
@@ -247,6 +256,13 @@ def __train_model(gen_pre, x_train, x_val, ratings_data, queries_data, documents
         print('Training Generator ...')
         for g_epoch in range(params.GEN_TRAIN_EPOCHS):
             print('now_ G_epoch : ', str(g_epoch))
+
+            queries = x_train
+            random.shuffle(queries)
+            queries = queries[:params.QUERIES_TRAINING_EPOCH]
+
+            i = 0
+            len_queries = len(queries)
 
             for query_id in x_train:
 
@@ -287,9 +303,11 @@ def __train_model(gen_pre, x_train, x_val, ratings_data, queries_data, documents
                 # get reward((prob  - 0.5) * 2 )
                 choose_reward = disc.get_preresult(choose_queries, choose_documents)
 
-                print("Generator epoch: ", str(g_epoch), " with query: ", str(query_id))
+                print("Generator epoch: ", str(g_epoch), " with query: ", str(i), " of ", str(len_queries))
                 # train
                 gen.train(choose_queries, choose_documents, choose_reward.reshape([-1]), choose_is)
+
+                i += 1
 
             print('Evaluate models')
             # Evaluate
@@ -323,8 +341,12 @@ def __build_train_data(x_train, ratings_data, queries_data, documents_data):
 def __generate_negatives_for_discriminator(gen, x_train, ratings_data, queries_data, documents_data):
     data = []
 
+    queries = x_train
+    random.shuffle(queries)
+    queries = queries[:params.QUERIES_TRAINING_EPOCH]
+
     print('start negative sampling for discriminator using generator')
-    for query_id in x_train:
+    for query_id in queries:
         # get query specific rating and all relevant docs
         x_pos_list, candidate_list = __get_query_specific_data(query_id, ratings_data, documents_data)
 
