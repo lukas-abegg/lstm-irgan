@@ -54,8 +54,7 @@ QUERIES = WORKDIR + '/data/nfcorpus/all_queries/merged.all.queries'
 LABELLED_DATA = WORKDIR + '/data/nfcorpus/all_qrels/3-2-1/merged.3-2-1.qrel'
 
 # Training
-QUERIES_TRAINING_EPOCH = 500
-POS_TRAINING_DATA_PER_QUERY = 10
+POS_TRAINING_DATA_PER_QUERY = 5
 MAX_RELEVANCE = 3
 
 # Evaluation

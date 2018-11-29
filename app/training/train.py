@@ -124,7 +124,7 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
     for g_epoch in range(params.GEN_TRAIN_EPOCHS):
         print('now_ G_epoch : ', str(g_epoch))
 
-        i = 0
+        x = 0
         len_queries = len(x_train)
 
         for query_id in x_train:
@@ -166,11 +166,10 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
             # get reward((prob  - 0.5) * 2 )
             choose_reward = disc.get_preresult(choose_queries, choose_documents)
 
-            print("Generator epoch: ", str(g_epoch), " with query: ", str(i), " of ", str(len_queries))
+            x += 1
+            print("Generator epoch: ", str(g_epoch), " with query: ", str(x), " of ", str(len_queries))
             # train
             gen.train(choose_queries, choose_documents, choose_reward.reshape([-1]), choose_is)
-
-            i += 1
 
     return gen, disc
 
@@ -244,7 +243,7 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
         for g_epoch in range(params.GEN_TRAIN_EPOCHS):
             print('now_ G_epoch : ', str(g_epoch))
 
-            i = 0
+            x = 0
             len_queries = len(x_train)
 
             for query_id in x_train:
@@ -286,11 +285,10 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
                 # get reward((prob  - 0.5) * 2 )
                 choose_reward = disc.get_preresult(choose_queries, choose_documents)
 
-                print("Generator epoch: ", str(g_epoch), " with query: ", str(i), " of ", str(len_queries))
+                x += 1
+                print("Generator epoch: ", str(g_epoch), " with query: ", str(x), " of ", str(len_queries))
                 # train
                 gen.train(choose_queries, choose_documents, choose_reward.reshape([-1]), choose_is)
-
-                i += 1
 
             print('Evaluate models')
             # Evaluate
@@ -324,6 +322,9 @@ def __build_train_data(x_train, ratings_data, queries_data, documents_data):
 def __generate_negatives_for_discriminator(gen, x_train, ratings_data, queries_data, documents_data):
     data = []
 
+    x = 0
+    len_queries = len(x_train)
+
     print('start negative sampling for discriminator using generator')
     for query_id in x_train:
         # get query specific rating and all relevant docs
@@ -336,6 +337,9 @@ def __generate_negatives_for_discriminator(gen, x_train, ratings_data, queries_d
 
         for i in range(len(x_pos_list)):
             data.append([query_id, x_pos_list[i], neg_list[i]])
+
+        i += 1
+        print("query: ", str(x), " of ", str(len_queries))
 
     # shuffle
     random.shuffle(data)
@@ -351,7 +355,7 @@ def __get_batch_data_for_pretrain(query_id, queries_data, documents_data, x_pos_
 
 
 def __get_rand_batch_from_candidates_for_negatives(gen, query_id, queries_data, documents_data, candidate_list, x_pos_list):
-    rand_batch = np.random.choice(np.arange(len(candidate_list)), [5 * len(x_pos_list)])
+    rand_batch = np.random.choice(np.arange(len(candidate_list)), [3 * len(x_pos_list)])
 
     # prepare pos and neg data
     data_queries = [queries_data[query_id]] * len(rand_batch)
@@ -367,10 +371,10 @@ def __get_rand_batch_from_candidates_for_negatives(gen, query_id, queries_data, 
 
 
 def __get_rand_batch_from_candidates_for_generator(gen, query_id, queries_data, documents_data, candidate_list, x_pos_list):
-    rand_batch = np.random.choice(np.arange(len(candidate_list)), [4 * len(x_pos_list)])
+    rand_batch = np.random.choice(np.arange(len(candidate_list)), [2 * len(x_pos_list)])
 
     # prepare pos and neg data
-    data_queries = [queries_data[query_id]] * (5 * len(x_pos_list))
+    data_queries = [queries_data[query_id]] * (3 * len(x_pos_list))
     doc_ids = np.array(candidate_list)[rand_batch]
     data_documents_cand = [documents_data[x] for x in doc_ids]
     data_documents_pos = [documents_data[x] for x in x_pos_list]
