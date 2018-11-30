@@ -139,7 +139,6 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
                                                                                                 candidate_list,
                                                                                                 x_pos_list)
 
-            print('start important sampling')
             # important sampling, change doc prob
             prob_is = prob * (1.0 - params.GEN_LAMBDA)
 
