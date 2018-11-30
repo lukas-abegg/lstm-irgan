@@ -49,9 +49,9 @@ DATA_SOURCE_NFCORPUS = 'nfcorpus'
 DATA_SOURCE_WIKICLIR = 'wikiclir'
 DATA_SOURCE_EXAMPLE = 'example'
 
-DOCUMENTS_DIR = WORKDIR + '/data/nfcorpus/all_docs/merged.docs'
-QUERIES = WORKDIR + '/data/nfcorpus/all_queries/merged.all.queries'
-LABELLED_DATA = WORKDIR + '/data/nfcorpus/all_qrels/3-2-1/merged.3-2-1.qrel'
+DOCUMENTS_DIR = WORKDIR + '/data/nfcorpus/all_docs/train.docs'
+QUERIES = WORKDIR + '/data/nfcorpus/all_queries/train.all.queries'
+LABELLED_DATA = WORKDIR + '/data/nfcorpus/all_qrels/3-2-1/train.3-2-1.qrel'
 
 # Training
 POS_TRAINING_DATA_PER_QUERY = 5
