@@ -176,15 +176,15 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
 def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout) -> (Discriminator, Generator):
     train_ratings_data, train_queries_data, train_documents_data = __build_train_data(x_train, ratings_data, queries_data, documents_data)
 
-    disc = gen_pre
-    gen = disc_pre
+    disc = disc_pre
+    gen = gen_pre
 
     # Initialize data for eval
     p_best_val = 0.0
     ndcg_best_val = 0.0
 
-    best_disc = gen_pre
-    best_gen = disc_pre
+    best_disc = disc_pre
+    best_gen = gen_pre
 
     print('Start adversarial training')
     for epoch in range(params.DISC_TRAIN_EPOCHS):
