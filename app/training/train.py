@@ -173,7 +173,7 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
     return gen, disc
 
 
-def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout) -> (Discriminator, Generator):
+def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout):
     train_ratings_data, train_queries_data, train_documents_data = __build_train_data(x_train, ratings_data, queries_data, documents_data)
 
     disc = disc_pre
@@ -300,7 +300,7 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
 
     print("Best:", "gen p@5 =", p_best_val, "gen ndcg@5 =", ndcg_best_val)
 
-    return best_disc, best_gen, p_best_val, ndcg_best_val
+    return best_gen, best_disc, p_best_val, ndcg_best_val
 
 
 def __build_train_data(x_train, ratings_data, queries_data, documents_data):
