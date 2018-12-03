@@ -70,10 +70,10 @@ def train_model_without_hyperparam_opt(x_train, ratings_data, queries_data, docu
     temperature = params.TEMPERATURE
     dropout = params.DROPOUT
 
-    best_gen, validation_acc = train.train_model(x_train, ratings_data, queries_data, documents_data, tokenizer_q,
+    best_gen, best_disc, validation_acc, validation_ndcg = train.train_model(x_train, ratings_data, queries_data, documents_data, tokenizer_q,
                                                  tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout)
 
-    return best_gen
+    return best_gen, best_disc
 
 
 def train_model_with_hyperparam_opt(x_train, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess):
@@ -82,7 +82,7 @@ def train_model_with_hyperparam_opt(x_train, ratings_data, queries_data, documen
     temperature = {{uniform(params.OPT_MIN_TEMPERATURE, params.OPT_MAX_TEMPERATURE)}}
     dropout = {{uniform(params.OPT_MIN_DROPOUT, params.OPT_MAX_DROPOUT)}}
 
-    best_gen, validation_acc = train.train_model(x_train, ratings_data, queries_data, documents_data, tokenizer_q,
+    best_gen, best_disc, validation_acc, validation_ndcg = train.train_model(x_train, ratings_data, queries_data, documents_data, tokenizer_q,
                                                  tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout)
 
     return {'loss': -validation_acc, 'status': STATUS_OK, 'model': best_gen}
@@ -108,7 +108,7 @@ def main(mode):
     if params.TRAIN_MODE == mode:
         if not params.USE_HYPERPARAM_OPT:
             sess, x_train, x_val, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = get_env_data_with_x_data_splitted()
-            generator = train_model_without_hyperparam_opt(x_train, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess)
+            generator, discriminator = train_model_without_hyperparam_opt(x_train, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess)
 
         else:
             best_run, best_model = optim.minimize(model=train_model_with_hyperparam_opt,
@@ -119,11 +119,13 @@ def main(mode):
 
             sess, x_train, x_val, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = get_env_data_with_x_data_splitted()
             generator = best_model
+            discriminator = None
             print("Best performing model chosen hyper-parameters:")
             print(best_run)
 
-        eval_metrics.evaluate(generator, x_val, ratings_data, documents_data, queries_data, sess)
+        # eval_metrics.evaluate(generator, x_val, ratings_data, documents_data, queries_data, sess)
         save_model(generator, params.SAVED_MODEL_GEN_FILE)
+        save_model(discriminator, params.SAVED_MODEL_DISC_FILE)
 
     elif params.EVAL_MODE == mode:
         sess, x_data, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = get_env_data_not_splitted()

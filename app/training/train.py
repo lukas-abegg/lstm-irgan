@@ -30,7 +30,7 @@ def train_model(x_train, ratings_data, queries_data, documents_data, tokenizer_q
     gen, disc, p_val, ndcg_val = __train_model(gen_pre, disc_pre, x_train_k, x_test_k, ratings_data, queries_data, documents_data,
                                                    tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout)
 
-    return gen, p_val
+    return gen, disc, p_val, ndcg_val
 
 
 def __get_embedding_layers(tokenizer_q, tokenizer_d) -> (Embedding, Embedding):
@@ -289,16 +289,19 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
                 # train
                 gen.train(choose_queries, choose_documents, choose_reward.reshape([-1]), choose_is)
 
-            print('Evaluate models')
-            # Evaluate
-            p_step = p_k.measure_precision_at_k(gen, x_val, ratings_data, queries_data, documents_data, params.EVAL_K, sess)
-            ndcg_step = ndcg_k.measure_ndcg_at_k(gen, x_val, ratings_data, queries_data, documents_data, params.EVAL_K, sess)
 
-            print("Epoch", g_epoch, "measure:", "gen p@5 =", p_best_val, "gen ndcg@5 =", ndcg_best_val)
-            best_disc, best_gen, p_best_val, ndcg_best_val = __get_best_eval_result(disc, best_disc, gen, best_gen, p_step,
-                                                                                    p_best_val, ndcg_step, ndcg_best_val)
+            best_disc = disc
+            best_gen = gen
+        # print('Evaluate models')
+        # Evaluate
+        # p_step = p_k.measure_precision_at_k(gen, x_val, ratings_data, queries_data, documents_data, params.EVAL_K, sess)
+        # ndcg_step = ndcg_k.measure_ndcg_at_k(gen, x_val, ratings_data, queries_data, documents_data, params.EVAL_K, sess)
+        #
+        # print("Epoch", g_epoch, "measure:", "gen p@5 =", p_best_val, "gen ndcg@5 =", ndcg_best_val)
+        # best_disc, best_gen, p_best_val, ndcg_best_val = __get_best_eval_result(disc, best_disc, gen, best_gen, p_step,
+        #                                                                         p_best_val, ndcg_step, ndcg_best_val)
 
-    print("Best:", "gen p@5 =", p_best_val, "gen ndcg@5 =", ndcg_best_val)
+    # print("Best:", "gen p@5 =", p_best_val, "gen ndcg@5 =", ndcg_best_val)
 
     return best_gen, best_disc, p_best_val, ndcg_best_val
 
