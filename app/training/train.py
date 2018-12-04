@@ -30,7 +30,7 @@ def train_model(x_train, ratings_data, queries_data, documents_data, tokenizer_q
     gen, disc, p_val, ndcg_val = __train_model(gen_pre, disc_pre, x_train_k, x_test_k, ratings_data, queries_data, documents_data,
                                                    tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout, experiment)
 
-    return gen, p_val
+    return gen, disc, p_val, ndcg_val
 
 
 def __get_embedding_layers(tokenizer_q, tokenizer_d) -> (Embedding, Embedding):
@@ -55,7 +55,7 @@ def __get_embedding_layers(tokenizer_q, tokenizer_d) -> (Embedding, Embedding):
     return embedding_layer_q, embedding_layer_d
 
 
-def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout, experiment=None) -> (Generator, Discriminator):
+def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout, experiment=None):
 
     train_ratings_data, train_queries_data, train_documents_data = __build_train_data(x_train, ratings_data, queries_data, documents_data)
 
@@ -122,9 +122,9 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
             d_acc = 100 * d_loss[1]
             d_loss_val = d_loss[0]
 
-            print("%d [D loss: %f, acc.: %.2f%%]" % (d_epoch, d_loss_val, d_acc))
-            experiment.log_metric("disc_accuracy", d_acc, d_epoch)
-            experiment.log_metric("disc_loss", d_loss_val, d_epoch)
+            print("%s [D loss: %f, acc.: %.2f%%]" % (str(i-1) + "_" + str(d_epoch), d_loss_val, d_acc))
+            experiment.log_metric("disc_accuracy", d_acc, str(i-1) + "_" + str(d_epoch))
+            experiment.log_metric("disc_loss", d_loss_val, str(i-1) + "_" + str(d_epoch))
 
     # Train Generator
     print('Training Generator ...')
@@ -178,24 +178,24 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
             g_loss = gen.train(choose_queries, choose_documents, choose_reward.reshape([-1]), choose_is)
 
             # Plot the progress
-            print("%d [G loss: %f]" % (g_epoch, g_loss))
+            print("%s [G loss: %f]" % (str(x) + "_" + str(g_epoch), g_loss))
             experiment.log_metric("gen_loss", g_loss, g_epoch)
 
     return gen, disc
 
 
-def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout, experiment=None) -> (Discriminator, Generator):
+def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout, experiment=None):
     train_ratings_data, train_queries_data, train_documents_data = __build_train_data(x_train, ratings_data, queries_data, documents_data)
 
-    disc = gen_pre
-    gen = disc_pre
+    disc = disc_pre
+    gen = gen_pre
 
     # Initialize data for eval
     p_best_val = 0.0
     ndcg_best_val = 0.0
 
-    best_disc = gen_pre
-    best_gen = disc_pre
+    best_disc = disc_pre
+    best_gen = gen_pre
 
     print('Start adversarial training')
     for epoch in range(params.DISC_TRAIN_EPOCHS):
@@ -252,9 +252,9 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
                 d_acc = 100 * d_loss[1]
                 d_loss_val = d_loss[0]
 
-                print("%d [D loss: %f, acc.: %.2f%%]" % (d_epoch, d_loss_val, d_acc))
-                experiment.log_metric("disc_accuracy", d_acc, d_epoch)
-                experiment.log_metric("disc_loss", d_loss_val, d_epoch)
+                print("%s [D loss: %f, acc.: %.2f%%]" % (str(i - 1) + "_" + str(d_epoch), d_loss_val, d_acc))
+                experiment.log_metric("disc_accuracy", d_acc, str(i - 1) + "_" + str(d_epoch))
+                experiment.log_metric("disc_loss", d_loss_val, str(i - 1) + "_" + str(d_epoch))
 
         # Train Generator
         print('Training Generator ...')
@@ -309,21 +309,23 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
                 g_loss = gen.train(choose_queries, choose_documents, choose_reward.reshape([-1]), choose_is)
 
                 # Plot the progress
-                print("%d [G loss: %f]" % (g_epoch, g_loss))
+                print("%s [G loss: %f]" % (str(x) + "_" + str(g_epoch), g_loss))
                 experiment.log_metric("gen_loss", g_loss, g_epoch)
 
-            print('Evaluate models')
-            # Evaluate
-            p_step = p_k.measure_precision_at_k(gen, x_val, ratings_data, queries_data, documents_data, params.EVAL_K, sess)
-            ndcg_step = ndcg_k.measure_ndcg_at_k(gen, x_val, ratings_data, queries_data, documents_data, params.EVAL_K, sess)
+            best_disc = disc
+            best_gen = gen
+        # print('Evaluate models')
+        # Evaluate
+        # p_step = p_k.measure_precision_at_k(gen, x_val, ratings_data, queries_data, documents_data, params.EVAL_K, sess)
+        # ndcg_step = ndcg_k.measure_ndcg_at_k(gen, x_val, ratings_data, queries_data, documents_data, params.EVAL_K, sess)
+        #
+        # print("Epoch", g_epoch, "measure:", "gen p@5 =", p_best_val, "gen ndcg@5 =", ndcg_best_val)
+        # best_disc, best_gen, p_best_val, ndcg_best_val = __get_best_eval_result(disc, best_disc, gen, best_gen, p_step,
+        #                                                                         p_best_val, ndcg_step, ndcg_best_val)
 
-            print("Epoch", g_epoch, "measure:", "gen p@5 =", p_best_val, "gen ndcg@5 =", ndcg_best_val)
-            best_disc, best_gen, p_best_val, ndcg_best_val = __get_best_eval_result(disc, best_disc, gen, best_gen, p_step,
-                                                                                    p_best_val, ndcg_step, ndcg_best_val)
+    # print("Best:", "gen p@5 =", p_best_val, "gen ndcg@5 =", ndcg_best_val)
 
-    print("Best:", "gen p@5 =", p_best_val, "gen ndcg@5 =", ndcg_best_val)
-
-    return best_disc, best_gen, p_best_val, ndcg_best_val
+    return best_gen, best_disc, p_best_val, ndcg_best_val
 
 
 def __build_train_data(x_train, ratings_data, queries_data, documents_data):
