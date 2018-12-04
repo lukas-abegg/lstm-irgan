@@ -66,7 +66,7 @@ class Discriminator:
         return model
 
     def train(self, train_data_queries, train_data_documents, train_data_label):
-        self.model.train_on_batch([train_data_queries, train_data_documents], train_data_label)
+        return self.model.train_on_batch([train_data_queries, train_data_documents], train_data_label)
 
     def get_preresult(self, train_data_queries, train_data_documents):
         return (self.model.predict([train_data_queries, train_data_documents]) - 0.5) * 2

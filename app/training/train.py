@@ -18,17 +18,17 @@ def get_x_data_splitted(query_ids):
     return x_train, x_test
 
 
-def train_model(x_train, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout):
+def train_model(x_train, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout, experiment=None):
 
     train_x_indices, test_x_indices = get_x_data_splitted(x_train)
 
     # Generate batches from indices
     x_train_k, x_test_k = np.array(train_x_indices), np.array(test_x_indices)
 
-    gen_pre, disc_pre = __pretrain_model(x_train_k, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout)
+    gen_pre, disc_pre = __pretrain_model(x_train_k, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout, experiment)
 
     gen, disc, p_val, ndcg_val = __train_model(gen_pre, disc_pre, x_train_k, x_test_k, ratings_data, queries_data, documents_data,
-                                                   tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout)
+                                                   tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout, experiment)
 
     return gen, disc, p_val, ndcg_val
 
@@ -55,7 +55,7 @@ def __get_embedding_layers(tokenizer_q, tokenizer_d) -> (Embedding, Embedding):
     return embedding_layer_q, embedding_layer_d
 
 
-def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout) -> (Generator, Discriminator):
+def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout, experiment=None):
 
     train_ratings_data, train_queries_data, train_documents_data = __build_train_data(x_train, ratings_data, queries_data, documents_data)
 
@@ -100,24 +100,31 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
             neg_data_queries = [queries_data[x[0]] for x in input_neg]
             neg_data_documents = [documents_data[x[1]] for x in input_neg]
 
-            pred_data_queries = []
-            pred_data_queries.extend(pos_data_queries)
-            pred_data_queries.extend(neg_data_queries)
-            pred_data_queries = np.asarray(pred_data_queries)
+            pos_data_queries = np.asarray(pos_data_queries)
+            neg_data_queries = np.asarray(neg_data_queries)
 
-            pred_data_documents = []
-            pred_data_documents.extend(pos_data_documents)
-            pred_data_documents.extend(neg_data_documents)
-            pred_data_documents = np.asarray(pred_data_documents)
+            pos_data_documents = np.asarray(pos_data_documents)
+            neg_data_documents = np.asarray(neg_data_documents)
 
             # prepare pos and neg label
-            pred_data_label = [1.0] * len(pos_data_queries)
-            pred_data_label.extend([0.0] * len(neg_data_queries))
-            pred_data_label = np.asarray(pred_data_label)
+            pos_data_label = [1.0] * len(pos_data_queries)
+            pos_data_label = np.asarray(pos_data_label)
+            neg_data_label = [0.0] * len(neg_data_queries)
+            neg_data_label = np.asarray(neg_data_label)
 
             print("Discriminator epoch: ", str(d_epoch), "with batch: ", str(batch_index), " to ", str(i-1), " of ", str(pos_neg_size))
             # train
-            disc.train(pred_data_queries, pred_data_documents, pred_data_label)
+            d_loss_real = disc.train(pos_data_queries, pos_data_documents, pos_data_label)
+            d_loss_fake = disc.train(neg_data_queries, neg_data_documents, neg_data_label)
+            d_loss = 0.5 * np.add(d_loss_real, d_loss_fake)
+
+            # Plot the progress
+            d_acc = 100 * d_loss[1]
+            d_loss_val = d_loss[0]
+
+            print("%s [D loss: %f, acc.: %.2f%%]" % (str(i-1) + "_" + str(d_epoch), d_loss_val, d_acc))
+            experiment.log_metric("disc_accuracy", d_acc, str(i-1) + "_" + str(d_epoch))
+            experiment.log_metric("disc_loss", d_loss_val, str(i-1) + "_" + str(d_epoch))
 
     # Train Generator
     print('Training Generator ...')
@@ -168,12 +175,16 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
             x += 1
             print("Generator epoch: ", str(g_epoch), " with query: ", str(x), " of ", str(len_queries))
             # train
-            gen.train(choose_queries, choose_documents, choose_reward.reshape([-1]), choose_is)
+            g_loss = gen.train(choose_queries, choose_documents, choose_reward.reshape([-1]), choose_is)
+
+            # Plot the progress
+            print("%s [G loss: %f]" % (str(x) + "_" + str(g_epoch), g_loss))
+            experiment.log_metric("gen_loss", g_loss, g_epoch)
 
     return gen, disc
 
 
-def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout):
+def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout, experiment=None):
     train_ratings_data, train_queries_data, train_documents_data = __build_train_data(x_train, ratings_data, queries_data, documents_data)
 
     disc = disc_pre
@@ -218,24 +229,32 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
                 neg_data_queries = [queries_data[x[0]] for x in input_neg]
                 neg_data_documents = [documents_data[x[1]] for x in input_neg]
 
-                pred_data_queries = []
-                pred_data_queries.extend(pos_data_queries)
-                pred_data_queries.extend(neg_data_queries)
-                pred_data_queries = np.asarray(pred_data_queries)
+                pos_data_queries = np.asarray(pos_data_queries)
+                neg_data_queries = np.asarray(neg_data_queries)
 
-                pred_data_documents = []
-                pred_data_documents.extend(pos_data_documents)
-                pred_data_documents.extend(neg_data_documents)
-                pred_data_documents = np.asarray(pred_data_documents)
+                pos_data_documents = np.asarray(pos_data_documents)
+                neg_data_documents = np.asarray(neg_data_documents)
 
                 # prepare pos and neg label
-                pred_data_label = [1.0] * len(pos_data_queries)
-                pred_data_label.extend([0.0] * len(neg_data_queries))
-                pred_data_label = np.asarray(pred_data_label)
+                pos_data_label = [1.0] * len(pos_data_queries)
+                pos_data_label = np.asarray(pos_data_label)
+                neg_data_label = [0.0] * len(neg_data_queries)
+                neg_data_label = np.asarray(neg_data_label)
 
-                print("Discriminator epoch: ", str(d_epoch), "with batch: ", str(batch_index), " to ", str(i-1), " of ", str(pos_neg_size))
+                print("Discriminator epoch: ", str(d_epoch), "with batch: ", str(batch_index), " to ", str(i - 1),
+                      " of ", str(pos_neg_size))
                 # train
-                disc.train(pred_data_queries, pred_data_documents, pred_data_label)
+                d_loss_real = disc.train(pos_data_queries, pos_data_documents, pos_data_label)
+                d_loss_fake = disc.train(neg_data_queries, neg_data_documents, neg_data_label)
+                d_loss = 0.5 * np.add(d_loss_real, d_loss_fake)
+
+                # Plot the progress
+                d_acc = 100 * d_loss[1]
+                d_loss_val = d_loss[0]
+
+                print("%s [D loss: %f, acc.: %.2f%%]" % (str(i - 1) + "_" + str(d_epoch), d_loss_val, d_acc))
+                experiment.log_metric("disc_accuracy", d_acc, str(i - 1) + "_" + str(d_epoch))
+                experiment.log_metric("disc_loss", d_loss_val, str(i - 1) + "_" + str(d_epoch))
 
         # Train Generator
         print('Training Generator ...')
@@ -287,8 +306,11 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
                 x += 1
                 print("Generator epoch: ", str(g_epoch), " with query: ", str(x), " of ", str(len_queries))
                 # train
-                gen.train(choose_queries, choose_documents, choose_reward.reshape([-1]), choose_is)
+                g_loss = gen.train(choose_queries, choose_documents, choose_reward.reshape([-1]), choose_is)
 
+                # Plot the progress
+                print("%s [G loss: %f]" % (str(x) + "_" + str(g_epoch), g_loss))
+                experiment.log_metric("gen_loss", g_loss, g_epoch)
 
             best_disc = disc
             best_gen = gen

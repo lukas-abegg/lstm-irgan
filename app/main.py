@@ -64,14 +64,14 @@ def get_env_data_not_splitted():
     return sess, query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d
 
 
-def train_model_without_hyperparam_opt(x_train, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess):
+def train_model_without_hyperparam_opt(x_train, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, experiment):
     weight_decay = params.WEIGHT_DECAY
     learning_rate = params.LEARNING_RATE
     temperature = params.TEMPERATURE
     dropout = params.DROPOUT
 
     best_gen, best_disc, validation_acc, validation_ndcg = train.train_model(x_train, ratings_data, queries_data, documents_data, tokenizer_q,
-                                                 tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout)
+                                                 tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout, experiment)
 
     return best_gen, best_disc
 
@@ -104,11 +104,11 @@ def plot_model(gen):
     plotting.plot_model(gen)
 
 
-def main(mode):
+def main(mode, experiment):
     if params.TRAIN_MODE == mode:
         if not params.USE_HYPERPARAM_OPT:
             sess, x_train, x_val, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = get_env_data_with_x_data_splitted()
-            generator, discriminator = train_model_without_hyperparam_opt(x_train, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess)
+            generator, discriminator = train_model_without_hyperparam_opt(x_train, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, experiment)
 
         else:
             best_run, best_model = optim.minimize(model=train_model_with_hyperparam_opt,
@@ -125,7 +125,8 @@ def main(mode):
 
         # eval_metrics.evaluate(generator, x_val, ratings_data, documents_data, queries_data, sess)
         save_model(generator, params.SAVED_MODEL_GEN_FILE)
-        save_model(discriminator, params.SAVED_MODEL_DISC_FILE)
+        if discriminator is not None:
+            save_model(discriminator, params.SAVED_MODEL_DISC_FILE)
 
     elif params.EVAL_MODE == mode:
         sess, x_data, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = get_env_data_not_splitted()
@@ -146,4 +147,4 @@ if __name__ == '__main__':
     experiment = Experiment(api_key="tgrD5ElfTdvaGEmJB7AEZG8Ra",
                             project_name="general", workspace="abeggluk")
 
-    main(params.USED_MODE)
+    main(params.USED_MODE, experiment)

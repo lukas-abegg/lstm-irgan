@@ -82,7 +82,7 @@ class Generator:
         return _loss
 
     def train(self, train_data_queries, train_data_documents, reward, important_sampling):
-        self.model.train_on_batch([train_data_queries, train_data_documents, reward, important_sampling], np.zeros([train_data_queries.shape[0]]))
+        return self.model.train_on_batch([train_data_queries, train_data_documents, reward, important_sampling], np.zeros([train_data_queries.shape[0]]))
 
     def get_score(self, train_data_queries, train_data_documents):
         inputs = self.model.inputs + [K.learning_phase()]
