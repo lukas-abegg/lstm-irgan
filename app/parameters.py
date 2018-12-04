@@ -1,5 +1,5 @@
 # Base dirs
-WORKDIR = '/home/abeggluk/lstm-irgan'
+WORKDIR = '/home/abeggluk/lstm-irgan_binary'
 TEMP = WORKDIR + '/temp'
 
 # Hyperparameter Optimization
