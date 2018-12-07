@@ -38,7 +38,7 @@ def __get_queries():
             text = values[1]
             queries[id] = text
             query_ids.append(id)
-    return queries, query_ids
+    return queries[:20], query_ids[:20]
 
 
 def __get_ratings():

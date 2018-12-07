@@ -84,22 +84,11 @@ class Generator:
     def train(self, train_data_queries, train_data_documents, reward, important_sampling):
         return self.model.train_on_batch([train_data_queries, train_data_documents, reward, important_sampling], np.zeros([train_data_queries.shape[0]]))
 
-    def get_score(self, train_data_queries, train_data_documents):
-        inputs = self.model.inputs + [K.learning_phase()]
-        out = self.model.get_layer('score').output
-        functor = K.function(inputs, [out])
-        layer_outs = functor([train_data_queries, train_data_documents, 0.])
-        return layer_outs
-
     def get_prob(self, train_data_queries, train_data_documents):
-        inputs = self.model.inputs + [K.learning_phase()]
-        out = self.model.get_layer('prob').output
-        functor = K.function(inputs, [out])
-        layer_outs = functor([train_data_queries, train_data_documents, 0.])
-        return layer_outs
+        return self.model.predict([train_data_queries, train_data_documents], batch_size=params.GEN_BATCH_SIZE)
 
     def save_model(self, filepath):
-        save_model(self.model, filepath)
+        self.model.save(filepath)
         print("Saved model to disk")
 
     @staticmethod

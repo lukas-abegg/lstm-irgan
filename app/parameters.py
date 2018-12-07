@@ -1,6 +1,5 @@
 # Base dirs
-WORKDIR = '/home/abeggluk/lstm-irgan_binary'
-TEMP = WORKDIR + '/temp'
+WORKDIR = '/home/abeggluk/lstm-irgan'
 
 # Hyperparameter Optimization
 USE_HYPERPARAM_OPT = False
@@ -62,11 +61,11 @@ EVAL_K = 5
 EVAL_N_DOCS = 1000
 
 # Save models
-SAVED_MODEL_DISC_FILE = TEMP + "/disc_model.h5"
-SAVED_MODEL_GEN_FILE = TEMP + "/gen_model.h5"
+SAVED_MODEL_DISC_FILE = WORKDIR + "/disc_model.h5"
+SAVED_MODEL_GEN_FILE = WORKDIR + "/gen_model.h5"
 
 # Plotting
-PLOTTED_MODEL_FILE = TEMP + "/plot_model.png"
+PLOTTED_MODEL_FILE = WORKDIR + "/plot_model.png"
 
 # General
 USED_MODE = 'train'

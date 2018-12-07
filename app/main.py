@@ -122,8 +122,8 @@ def main(mode, experiment):
             discriminator = None
             print("Best performing model chosen hyper-parameters:")
             print(best_run)
+            eval_metrics.evaluate(generator, x_val, ratings_data, documents_data, queries_data, sess)
 
-        # eval_metrics.evaluate(generator, x_val, ratings_data, documents_data, queries_data, sess)
         save_model(generator, params.SAVED_MODEL_GEN_FILE)
         if discriminator is not None:
             save_model(discriminator, params.SAVED_MODEL_DISC_FILE)

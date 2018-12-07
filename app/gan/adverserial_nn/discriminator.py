@@ -68,18 +68,11 @@ class Discriminator:
     def train(self, train_data_queries, train_data_documents, train_data_label):
         return self.model.train_on_batch([train_data_queries, train_data_documents], train_data_label)
 
-    def get_preresult(self, train_data_queries, train_data_documents):
-        return (self.model.predict([train_data_queries, train_data_documents]) - 0.5) * 2
-
     def get_reward(self, train_data_queries, train_data_documents):
-        inputs = self.model.inputs + [K.learning_phase()]
-        out = self.model.get_layer("prob").output
-        functor = K.function(inputs, [out])
-        layer_outs = functor([train_data_queries, train_data_documents, 1.])
-        return (layer_outs[0] - 0.5) * 2
+        return (self.model.predict([train_data_queries, train_data_documents], batch_size=params.DISC_BATCH_SIZE) - 0.5) * 2
 
     def save_model(self, filepath):
-        save_model(self.model, filepath)
+        self.model.save(filepath)
         print("Saved model to disk")
 
     @staticmethod
