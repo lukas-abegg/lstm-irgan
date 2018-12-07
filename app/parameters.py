@@ -7,7 +7,7 @@ USE_HYPERPARAM_OPT = False
 # Embeddings / Tokenizer
 USE_FASTTEXT_MODEL = False
 FASTTEXT_BINARY = True
-FASTTEXT = '/home/abeggluk/BioWordVec_PubMed_MIMICIII_d200.vec.bin'
+FASTTEXT = '/mnt/fob-wbia-vol2/wbi_stud/abeggluk/BioWordVec_PubMed_MIMICIII_d200.vec.bin'
 
 MAX_SEQUENCE_LENGTH = 2000
 MAX_NUM_WORDS = 2000
@@ -61,11 +61,11 @@ EVAL_K = 5
 EVAL_N_DOCS = 1000
 
 # Save models
-SAVED_MODEL_DISC_FILE = WORKDIR + "/disc_model.h5"
-SAVED_MODEL_GEN_FILE = WORKDIR + "/gen_model.h5"
+SAVED_MODEL_DISC_FILE = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/disc_model.h5"
+SAVED_MODEL_GEN_FILE = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/gen_model.h5"
 
 # Plotting
-PLOTTED_MODEL_FILE = WORKDIR + "/plot_model.png"
+PLOTTED_MODEL_FILE = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/plot_model.png"
 
 # General
 USED_MODE = 'train'
