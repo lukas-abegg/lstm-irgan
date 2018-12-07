@@ -15,7 +15,6 @@ def measure_map(model, x_val, ratings_data, queries_data, documents_data, k, ses
 
         # predict y-values for given x-values
         pred_scores = model.get_prob(eval_queries, eval_documents)
-        pred_scores = pred_scores[0]
         pred_scores = pred_scores.reshape([-1])
 
         pred_document_scores_order, rated_document_scores_order = utils.sort_pred_val_data(x_data, y_data, pred_scores)
