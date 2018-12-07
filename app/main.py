@@ -92,12 +92,20 @@ def evaluate(gen, x_data, ratings_data, queries_data, documents_data, sess):
     eval_metrics.evaluate(gen, x_data, ratings_data, queries_data, documents_data, sess)
 
 
-def save_model(model, path):
-    model.save_model(path)
+def save_model_to_file(model, path):
+    model.save_model_to_file(path)
 
 
-def load_model(model_class, path):
-    return model_class.load_model(path)
+def save_model_to_weights(model, path_json, path_weights):
+    model.save_model_to_weights(path_json, path_weights)
+
+
+def load_model_from_file(model_class, path):
+    return model_class.load_model_from_file(path)
+
+
+def load_model_from_weights(model_class, path_json, path_weights):
+    return model_class.load_model_from_weights(path_json, path_weights)
 
 
 def plot_model(gen):
@@ -124,19 +132,20 @@ def main(mode, experiment):
             print(best_run)
             eval_metrics.evaluate(generator, x_val, ratings_data, documents_data, queries_data, sess)
 
-        save_model(generator, params.SAVED_MODEL_GEN_FILE)
+        save_model_to_weights(generator, params.SAVED_MODEL_GEN_JSON, params.SAVED_MODEL_GEN_WEIGHTS)
+        save_model_to_file(generator, params.SAVED_MODEL_GEN_FILE)
         if discriminator is not None:
-            save_model(discriminator, params.SAVED_MODEL_DISC_FILE)
+            save_model_to_file(discriminator, params.SAVED_MODEL_DISC_FILE)
 
     elif params.EVAL_MODE == mode:
         sess, x_data, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = get_env_data_not_splitted()
         generator = Generator
-        generator = load_model(generator, params.SAVED_MODEL_GEN_FILE)
+        generator = load_model_from_file(generator, params.SAVED_MODEL_GEN_FILE)
         evaluate(generator, x_data, ratings_data, queries_data, documents_data, sess)
 
     elif params.PLOT_MODEL_MODE == mode:
         generator = Generator
-        generator = load_model(generator, params.SAVED_MODEL_GEN_FILE)
+        generator = load_model_from_file(generator, params.SAVED_MODEL_GEN_FILE)
         plot_model(generator)
 
     else:

@@ -1,7 +1,7 @@
 from keras import backend as K
 from keras.layers import Bidirectional, Embedding, GRU, Dense, Activation, Lambda, Concatenate
 from keras.layers.core import Reshape, Dropout
-from keras.models import Model, Input, save_model, load_model
+from keras.models import Model, Input, load_model, model_from_json
 
 from gan.optimizer.AdamW import AdamW
 
@@ -108,16 +108,39 @@ class Generator:
         pred_scores = np.asarray(pred_scores)
         return pred_scores
 
-    def save_model(self, filepath):
+    def save_model_to_file(self, filepath):
         self.model.save(filepath)
         print("Saved model to disk")
 
+    def save_model_to_weights(self, filepath_json, filepath_weights):
+        # serialize model to JSON
+        model_json = self.model.to_json()
+        with open(filepath_json, "w") as json_file:
+            json_file.write(model_json)
+        # serialize weights to HDF5
+        self.model.save_weights(filepath_weights)
+        print("Saved model weights to disk")
+
     @staticmethod
-    def load_model(filepath):
-        model = load_model(filepath)
+    def load_model_from_file(filepath):
+        loaded_model = load_model(filepath)
         print("Loaded model from disk")
 
-        gen = Generator(model=model)
+        gen = Generator(model=loaded_model)
+        return gen
+
+    @staticmethod
+    def load_model_from_weights(filepath_json, filepath_weights):
+        # load json and create model
+        json_file = open(filepath_json, 'r')
+        loaded_model_json = json_file.read()
+        json_file.close()
+        loaded_model = model_from_json(loaded_model_json)
+        # load weights into new model
+        loaded_model.load_weights(filepath_weights)
+        print("Loaded model from disk")
+
+        gen = Generator(model=loaded_model)
         return gen
 
     @staticmethod
