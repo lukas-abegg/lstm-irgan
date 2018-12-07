@@ -122,9 +122,9 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
             d_acc = 100 * d_loss[1]
             d_loss_val = d_loss[0]
 
-            print("%s [D loss: %f, acc.: %.2f%%]" % (str(i-1) + "_" + str(d_epoch), d_loss_val, d_acc))
-            experiment.log_metric("disc_accuracy", d_acc, str(i-1) + "_" + str(d_epoch))
-            experiment.log_metric("disc_loss", d_loss_val, str(i-1) + "_" + str(d_epoch))
+            print("%s [D loss: %f, acc.: %.2f%%]" % (str(i-1), d_loss_val, d_acc))
+            experiment.log_metric("pretrain_disc_accuracy", d_acc, i-1)
+            experiment.log_metric("pretrain_disc_loss", d_loss_val, i-1)
 
     # Train Generator
     print('Training Generator ...')
@@ -178,8 +178,8 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
             g_loss = gen.train(choose_queries, choose_documents, choose_reward.reshape([-1]), choose_is)
 
             # Plot the progress
-            print("%s [G loss: %f]" % (str(x) + "_" + str(g_epoch), g_loss))
-            experiment.log_metric("gen_loss", g_loss, g_epoch)
+            print("%s [G loss: %f]" % (str(x), g_loss))
+            experiment.log_metric("pretrain_gen_loss", g_loss, x)
 
     return gen, disc
 
@@ -252,9 +252,9 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
                 d_acc = 100 * d_loss[1]
                 d_loss_val = d_loss[0]
 
-                print("%s [D loss: %f, acc.: %.2f%%]" % (str(i - 1) + "_" + str(d_epoch), d_loss_val, d_acc))
-                experiment.log_metric("disc_accuracy", d_acc, str(i - 1) + "_" + str(d_epoch))
-                experiment.log_metric("disc_loss", d_loss_val, str(i - 1) + "_" + str(d_epoch))
+                print("%s [D loss: %f, acc.: %.2f%%]" % (str(i - 1), d_loss_val, d_acc))
+                experiment.log_metric("disc_accuracy", d_acc, i - 1)
+                experiment.log_metric("disc_loss", d_loss_val, i - 1)
 
         # Train Generator
         print('Training Generator ...')
@@ -309,8 +309,8 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
                 g_loss = gen.train(choose_queries, choose_documents, choose_reward.reshape([-1]), choose_is)
 
                 # Plot the progress
-                print("%s [G loss: %f]" % (str(x) + "_" + str(g_epoch), g_loss))
-                experiment.log_metric("gen_loss", g_loss, g_epoch)
+                print("%s [G loss: %f]" % (str(x), g_loss))
+                experiment.log_metric("gen_loss", g_loss, x)
 
             best_disc = disc
             best_gen = gen
