@@ -68,7 +68,7 @@ class Generator:
 
         model.compile(loss=self.loss(self.reward, self.important_sampling),
                       optimizer=adamw,
-                      metrics=['accuracy'])
+                      metrics=[self.loss_metrics(self.reward, self.important_sampling)])
 
         return model
 
@@ -80,6 +80,15 @@ class Generator:
             return loss
 
         return _loss
+
+    def loss_metrics(self, _reward, _important_sampling):
+        def _metrics(y_true, y_pred):
+            log_action_prob = K.log(y_pred)
+            loss = - K.reshape(log_action_prob, [-1]) * K.reshape(_reward, [-1]) * K.reshape(_important_sampling, [-1])
+            loss = K.mean(loss)
+            return loss
+
+        return _metrics
 
     def train(self, train_data_queries, train_data_documents, reward, important_sampling):
         return self.model.train_on_batch([train_data_queries, train_data_documents, reward, important_sampling], np.zeros([train_data_queries.shape[0]]))
