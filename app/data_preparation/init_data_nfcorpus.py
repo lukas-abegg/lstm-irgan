@@ -32,13 +32,13 @@ def __get_queries():
 
     with open(path) as f:
         content = f.readlines()
-        for line in content:
+        for line in content[:20]:
             values = line.split("\t", 1)
             id = values[0]
             text = values[1]
             queries[id] = text
             query_ids.append(id)
-    return queries[:20], query_ids[:20]
+    return queries, query_ids
 
 
 def __get_ratings():
