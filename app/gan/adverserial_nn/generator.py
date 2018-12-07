@@ -106,7 +106,6 @@ class Generator:
             pred_scores.extend(layer_outs[0])
 
         pred_scores = np.asarray(pred_scores)
-        print("predictions for ", len(pred_scores), " of ", len(train_data_queries), ": ", pred_scores)
         return pred_scores
 
     def save_model(self, filepath):

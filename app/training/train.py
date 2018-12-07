@@ -122,7 +122,7 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
             d_acc = 100 * d_loss[1]
             d_loss_val = d_loss[0]
 
-            print("%s [D loss: %f, acc.: %.2f%%]" % (str(i-1), d_loss_val, d_acc))
+            print("%s [D loss: %f, acc.: %.2f%%]" % (str(batch_index)+"_"+str(i - 1), d_loss_val, d_acc))
             experiment.log_metric("pretrain_disc_accuracy", d_acc, i-1)
             experiment.log_metric("pretrain_disc_loss", d_loss_val, i-1)
 
@@ -176,6 +176,7 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
             print("Generator epoch: ", str(g_epoch), " with query: ", str(x), " of ", str(len_queries))
             # train
             g_loss = gen.train(choose_queries, choose_documents, choose_reward.reshape([-1]), choose_is)
+            print(g_loss)
 
             # Plot the progress
             print("%s [G loss: %f]" % (str(x), g_loss))
@@ -252,7 +253,7 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
                 d_acc = 100 * d_loss[1]
                 d_loss_val = d_loss[0]
 
-                print("%s [D loss: %f, acc.: %.2f%%]" % (str(i - 1), d_loss_val, d_acc))
+                print("%s [D loss: %f, acc.: %.2f%%]" % (str(batch_index)+"_"+str(i - 1), d_loss_val, d_acc))
                 experiment.log_metric("disc_accuracy", d_acc, i - 1)
                 experiment.log_metric("disc_loss", d_loss_val, i - 1)
 
