@@ -56,6 +56,7 @@ class Generator:
                   activation='elu')(x)
         x = Dense(1, activation='elu')(x)
 
+        # 0.2 should be replaced by self.temperature
         score = Lambda(lambda z: z / 0.2, name='raw_score')(x)
         score = Reshape([-1], name='score')(score)
         prob = Activation('softmax', name='prob')(score)
@@ -85,7 +86,25 @@ class Generator:
         return self.model.train_on_batch([train_data_queries, train_data_documents, reward, important_sampling], np.zeros([train_data_queries.shape[0]]))
 
     def get_prob(self, train_data_queries, train_data_documents):
-        return self.model.predict([train_data_queries, train_data_documents], batch_size=params.GEN_BATCH_SIZE)
+        pred_scores = []
+        i = 1
+        while i <= len(train_data_queries):
+            batch_index = i - 1
+            if i + params.GEN_BATCH_SIZE <= len(train_data_queries):
+                input_queries = train_data_queries[batch_index:batch_index + params.GEN_BATCH_SIZE]
+                input_documents = train_data_documents[batch_index:batch_index + params.GEN_BATCH_SIZE]
+            else:
+                input_queries = train_data_queries[batch_index:len(train_data_queries)]
+                input_documents = train_data_documents[batch_index:len(train_data_queries)]
+
+            i += params.GEN_BATCH_SIZE
+
+            inputs = self.model.inputs + [K.learning_phase()]
+            out = self.model.get_layer('prob').output
+            functor = K.function(inputs, [out])
+            layer_outs = functor([input_queries, input_documents, 0.])
+            pred_scores.extend(layer_outs[0])
+        return pred_scores
 
     def save_model(self, filepath):
         self.model.save(filepath)
