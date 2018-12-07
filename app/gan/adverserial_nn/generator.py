@@ -56,7 +56,7 @@ class Generator:
                   activation='elu')(x)
         x = Dense(1, activation='elu')(x)
 
-        score = Lambda(lambda z: z / self.temperature, name='raw_score')(x)
+        score = Lambda(lambda z: z / 0.2, name='raw_score')(x)
         score = Reshape([-1], name='score')(score)
         prob = Activation('softmax', name='prob')(score)
 
