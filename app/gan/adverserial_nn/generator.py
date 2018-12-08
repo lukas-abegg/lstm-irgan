@@ -92,7 +92,9 @@ class Generator:
         return self.model.train_on_batch([train_data_queries, train_data_documents, reward, important_sampling], np.zeros([train_data_queries.shape[0]]))
 
     def get_prob(self, train_data_queries, train_data_documents):
-        pred_scores = self.model.predict([train_data_queries, train_data_documents, 0., 0.], params.GEN_BATCH_SIZE)
+        input_reward = [0.0] * len(train_data_queries)
+        input_important_sampling = [0.0] * len(train_data_queries)
+        pred_scores = self.model.predict([train_data_queries, train_data_documents, input_reward, input_important_sampling], params.GEN_BATCH_SIZE)
         print(pred_scores)
         return pred_scores
 
