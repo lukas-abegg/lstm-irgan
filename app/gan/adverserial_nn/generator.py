@@ -92,26 +92,8 @@ class Generator:
         return self.model.train_on_batch([train_data_queries, train_data_documents, reward, important_sampling], np.zeros([train_data_queries.shape[0]]))
 
     def get_prob(self, train_data_queries, train_data_documents):
-        pred_scores = []
-        i = 1
-        while i <= len(train_data_queries):
-            batch_index = i - 1
-            if i + params.GEN_BATCH_SIZE <= len(train_data_queries):
-                input_queries = train_data_queries[batch_index:batch_index + params.GEN_BATCH_SIZE]
-                input_documents = train_data_documents[batch_index:batch_index + params.GEN_BATCH_SIZE]
-            else:
-                input_queries = train_data_queries[batch_index:len(train_data_queries)]
-                input_documents = train_data_documents[batch_index:len(train_data_queries)]
-
-            i += params.GEN_BATCH_SIZE
-
-            inputs = self.model.inputs + [K.learning_phase()]
-            out = self.model.get_layer('prob').output
-            functor = K.function(inputs, [out])
-            layer_outs = functor([input_queries, input_documents, 0.])
-            pred_scores.extend(layer_outs[0])
-
-        pred_scores = np.asarray(pred_scores)
+        pred_scores = self.model.predict([train_data_queries, train_data_documents, 0.], params.GEN_BATCH_SIZE)
+        print(pred_scores)
         return pred_scores
 
     def save_model_to_file(self, filepath):

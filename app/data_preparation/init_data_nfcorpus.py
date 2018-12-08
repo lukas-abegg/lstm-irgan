@@ -16,7 +16,7 @@ def __get_documents():
 
     with open(path) as f:
         content = f.readlines()
-        for line in content:
+        for line in content[:10]:
             values = line.split("\t", 1)
             id = values[0]
             text = values[1]
