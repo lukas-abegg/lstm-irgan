@@ -77,6 +77,7 @@ class Generator:
             log_action_prob = K.log(y_pred)
             loss = - K.reshape(log_action_prob, [-1]) * K.reshape(_reward, [-1]) * K.reshape(_important_sampling, [-1])
             loss = K.mean(loss)
+            print("Calculate loss: reward=", str(K.reshape(_reward, [-1])), " important sampling=", str(K.reshape(_important_sampling, [-1])), "loss=", loss)
             return loss
 
         return _loss
