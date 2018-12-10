@@ -96,7 +96,6 @@ class Generator:
         input_reward = np.asarray(input_reward)
         input_important_sampling = [0.0] * len(train_data_queries)
         input_important_sampling = np.asarray(input_important_sampling)
-        print("dims:", train_data_queries.ndim, train_data_documents.ndim, input_reward.ndim, input_important_sampling.ndim)
         pred_scores = self.model.predict([train_data_queries, train_data_documents, input_reward, input_important_sampling], params.GEN_BATCH_SIZE)
         return pred_scores
 
