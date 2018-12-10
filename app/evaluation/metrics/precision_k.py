@@ -13,8 +13,6 @@ def measure_precision_at_k(model, x_val, ratings_data, queries_data, documents_d
             continue
 
         # predict y-values for given x-values
-        print("eval queries:", eval_queries)
-        print("eval documents:", eval_documents)
         pred_scores = model.get_prob(eval_queries, eval_documents)
         pred_scores = pred_scores.reshape([-1])
         print("Prediction scores for p_k: ", pred_scores)
