@@ -28,8 +28,8 @@ def get_query_specific_eval_data(query_id, ratings_data, queries_data, documents
         eval_queries = [queries_data[query_id]] * n_eval
         eval_documents = [documents_data[doc_id] for doc_id in x_data]
 
-    eval_queries = np.asarray(eval_queries)
-    eval_documents = np.asarray(eval_documents)
+    eval_queries = np.asarray(eval_queries).reshape([-1])
+    eval_documents = np.asarray(eval_documents).reshape([-1])
 
     return x_data, y_data, eval_queries, eval_documents, enough_data_for_eval
 

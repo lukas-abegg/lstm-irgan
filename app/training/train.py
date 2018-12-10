@@ -317,8 +317,8 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
                 g_loss_val = g_loss[0]
 
                 print("%s [G loss: %f, acc.: %.2f%%]" % (str(x), g_loss_val, g_acc))
-                experiment.log_metric("pretrain_gen_accuracy", g_acc, x)
-                experiment.log_metric("pretrain_gen_loss", g_loss_val, x)
+                experiment.log_metric("gen_accuracy", g_acc, x)
+                experiment.log_metric("gen_loss", g_loss_val, x)
 
             best_disc = disc
             best_gen = gen

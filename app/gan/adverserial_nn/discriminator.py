@@ -1,7 +1,6 @@
-from keras import backend as K
 from keras.layers import Dense, Activation, Bidirectional, Embedding, GRU, Concatenate
 from keras.layers.core import Reshape, Dropout
-from keras.models import Model, Input, save_model, load_model
+from keras.models import Model, Input, load_model
 
 from gan.optimizer.AdamW import AdamW
 
@@ -71,16 +70,16 @@ class Discriminator:
     def get_reward(self, train_data_queries, train_data_documents):
         return (self.model.predict([train_data_queries, train_data_documents], batch_size=params.DISC_BATCH_SIZE) - 0.5) * 2
 
-    def save_model(self, filepath):
+    def save_model_to_file(self, filepath):
         self.model.save(filepath)
         print("Saved model to disk")
 
     @staticmethod
-    def load_model(filepath):
-        model = load_model(filepath)
+    def load_model_from_file(filepath):
+        loaded_model = load_model(filepath)
         print("Loaded model from disk")
 
-        disc = Discriminator(model=model)
+        disc = Discriminator(model=loaded_model)
         return disc
 
     @staticmethod

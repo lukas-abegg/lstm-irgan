@@ -32,7 +32,7 @@ def __get_queries():
 
     with open(path) as f:
         content = f.readlines()
-        for line in content[:20]:
+        for line in content[:15]:
             values = line.split("\t", 1)
             id = values[0]
             text = values[1]
