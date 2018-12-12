@@ -55,8 +55,8 @@ class Discriminator:
         model = Model(inputs=[sequence_input_q, sequence_input_d], outputs=[prob])
         model.summary()
 
-        adamw = AdamW(batch_size=params.DISC_BATCH_SIZE, samples_per_epoch=self.samples_per_epoch,
-                      epochs=params.DISC_TRAIN_EPOCHS)
+        adamw = AdamW(lr=self.learning_rate, batch_size=params.DISC_BATCH_SIZE,
+                      samples_per_epoch=self.samples_per_epoch, epochs=params.DISC_TRAIN_EPOCHS)
 
         model.compile(loss='binary_crossentropy',
                       optimizer=adamw,
