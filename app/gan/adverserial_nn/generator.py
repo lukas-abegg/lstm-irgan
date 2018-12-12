@@ -8,6 +8,9 @@ from gan.optimizer.AdamW import AdamW
 import numpy as np
 import parameters as params
 
+import tensorflow as tf
+from keras import optimizers
+
 
 def custom_loss(_reward, _important_sampling):
     def loss(y_true, y_pred):
@@ -93,10 +96,15 @@ class Generator:
         #                     metrics=[self.loss_metrics(self.reward, self.important_sampling)])
 
         self.model.compile(loss=custom_loss(self.reward, self.important_sampling),
-                           optimizer=self.adamw,
+                           optimizer=optimizers.TFOptimizer(tf.train.GradientDescentOptimizer(self.learning_rate)),
                            metrics=['accuracy'])
 
     def train(self, train_data_queries, train_data_documents, reward, important_sampling):
+        print(train_data_queries)
+        print(train_data_documents)
+        print(reward)
+        print(important_sampling)
+        print(np.zeros([train_data_queries.shape[0]]))
         return self.model.train_on_batch([train_data_queries, train_data_documents, reward, important_sampling],
                                          np.zeros([train_data_queries.shape[0]]))
 
