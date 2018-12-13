@@ -15,8 +15,10 @@ class Discriminator:
         self.dropout = dropout
         self.embeddings_layer_q: Embedding = embedding_layer_q
         self.embeddings_layer_d: Embedding = embedding_layer_d
-        self.model: Model = self.__get_model(model)
+        self.adamw = AdamW(lr=self.learning_rate, batch_size=params.DISC_BATCH_SIZE,
+                            samples_per_epoch=self.samples_per_epoch, epochs=params.DISC_TRAIN_EPOCHS)
         self.sess = sess
+        self.model: Model = self.__get_model(model)
 
     def __get_model(self, model):
         if model is None:
@@ -55,11 +57,8 @@ class Discriminator:
         model = Model(inputs=[sequence_input_q, sequence_input_d], outputs=[prob])
         model.summary()
 
-        adamw = AdamW(lr=self.learning_rate, batch_size=params.DISC_BATCH_SIZE,
-                      samples_per_epoch=self.samples_per_epoch, epochs=params.DISC_TRAIN_EPOCHS)
-
         model.compile(loss='binary_crossentropy',
-                      optimizer=adamw,
+                      optimizer=self.adamw,
                       metrics=['accuracy'])
 
         return model
@@ -80,6 +79,7 @@ class Discriminator:
         print("Loaded model from disk")
 
         disc = Discriminator(model=loaded_model)
+        disc.model.compile(loss='binary_crossentropy', optimizer=disc.adamw, metrics=['accuracy'])
         return disc
 
     @staticmethod

@@ -8,19 +8,6 @@ from gan.optimizer.AdamW import AdamW
 import numpy as np
 import parameters as params
 
-import tensorflow as tf
-from keras import optimizers
-
-
-def custom_loss(_reward, _important_sampling):
-    def loss(y_true, y_pred):
-        log_action_prob = K.log(y_pred)
-        calc_loss = - K.reshape(log_action_prob, [-1]) * K.reshape(_reward, [-1]) * K.reshape(_important_sampling, [-1])
-        calc_loss = K.mean(calc_loss)
-        return calc_loss
-
-    return loss
-
 
 class Generator:
     def __init__(self, samples_per_epoch=0, weight_decay=None, learning_rate=None, temperature=1.0, dropout=0.2,
@@ -34,6 +21,8 @@ class Generator:
         self.embeddings_layer_d: Embedding = embedding_layer_d
         self.reward = Input(shape=(None,), name='input_reward')
         self.important_sampling = Input(shape=(None,), name='input_imp_sampling')
+        self.adamw = AdamW(lr=self.learning_rate, batch_size=params.GEN_BATCH_SIZE,
+                           samples_per_epoch=self.samples_per_epoch, epochs=params.GEN_TRAIN_EPOCHS)
         self.sess = sess
         self.__get_model(model)
 
@@ -79,25 +68,33 @@ class Generator:
         self.x = Dense(1, activation='elu')(self.x)
 
         # 0.2 should be replaced by self.temperature
-        self.score = Lambda(lambda z: z / 0.2, name='raw_score')(self.x)
-        self.score = Reshape([-1], name='score')(self.score)
+        # self.score = Lambda(lambda z: z / 0.2, name='raw_score')(self.x)
+        # self.score = Reshape([-1], name='score')(self.score)
         self.prob = Activation('softmax', name='prob')(self.score)
 
         self.model = Model(inputs=[self.sequence_input_q, self.sequence_input_d, self.reward, self.important_sampling],
                            outputs=[self.prob])
 
         self.model.summary()
-
-        self.adamw = AdamW(lr=self.learning_rate, batch_size=params.GEN_BATCH_SIZE,
-                           samples_per_epoch=self.samples_per_epoch, epochs=params.GEN_TRAIN_EPOCHS)
         #
         # self.model.compile(loss=self.loss(self.reward, self.important_sampling),
         #                     optimizer=self.adamw,
         #                     metrics=[self.loss_metrics(self.reward, self.important_sampling)])
 
-        self.model.compile(loss=custom_loss(self.reward, self.important_sampling),
-                           optimizer=optimizers.TFOptimizer(tf.train.GradientDescentOptimizer(self.learning_rate)),
+        self.model.compile(loss=self.custom_loss(self.reward, self.important_sampling),
+                           optimizer='adam',
                            metrics=['accuracy'])
+
+    @staticmethod
+    def custom_loss(_reward, _important_sampling):
+        def loss(y_true, y_pred):
+            log_action_prob = K.log(y_pred)
+            calc_loss = - K.reshape(log_action_prob, [-1]) * K.reshape(_reward, [-1]) * K.reshape(_important_sampling,
+                                                                                                  [-1])
+            calc_loss = K.mean(calc_loss)
+            return calc_loss
+
+        return loss
 
     def train(self, train_data_queries, train_data_documents, reward, important_sampling):
         print(train_data_queries)
@@ -150,6 +147,8 @@ class Generator:
         print("Loaded model from disk")
 
         gen = Generator(model=loaded_model)
+        gen.model.compile(loss=gen.custom_loss(gen.reward, gen.important_sampling),
+                          optimizer=gen.adamw, metrics=['accuracy'])
         return gen
 
     @staticmethod
