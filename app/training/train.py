@@ -149,9 +149,13 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
             # important sampling, change doc prob
             prob_is = prob * (1.0 - params.GEN_LAMBDA)
 
+            print("prob_is of gen: " + str(prob_is))
+
             for i in range(len(doc_ids)):
                 if doc_ids[i] in x_pos_set:
                     prob_is[i] += (params.GEN_LAMBDA / (1.0 * len(x_pos_list)))
+
+            print("prob_is of gen after lambda: " + str(prob_is))
 
             # G generate some url (2 * postive doc num)
             prob_is_rand = np.asarray(prob_is) / np.asarray(prob_is).sum(axis=0, keepdims=1)
@@ -444,6 +448,7 @@ def __get_rand_batch_from_candidates_for_generator(gen, query_id, queries_data, 
     # Importance Sampling
     prob = gen.get_prob(data_queries, data_documents)
     prob = prob.reshape([-1])
+    print("prob of gen: "+str(prob))
 
     doc_ids_collected = []
     doc_ids_collected.extend(doc_ids)

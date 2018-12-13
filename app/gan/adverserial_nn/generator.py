@@ -81,29 +81,31 @@ class Generator:
         #                     optimizer=self.adamw,
         #                     metrics=[self.loss_metrics(self.reward, self.important_sampling)])
 
-        self.model.compile(loss=self.custom_loss(self.reward, self.important_sampling),
+        self.model.compile(loss=self.custom_loss,
                            optimizer='adam',
                            metrics=['accuracy'])
 
     @staticmethod
-    def custom_loss(_reward, _important_sampling):
-        def loss(y_true, y_pred):
-            log_action_prob = K.log(y_pred)
-            calc_loss = - K.reshape(log_action_prob, [-1]) * K.reshape(_reward, [-1]) * K.reshape(_important_sampling,
-                                                                                                  [-1])
-            calc_loss = K.mean(calc_loss)
-            return calc_loss
+    def custom_loss(y_true, y_pred):
+        log_action_prob = K.log(y_pred)
+        calc_loss = - K.reshape(log_action_prob, [-1]) * y_true
+        calc_loss = K.mean(calc_loss)
 
-        return loss
+        return calc_loss
 
     def train(self, train_data_queries, train_data_documents, reward, important_sampling):
-        print(train_data_queries[0])
-        print(train_data_documents[0])
+        print("reward / imp_sampling:")
         print(reward[0])
         print(important_sampling[0])
 
+        train_data_labels = []
+        for i in range(len(reward)):
+            y_label = reward[i] * important_sampling[i]
+            train_data_labels.append(y_label)
+        train_data_labels = np.asarray(train_data_labels)
+
         return self.model.train_on_batch([train_data_queries, train_data_documents, reward, important_sampling],
-                                         np.zeros([train_data_queries.shape[0]]))
+                                         train_data_labels)
 
     def get_prob(self, train_data_queries, train_data_documents):
         input_reward = [0.0] * len(train_data_queries)
