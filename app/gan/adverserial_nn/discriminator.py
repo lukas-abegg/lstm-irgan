@@ -18,50 +18,47 @@ class Discriminator:
         self.adamw = AdamW(lr=self.learning_rate, batch_size=params.DISC_BATCH_SIZE,
                             samples_per_epoch=self.samples_per_epoch, epochs=params.DISC_TRAIN_EPOCHS)
         self.sess = sess
-        self.model: Model = self.__get_model(model)
+        self.__get_model(model)
 
     def __get_model(self, model):
         if model is None:
-            return self.__init_model()
+            self.__init_model()
         else:
-            return model
+            self.model = model
 
     def __init_model(self):
         # create model
-        sequence_input_q = Input(shape=(params.MAX_SEQUENCE_LENGTH,), dtype='int32', name='input_query')
-        embedded_sequences_q = self.embeddings_layer_q(sequence_input_q)
+        self.sequence_input_q = Input(shape=(params.MAX_SEQUENCE_LENGTH,), dtype='int32', name='input_query')
+        self.embedded_sequences_q = self.embeddings_layer_q(self.sequence_input_q)
 
-        lstm_q_in = Bidirectional(GRU(params.DISC_HIDDEN_SIZE_LSTM, return_sequences=True, activation='elu', dropout=self.dropout, recurrent_dropout=self.dropout))(embedded_sequences_q)
+        self.lstm_q_in = Bidirectional(GRU(params.DISC_HIDDEN_SIZE_LSTM, return_sequences=True, activation='elu', dropout=self.dropout, recurrent_dropout=self.dropout))(self.embedded_sequences_q)
         # this LSTM will transform the vector sequence into a single vector,
         # containing information about the entire sequence
-        lstm_q_out = Bidirectional(GRU(params.DISC_HIDDEN_SIZE_LSTM, return_sequences=False, activation='elu', dropout=self.dropout, recurrent_dropout=self.dropout))(lstm_q_in)
+        self.lstm_q_out = Bidirectional(GRU(params.DISC_HIDDEN_SIZE_LSTM, return_sequences=False, activation='elu', dropout=self.dropout, recurrent_dropout=self.dropout))(self.lstm_q_in)
 
-        sequence_input_d = Input(shape=(params.MAX_SEQUENCE_LENGTH,), dtype='int32', name='input_doc')
-        embedded_sequences_d = self.embeddings_layer_d(sequence_input_d)
+        self.sequence_input_d = Input(shape=(params.MAX_SEQUENCE_LENGTH,), dtype='int32', name='input_doc')
+        self.embedded_sequences_d = self.embeddings_layer_d(self.sequence_input_d)
 
-        lstm_d_in = Bidirectional(GRU(params.DISC_HIDDEN_SIZE_LSTM, return_sequences=True, activation='elu', dropout=self.dropout, recurrent_dropout=self.dropout))(embedded_sequences_d)
+        self.lstm_d_in = Bidirectional(GRU(params.DISC_HIDDEN_SIZE_LSTM, return_sequences=True, activation='elu', dropout=self.dropout, recurrent_dropout=self.dropout))(self.embedded_sequences_d)
         # this LSTM will transform the vector sequence into a single vector,
         # containing information about the entire sequence
-        lstm_d_out = Bidirectional(GRU(params.DISC_HIDDEN_SIZE_LSTM, return_sequences=False, activation='elu', dropout=self.dropout, recurrent_dropout=self.dropout))(lstm_d_in)
+        self.lstm_d_out = Bidirectional(GRU(params.DISC_HIDDEN_SIZE_LSTM, return_sequences=False, activation='elu', dropout=self.dropout, recurrent_dropout=self.dropout))(self.lstm_d_in)
 
-        x = Concatenate()([lstm_q_out, lstm_d_out])
-        x = Dropout(self.dropout)(x)
+        self.x = Concatenate()([self.lstm_q_out, self.lstm_d_out])
+        self.x = Dropout(self.dropout)(self.x)
 
-        x = Dense(params.DISC_HIDDEN_SIZE_DENSE,
-                  activation='elu')(x)
-        x = Dense(1, activation='elu')(x)
+        self.x = Dense(params.DISC_HIDDEN_SIZE_DENSE, activation='elu')(self.x)
+        self.x = Dense(1, activation='elu')(self.x)
 
-        score = Reshape([-1])(x)
-        prob = Activation('sigmoid', name='prob')(score)
+        self.score = Reshape([-1])(self.x)
+        self.prob = Activation('sigmoid', name='prob')(self.score)
 
-        model = Model(inputs=[sequence_input_q, sequence_input_d], outputs=[prob])
-        model.summary()
+        self.model = Model(inputs=[self.sequence_input_q, self.sequence_input_d], outputs=[self.prob])
+        self.model.summary()
 
-        model.compile(loss='binary_crossentropy',
+        self.model.compile(loss='binary_crossentropy',
                       optimizer=self.adamw,
                       metrics=['accuracy'])
-
-        return model
 
     def train(self, train_data_queries, train_data_documents, train_data_label):
         return self.model.train_on_batch([train_data_queries, train_data_documents], train_data_label)

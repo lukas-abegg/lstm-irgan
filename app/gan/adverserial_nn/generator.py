@@ -63,13 +63,13 @@ class Generator:
         self.x = Dropout(self.dropout)(self.x)
 
         # we stack a deep fully-connected network on top
-        self.x = Dense(params.GEN_HIDDEN_SIZE_DENSE,
-                       activation='elu')(self.x)
+        self.x = Dense(params.GEN_HIDDEN_SIZE_DENSE, activation='elu')(self.x)
         self.x = Dense(1, activation='elu')(self.x)
 
         # 0.2 should be replaced by self.temperature
         # self.score = Lambda(lambda z: z / 0.2, name='raw_score')(self.x)
-        # self.score = Reshape([-1], name='score')(self.score)
+
+        self.score = Reshape([-1])(self.x)
         self.prob = Activation('softmax', name='prob')(self.score)
 
         self.model = Model(inputs=[self.sequence_input_q, self.sequence_input_d, self.reward, self.important_sampling],
@@ -97,11 +97,11 @@ class Generator:
         return loss
 
     def train(self, train_data_queries, train_data_documents, reward, important_sampling):
-        print(train_data_queries)
-        print(train_data_documents)
-        print(reward)
-        print(important_sampling)
-        print(np.zeros([train_data_queries.shape[0]]))
+        print(train_data_queries[0])
+        print(train_data_documents[0])
+        print(reward[0])
+        print(important_sampling[0])
+
         return self.model.train_on_batch([train_data_queries, train_data_documents, reward, important_sampling],
                                          np.zeros([train_data_queries.shape[0]]))
 
@@ -133,6 +133,8 @@ class Generator:
         print("Loaded model from disk")
 
         gen = Generator(model=loaded_model)
+        gen.model.compile(loss=gen.custom_loss(gen.reward, gen.important_sampling),
+                          optimizer=gen.adamw, metrics=['accuracy'])
         return gen
 
     @staticmethod
