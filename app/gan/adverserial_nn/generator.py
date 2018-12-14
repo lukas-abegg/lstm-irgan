@@ -67,7 +67,7 @@ class Generator:
         self.x = Dense(1, activation='elu')(self.x)
 
         # 0.2 should be replaced by self.temperature
-        # self.score = Lambda(lambda z: z / 0.2, name='raw_score')(self.x)
+        self.score = Lambda(lambda z: z / 0.2, name='raw_score')(self.x)
 
         self.score = Reshape([-1])(self.x)
         self.prob = Activation('softmax', name='prob')(self.score)
