@@ -67,10 +67,10 @@ class Generator:
         self.x = Dense(1, activation='elu')(self.x)
 
         # 0.2 should be replaced by self.temperature
-        self.score = Lambda(lambda z: z / 0.2, name='raw_score')(self.x)
+        #self.score = Lambda(lambda z: z / 0.2, name='raw_score')(self.x)
 
         self.score = Reshape([-1])(self.x)
-        self.prob = Activation('softmax', name='prob')(self.score)
+        self.prob = Activation('sigmoid', name='prob')(self.score)
 
         self.model = Model(inputs=[self.sequence_input_q, self.sequence_input_d, self.reward, self.important_sampling],
                            outputs=[self.prob])
@@ -95,14 +95,16 @@ class Generator:
 
     def train(self, train_data_queries, train_data_documents, reward, important_sampling):
         print("reward / imp_sampling:")
-        print(reward[0])
-        print(important_sampling[0])
+        print(reward)
+        print(important_sampling)
 
         train_data_labels = []
         for i in range(len(reward)):
             y_label = reward[i] * important_sampling[i]
             train_data_labels.append(y_label)
         train_data_labels = np.asarray(train_data_labels)
+
+        print(train_data_labels)
 
         return self.model.train_on_batch([train_data_queries, train_data_documents, reward, important_sampling],
                                          train_data_labels)
