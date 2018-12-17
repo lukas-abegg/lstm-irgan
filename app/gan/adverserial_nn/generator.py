@@ -90,13 +90,13 @@ class Generator:
 
         return _loss
 
-    def train(self, train_data_queries, train_data_documents, reward, important_sampling):
+    def train(self, train_data_queries, train_data_documents, reward, important_sampling, label):
         print("reward / imp_sampling:")
         print(reward)
         print(important_sampling)
 
         return self.model.train_on_batch([train_data_queries, train_data_documents, reward, important_sampling],
-                                         np.zeros([train_data_queries.shape[0]]))
+                                         label)
 
     def get_prob(self, train_data_queries, train_data_documents):
         input_reward = [0.0] * len(train_data_queries)
