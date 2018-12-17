@@ -70,7 +70,7 @@ class Generator:
         self.score = Lambda(lambda z: z / 0.2, name='raw_score')(self.x)
 
         self.score = Reshape([-1])(self.score)
-        self.prob = Activation('sigmoid', name='prob')(self.score)
+        self.prob = Activation('softmax', name='prob')(self.score)
 
         self.model = Model(inputs=[self.sequence_input_q, self.sequence_input_d, self.reward, self.important_sampling],
                            outputs=[self.prob])

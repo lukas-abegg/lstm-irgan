@@ -107,7 +107,7 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
             neg_data_documents = np.asarray(neg_data_documents)
 
             # prepare pos and neg label
-            pos_data_label = [1.0] * len(pos_data_queries)
+            pos_data_label = [train_ratings_data[x[0]][x[1]] for x in input_pos]
             pos_data_label = np.asarray(pos_data_label)
             neg_data_label = [0.0] * len(neg_data_queries)
             neg_data_label = np.asarray(neg_data_label)
@@ -244,7 +244,7 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
                 neg_data_documents = np.asarray(neg_data_documents)
 
                 # prepare pos and neg label
-                pos_data_label = [1.0] * len(pos_data_queries)
+                pos_data_label = [train_ratings_data[x[0]][x[1]] for x in input_pos]
                 pos_data_label = np.asarray(pos_data_label)
                 neg_data_label = [0.0] * len(neg_data_queries)
                 neg_data_label = np.asarray(neg_data_label)
