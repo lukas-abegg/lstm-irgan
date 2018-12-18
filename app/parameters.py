@@ -52,6 +52,11 @@ DOCUMENTS_DIR = WORKDIR + '/data/nfcorpus/all_docs/train.docs'
 QUERIES = WORKDIR + '/data/nfcorpus/all_queries/train.all.queries'
 LABELLED_DATA = WORKDIR + '/data/nfcorpus/all_qrels/3-2-1/train.3-2-1.qrel'
 
+TREC_CDS_2017_DATA = WORKDIR + '/data/trec_pm_2017/data'
+TREC_CDS_2017_QUERIES = TREC_CDS_2017_DATA + '/topics2017.xml'
+TREC_CDS_2017_LABELLED_DATA = TREC_CDS_2017_DATA + '/qrels-final-trials.txt'
+TREC_CDS_2017_DOCUMENTS = '/mnt/fob-wbia-vol2/wbi_stud/abeggluk/trec_2017/clinicaltrials_txt/'
+
 # Training
 POS_TRAINING_DATA_PER_QUERY = 5
 MAX_RELEVANCE = 3

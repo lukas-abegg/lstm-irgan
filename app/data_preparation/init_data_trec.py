@@ -3,6 +3,9 @@ from nltk.corpus import stopwords
 
 import xml.etree.ElementTree as ET
 
+from pathlib import Path
+import os.path
+
 import parameters as params
 
 from keras.preprocessing.text import Tokenizer
@@ -11,24 +14,36 @@ from keras.preprocessing.sequence import pad_sequences
 from data_preparation.preprocessing.preprocess_tokenizer import TokenizePreprocessor
 
 
+def __read_document(path):
+    my_file = Path(path)
+    if my_file.is_file():
+        my_file.read_text()
+    else:
+        return ""
+
+
 def __get_documents():
-    path = params.DOCUMENTS_DIR
+    path = params.TREC_CDS_2017_LABELLED_DATA
     documents = {}
     doc_ids = []
 
     with open(path) as f:
         content = f.readlines()
         for line in content:
-            values = line.split("\t", 1)
-            id = values[0]
-            text = values[1]
+            values = line.split(" ")
+            id = values[2]
+            # /000/00000/NCT00000102.txt
+            folder = id.split("NCT")[1][:3]
+            subfolder = id.split("NCT")[1][:5]
+            path = params.TREC_CDS_2017_DOCUMENTS + "/" + folder + "/" + subfolder + "/" + id + ".txt"
+            text = __read_document(path)
             documents[id] = text
             doc_ids.append(id)
     return documents, doc_ids
 
 
 def __get_queries():
-    path = params.QUERIES
+    path = params.TREC_CDS_2017_QUERIES
     topics = {}
     topic_ids = []
 
@@ -52,7 +67,7 @@ def __get_queries():
 
 
 def __get_ratings():
-    path = params.LABELLED_DATA
+    path = params.TREC_CDS_2017_LABELLED_DATA
     ratings = {}
 
     with open(path) as f:
@@ -79,6 +94,34 @@ def __filter_stop_words(texts, stop_words):
 
 
 def __init_tokenizer(text_data, max_sequence_length):
+    texts = list(text_data.values())
+    ids = list(text_data.keys())
+
+    nltk.download('stopwords')
+    stop_words = set(stopwords.words('english'))
+    stop_words.update(['.', ',', '"', "'", ':', ';', '(', ')', '[', ']', '{', '}', '’'])
+    texts = __filter_stop_words(texts, stop_words)
+
+    # finally, vectorize the text samples into a 2D integer tensor
+    preTokenizer = TokenizePreprocessor(rules=False)
+    texts = preTokenizer.fit_transform(texts)
+    tokenizer = Tokenizer(num_words=params.MAX_NUM_WORDS)
+    tokenizer.fit_on_texts(texts)
+    sequences = tokenizer.texts_to_sequences(texts)
+
+    word_index = tokenizer.word_index
+    print('Found %s unique tokens.' % len(word_index))
+
+    data = pad_sequences(sequences, maxlen=max_sequence_length)
+
+    text_data_sequenced = {}
+    for i, text in enumerate(data):
+        text_data_sequenced[ids[i]] = text
+
+    return tokenizer, text_data_sequenced
+
+
+def __init_tokenizer_documents(text_data, max_sequence_length):
     texts = list(text_data.values())
     ids = list(text_data.keys())
 
