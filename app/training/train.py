@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 import parameters as params
 from gan.adverserial_nn.generator import Generator
 from gan.adverserial_nn.discriminator import Discriminator
+from gan.adverserial_nn.generator_pretrain import GeneratorPretrain
 from gan.layers import init_w2v_embeddings, init_fasttext_model_embeddings
 import evaluation.metrics.precision_k as p_k
 import evaluation.metrics.ndcg_k as ndcg_k
@@ -68,7 +69,7 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
 
     print('Build generator network')
     samples_per_epoc = len(x_train) * params.POS_TRAINING_DATA_PER_QUERY * 2
-    gen = Generator.create_model(samples_per_epoc, weight_decay, learning_rate, temperature, dropout, embedding_layer_q, embedding_layer_d, sess=sess)
+    gen_pretrain = GeneratorPretrain.create_model(samples_per_epoc, weight_decay, learning_rate, temperature, dropout, embedding_layer_q, embedding_layer_d, sess=sess)
 
     print('Start pre-model training')
     # Train Discriminator
@@ -131,74 +132,72 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
     for g_epoch in range(params.GEN_TRAIN_EPOCHS):
         print('now_ G_epoch : ', str(g_epoch))
 
-        x = 0
-        len_queries = len(x_train)
+        pos_neg_data = []
+        pos_neg_size = 0
+        if g_epoch % params.GEN_TRAIN_EPOCHS == 0:
+            # Generator generate negative for Discriminator, then train Discriminator
+            pos_neg_data = __generate_negatives_for_discriminator_pretrain(x_train, train_ratings_data, queries_data,
+                                                                           documents_data)
+            pos_neg_size = len(pos_neg_data)
 
-        for query_id in x_train:
+        print('train on batches of size: ', params.GEN_BATCH_SIZE)
+        i = 1
+        while i <= pos_neg_size:
+            batch_index = i - 1
+            if i + params.GEN_BATCH_SIZE <= pos_neg_size:
+                input_pos, input_neg = __get_batch_data(pos_neg_data, batch_index, params.GEN_BATCH_SIZE)
+            else:
+                input_pos, input_neg = __get_batch_data(pos_neg_data, batch_index, pos_neg_size - batch_index)
 
-            # get all query specific ratings
-            x_pos_list, candidate_list = __get_query_specific_data(query_id, ratings_data, documents_data)
-            x_pos_set = set(x_pos_list)
+            i += params.GEN_BATCH_SIZE
 
-            prob, doc_ids, data_queries, data_documents = __get_rand_batch_from_candidates_for_generator(gen, query_id,
-                                                                                                queries_data,
-                                                                                                documents_data,
-                                                                                                candidate_list,
-                                                                                                x_pos_list)
+            # prepare pos and neg data
+            pos_data_queries = [queries_data[x[0]] for x in input_pos]
+            pos_data_documents = [documents_data[x[1]] for x in input_pos]
+            neg_data_queries = [queries_data[x[0]] for x in input_neg]
+            neg_data_documents = [documents_data[x[1]] for x in input_neg]
 
-            # important sampling, change doc prob
-            prob_is = prob * (1.0 - params.GEN_LAMBDA)
+            pos_data_queries = np.asarray(pos_data_queries)
+            neg_data_queries = np.asarray(neg_data_queries)
 
-            print("prob_is of gen: " + str(prob_is))
+            pos_data_documents = np.asarray(pos_data_documents)
+            neg_data_documents = np.asarray(neg_data_documents)
 
-            for i in range(len(doc_ids)):
-                if doc_ids[i] in x_pos_set:
-                    prob_is[i] += (params.GEN_LAMBDA / (1.0 * len(x_pos_list)))
+            # prepare pos and neg label
+            pos_data_label = [1.0] * len(pos_data_queries)
+            pos_data_label = np.asarray(pos_data_label)
+            neg_data_label = [0.0] * len(neg_data_queries)
+            neg_data_label = np.asarray(neg_data_label)
 
-            print("prob_is of gen after lambda: " + str(prob_is))
-
-            # G generate some url (2 * postive doc num)
-            prob_is_rand = np.asarray(prob_is) / np.asarray(prob_is).sum(axis=0, keepdims=1)
-            choose_index = np.random.choice(np.arange(len(doc_ids)), [2 * len(x_pos_list)], p=prob_is_rand)
-
-            # choose data
-            choose_queries = np.array(data_queries)[choose_index]
-            choose_documents = np.array(data_documents)[choose_index]
-
-            # prob / important sampling prob (loss => prob * reward * prob / important sampling prob)
-            choose_is = np.array(prob)[choose_index] / np.array(prob_is)[choose_index]
-
-            choose_queries = np.asarray(choose_queries)
-            choose_documents = np.asarray(choose_documents)
-
-            choose_is = np.asarray(choose_is)
-
-            # get reward((prob  - 0.5) * 2 )
-            choose_reward = disc.get_reward(choose_queries, choose_documents)
-
-            label = np.asarray(prob)
-
-            x += 1
-            print("Generator epoch: ", str(g_epoch), " with query: ", str(x), " of ", str(len_queries))
+            print("Pretrain Generator epoch: ", str(g_epoch), "with batch: ", str(batch_index), " to ", str(i - 1), " of ",
+                  str(pos_neg_size))
             # train
-            g_loss = gen.train(choose_queries, choose_documents, choose_reward.reshape([-1]), choose_is, label)
+            g_loss_real = gen_pretrain.train(pos_data_queries, pos_data_documents, pos_data_label)
+            g_loss_fake = gen_pretrain.train(neg_data_queries, neg_data_documents, neg_data_label)
+            g_loss = 0.5 * np.add(g_loss_real, g_loss_fake)
 
             # Plot the progress
             g_acc = 100 * g_loss[1]
             g_loss_val = g_loss[0]
 
-            print("%s [G loss: %f, acc.: %.2f%%]" % (str(x), g_loss_val, g_acc))
-            experiment.log_metric("pretrain_gen_accuracy", g_acc, x)
-            experiment.log_metric("pretrain_gen_loss", g_loss_val, x)
+            print("%s [G loss: %f, acc.: %.2f%%]" % (str(batch_index) + "_" + str(i - 1), g_loss_val, g_acc))
+            experiment.log_metric("pretrain_gen_accuracy", g_acc, i - 1)
+            experiment.log_metric("pretrain_gen_loss", g_loss_val, i - 1)
 
-    return gen, disc
+    gen_pretrain.save_model_to_weights(params.SAVED_MODEL_GEN_JSON, params.SAVED_MODEL_GEN_WEIGHTS)
+    return gen_pretrain, disc
 
 
 def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout, experiment=None):
     train_ratings_data, train_queries_data, train_documents_data = __build_train_data(x_train, ratings_data, queries_data, documents_data)
 
     disc = disc_pre
-    gen = gen_pre
+
+    samples_per_epoc = len(x_train) * params.POS_TRAINING_DATA_PER_QUERY * 2
+    embedding_layer_q, embedding_layer_d = __get_embedding_layers(tokenizer_q, tokenizer_d)
+    gen = Generator.create_model(samples_per_epoc, weight_decay, learning_rate, temperature, dropout,
+                                                  embedding_layer_q, embedding_layer_d, sess=sess)
+    gen = gen.load_weights_for_model(params.SAVED_MODEL_GEN_WEIGHTS)
 
     # Initialize data for eval
     p_best_val = 0.0
