@@ -9,7 +9,7 @@ import numpy as np
 import parameters as params
 
 
-class Generator:
+class GeneratorPretrain:
     def __init__(self, samples_per_epoch=0, weight_decay=None, learning_rate=None, temperature=1.0, dropout=0.2,
                  embedding_layer_q=None, embedding_layer_d=None, model=None, sess=None):
         self.weight_decay = weight_decay
@@ -77,27 +77,16 @@ class Generator:
 
         self.model.summary()
 
-        self.model.compile(loss=self.loss(self.reward, self.important_sampling),
+        self.model.compile(loss='binary_crossentropy',
                            optimizer=self.adamw,
                            metrics=['accuracy'])
 
-    @staticmethod
-    def loss(_reward, _important_sampling):
-        def _loss(y_true, y_pred):
-            log_action_prob = K.log(y_pred)
-            loss = - K.reshape(log_action_prob, [-1]) * K.reshape(_reward, [-1]) * K.reshape(_important_sampling, [-1])
-            loss = K.mean(loss)
-            return loss
-
-        return _loss
-
-    def train(self, train_data_queries, train_data_documents, reward, important_sampling, label):
-        print("reward / imp_sampling:")
-        print(reward)
-        print(important_sampling)
-
-        return self.model.train_on_batch([train_data_queries, train_data_documents, reward, important_sampling],
-                                         label)
+    def train(self, train_data_queries, train_data_documents, train_data_label):
+        input_reward = [0.0] * len(train_data_queries)
+        input_reward = np.asarray(input_reward)
+        input_important_sampling = [0.0] * len(train_data_queries)
+        input_important_sampling = np.asarray(input_important_sampling)
+        return self.model.train_on_batch([train_data_queries, train_data_documents, input_reward, input_important_sampling], train_data_label)
 
     def get_prob(self, train_data_queries, train_data_documents):
         input_reward = [0.0] * len(train_data_queries)
@@ -126,17 +115,7 @@ class Generator:
         loaded_model = load_model(filepath)
         print("Loaded model from disk")
 
-        gen = Generator(model=loaded_model)
-        gen.model.compile(loss=gen.loss(gen.reward, gen.important_sampling),
-                          optimizer=gen.adamw, metrics=['accuracy'])
-        return gen
-
-    def load_weights_for_model(self, filepath_weights):
-        # load weights into new model
-        self.model.load_weights(filepath_weights)
-        print("Loaded model from disk")
-
-        gen = Generator(model=self.model)
+        gen = GeneratorPretrain(model=loaded_model)
         gen.model.compile(loss=gen.loss(gen.reward, gen.important_sampling),
                           optimizer=gen.adamw, metrics=['accuracy'])
         return gen
@@ -152,7 +131,7 @@ class Generator:
         loaded_model.load_weights(filepath_weights)
         print("Loaded model from disk")
 
-        gen = Generator(model=loaded_model)
+        gen = GeneratorPretrain(model=loaded_model)
         gen.model.compile(loss=gen.loss(gen.reward, gen.important_sampling),
                           optimizer=gen.adamw, metrics=['accuracy'])
         return gen
@@ -161,6 +140,6 @@ class Generator:
     def create_model(samples_per_epoch, weight_decay, learning_rate, temperature, dropout, embedding_layer_q,
                      embedding_layer_d, sess):
 
-        gen = Generator(samples_per_epoch, weight_decay, learning_rate, temperature, dropout, embedding_layer_q,
+        gen = GeneratorPretrain(samples_per_epoch, weight_decay, learning_rate, temperature, dropout, embedding_layer_q,
                         embedding_layer_d, sess=sess)
         return gen

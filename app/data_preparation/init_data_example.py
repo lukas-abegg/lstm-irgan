@@ -81,8 +81,6 @@ def __init_tokenizer(text_data, max_sequence_length):
     texts = __filter_stop_words(texts, stop_words)
 
     # finally, vectorize the text samples into a 2D integer tensor
-    preTokenizer = TokenizePreprocessor(rules=False)
-    texts = preTokenizer.fit_transform(texts)
     tokenizer = Tokenizer(num_words=params.MAX_NUM_WORDS)
     tokenizer.fit_on_texts(texts)
     sequences = tokenizer.texts_to_sequences(texts)
