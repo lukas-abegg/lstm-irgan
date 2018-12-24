@@ -61,10 +61,10 @@ EVAL_K = 5
 EVAL_N_DOCS = 100
 
 # Save models
-SAVED_MODEL_DISC_FILE = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/disc_model.h5"
-SAVED_MODEL_GEN_FILE = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/gen_model.h5"
-SAVED_MODEL_GEN_JSON = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/gen_model_json.json"
-SAVED_MODEL_GEN_WEIGHTS = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/gen_model_weights.h5"
+SAVED_MODEL_DISC_FILE = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/test_sigmoid/disc_model.h5"
+SAVED_MODEL_GEN_FILE = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/test_sigmoid/gen_model.h5"
+SAVED_MODEL_GEN_JSON = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/test_sigmoid/gen_model_json.json"
+SAVED_MODEL_GEN_WEIGHTS = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/test_sigmoid/gen_model_weights.h5"
 
 # Plotting
 PLOTTED_MODEL_FILE = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/plot_model.png"
