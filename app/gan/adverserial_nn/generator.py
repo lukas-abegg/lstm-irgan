@@ -136,10 +136,9 @@ class Generator:
         self.model.load_weights(filepath_weights)
         print("Loaded model from disk")
 
-        gen = Generator(model=self.model)
-        gen.model.compile(loss=gen.loss(gen.reward, gen.important_sampling),
-                          optimizer=gen.adamw, metrics=['accuracy'])
-        return gen
+        self.model.compile(loss=self.loss(self.reward, self.important_sampling),
+                          optimizer=self.adamw, metrics=['accuracy'])
+        return self.model
 
     @staticmethod
     def load_model_from_weights(filepath_json, filepath_weights):
