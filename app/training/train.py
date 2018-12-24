@@ -312,12 +312,10 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
                 # get reward((prob  - 0.5) * 2 )
                 choose_reward = disc.get_reward(choose_queries, choose_documents)
 
-                label = np.asarray(prob)
-
                 x += 1
                 print("Generator epoch: ", str(g_epoch), " with query: ", str(x), " of ", str(len_queries))
                 # train
-                g_loss = gen.train(choose_queries, choose_documents, choose_reward.reshape([-1]), choose_is, label)
+                g_loss = gen.train(choose_queries, choose_documents, choose_reward.reshape([-1]), choose_is)
 
                 # Plot the progress
                 g_acc = 100 * g_loss[1]

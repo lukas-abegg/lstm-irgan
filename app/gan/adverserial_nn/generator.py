@@ -91,14 +91,11 @@ class Generator:
 
         return _loss
 
-    def train(self, train_data_queries, train_data_documents, reward, important_sampling, label):
+    def train(self, train_data_queries, train_data_documents, reward, important_sampling):
         print("reward / imp_sampling:")
         print(reward)
         print(important_sampling)
-        print(len(train_data_queries))
-        print(len(train_data_queries))
-        print(len(label))
-        print(label)
+        label = np.zeros(len(train_data_queries))
 
         return self.model.train_on_batch([train_data_queries, train_data_documents, reward, important_sampling],
                                          label)
