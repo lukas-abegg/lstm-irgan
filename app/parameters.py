@@ -1,5 +1,5 @@
 # Base dirs
-WORKDIR = '/home/abeggluk/lstm-irgan'
+WORKDIR = '/home/abeggluk/test/lstm-irgan'
 
 # Hyperparameter Optimization
 USE_HYPERPARAM_OPT = False
@@ -61,10 +61,10 @@ EVAL_K = 5
 EVAL_N_DOCS = 100
 
 # Save models
-SAVED_MODEL_DISC_FILE = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/sigmoid/disc_model.h5"
-SAVED_MODEL_GEN_FILE = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/sigmoid/gen_model.h5"
-SAVED_MODEL_GEN_JSON = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/sigmoid/gen_model_json.json"
-SAVED_MODEL_GEN_WEIGHTS = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/sigmoid/gen_model_weights.h5"
+SAVED_MODEL_DISC_FILE = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/sigmoid_test/disc_model.h5"
+SAVED_MODEL_GEN_FILE = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/sigmoid_test/gen_model.h5"
+SAVED_MODEL_GEN_JSON = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/sigmoid_test/gen_model_json.json"
+SAVED_MODEL_GEN_WEIGHTS = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/sigmoid_test/gen_model_weights.h5"
 
 # Plotting
 PLOTTED_MODEL_FILE = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/plot_model.png"
