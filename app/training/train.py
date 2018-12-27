@@ -116,8 +116,11 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
             print("Discriminator epoch: ", str(d_epoch), "with batch: ", str(batch_index), " to ", str(i-1), " of ", str(pos_neg_size))
             # train
             d_loss_real = disc.train(pos_data_queries, pos_data_documents, pos_data_label)
+            print("d_loss_real:", d_loss_real)
             d_loss_fake = disc.train(neg_data_queries, neg_data_documents, neg_data_label)
+            print("d_loss_fake:", d_loss_fake)
             d_loss = 0.5 * np.add(d_loss_real, d_loss_fake)
+            print("d_loss:", d_loss)
 
             # Plot the progress
             d_acc = 100 * d_loss[1]
@@ -173,8 +176,11 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
                   str(pos_neg_size))
             # train
             g_loss_real = gen_pretrain.train(pos_data_queries, pos_data_documents, pos_data_label)
+            print("g_loss_real:", g_loss_real)
             g_loss_fake = gen_pretrain.train(neg_data_queries, neg_data_documents, neg_data_label)
+            print("g_loss_fake:", g_loss_fake)
             g_loss = 0.5 * np.add(g_loss_real, g_loss_fake)
+            print("g_loss:", g_loss)
 
             # Plot the progress
             g_acc = 100 * g_loss[1]
@@ -254,9 +260,11 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
                       " of ", str(pos_neg_size))
                 # train
                 d_loss_real = disc.train(pos_data_queries, pos_data_documents, pos_data_label)
+                print("d_loss_real:",d_loss_real)
                 d_loss_fake = disc.train(neg_data_queries, neg_data_documents, neg_data_label)
+                print("d_loss_fake:", d_loss_fake)
                 d_loss = 0.5 * np.add(d_loss_real, d_loss_fake)
-
+                print("d_loss:", d_loss)
                 # Plot the progress
                 d_acc = 100 * d_loss[1]
                 d_loss_val = d_loss[0]
@@ -312,12 +320,11 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
                 # get reward((prob  - 0.5) * 2 )
                 choose_reward = disc.get_reward(choose_queries, choose_documents)
 
-                label = np.asarray(prob)
-
                 x += 1
                 print("Generator epoch: ", str(g_epoch), " with query: ", str(x), " of ", str(len_queries))
                 # train
-                g_loss = gen.train(choose_queries, choose_documents, choose_reward.reshape([-1]), choose_is, label)
+                g_loss = gen.train(choose_queries, choose_documents, choose_reward.reshape([-1]), choose_is)
+                print("g_loss:",g_loss)
 
                 # Plot the progress
                 g_acc = 100 * g_loss[1]

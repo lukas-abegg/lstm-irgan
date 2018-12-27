@@ -91,10 +91,11 @@ class Generator:
 
         return _loss
 
-    def train(self, train_data_queries, train_data_documents, reward, important_sampling, label):
+    def train(self, train_data_queries, train_data_documents, reward, important_sampling):
         print("reward / imp_sampling:")
         print(reward)
         print(important_sampling)
+        label = np.zeros(len(train_data_queries))
 
         return self.model.train_on_batch([train_data_queries, train_data_documents, reward, important_sampling],
                                          label)
@@ -136,10 +137,9 @@ class Generator:
         self.model.load_weights(filepath_weights)
         print("Loaded model from disk")
 
-        gen = Generator(model=self.model)
-        gen.model.compile(loss=gen.loss(gen.reward, gen.important_sampling),
-                          optimizer=gen.adamw, metrics=['accuracy'])
-        return gen
+        self.model.compile(loss=self.loss(self.reward, self.important_sampling),
+                          optimizer=self.adamw, metrics=['accuracy'])
+        return self
 
     @staticmethod
     def load_model_from_weights(filepath_json, filepath_weights):
