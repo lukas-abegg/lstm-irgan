@@ -68,7 +68,7 @@ def __filter_stop_words(texts, stop_words):
     return texts
 
 
-def __init_tokenizer(text_data, max_sequence_length):
+def __init_tokenizer(text_data, max_sequence_length, max_num_words):
     texts = list(text_data.values())
     ids = list(text_data.keys())
 
@@ -78,7 +78,7 @@ def __init_tokenizer(text_data, max_sequence_length):
     texts = __filter_stop_words(texts, stop_words)
 
     # finally, vectorize the text samples into a 2D integer tensor
-    tokenizer = Tokenizer(num_words=params.MAX_NUM_WORDS)
+    tokenizer = Tokenizer(num_words=max_num_words)
     tokenizer.fit_on_texts(texts)
     sequences = tokenizer.texts_to_sequences(texts)
 
@@ -100,9 +100,9 @@ def get_data():
     ratings_data = __get_ratings()
 
     print('Tokenize queries')
-    tokenizer_q, queries_data = __init_tokenizer(queries_data, params.MAX_SEQUENCE_LENGTH)
+    tokenizer_q, queries_data = __init_tokenizer(queries_data, params.MAX_SEQUENCE_LENGTH_QUERIES, params.MAX_NUM_WORDS_QUERIES)
     print('Tokenize documents')
-    tokenizer_d, documents_data = __init_tokenizer(documents_data, params.MAX_SEQUENCE_LENGTH)
+    tokenizer_d, documents_data = __init_tokenizer(documents_data, params.MAX_SEQUENCE_LENGTH_DOCS, params.MAX_NUM_WORDS_DOCS)
 
     print('Found %s training data.' % len(ratings_data))
 

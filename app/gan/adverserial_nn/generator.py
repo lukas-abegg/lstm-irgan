@@ -35,7 +35,7 @@ class Generator:
     def __init_model(self):
         # create model
 
-        self.sequence_input_q = Input(shape=(params.MAX_SEQUENCE_LENGTH,), dtype='int32', name='input_query')
+        self.sequence_input_q = Input(shape=(params.MAX_SEQUENCE_LENGTH_QUERIES,), dtype='int32', name='input_query')
         self.embedded_sequences_q = self.embeddings_layer_q(self.sequence_input_q)
 
         self.lstm_q_in = Bidirectional(
@@ -47,7 +47,7 @@ class Generator:
             GRU(params.GEN_HIDDEN_SIZE_LSTM, kernel_initializer='random_uniform', return_sequences=False, activation='elu', dropout=self.dropout,
                 recurrent_dropout=self.dropout))(self.lstm_q_in)
 
-        self.sequence_input_d = Input(shape=(params.MAX_SEQUENCE_LENGTH,), dtype='int32', name='input_doc')
+        self.sequence_input_d = Input(shape=(params.MAX_SEQUENCE_LENGTH_DOCS,), dtype='int32', name='input_doc')
         self.embedded_sequences_d = self.embeddings_layer_d(self.sequence_input_d)
 
         self.lstm_d_in = Bidirectional(

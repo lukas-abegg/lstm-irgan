@@ -40,19 +40,19 @@ def __get_embedding_layers(tokenizer_q, tokenizer_d) -> (Embedding, Embedding):
         embedding_model = init_fasttext_model_embeddings.load_model()
         print('Prepare embedding-layer for queries')
         embedding_layer_q = init_fasttext_model_embeddings.init_embedding_layer(tokenizer_q, embedding_model,
-                                                                     params.MAX_SEQUENCE_LENGTH)
+                                                                     params.MAX_SEQUENCE_LENGTH_QUERIES, params.MAX_NUM_WORDS_QUERIES)
         print('Prepare embedding-layer for documents')
         embedding_layer_d = init_fasttext_model_embeddings.init_embedding_layer(tokenizer_d, embedding_model,
-                                                                     params.MAX_SEQUENCE_LENGTH)
+                                                                     params.MAX_SEQUENCE_LENGTH_DOCS, params.MAX_NUM_WORDS_DOCS)
     else:
         print('Load embeddings')
         embedding_index = init_w2v_embeddings.build_index_mapping()
         print('Prepare embedding-layer for queries')
         embedding_layer_q = init_w2v_embeddings.init_embedding_layer(tokenizer_q, embedding_index,
-                                                                     params.MAX_SEQUENCE_LENGTH)
+                                                                     params.MAX_SEQUENCE_LENGTH_QUERIES, params.MAX_NUM_WORDS_QUERIES)
         print('Prepare embedding-layer for documents')
         embedding_layer_d = init_w2v_embeddings.init_embedding_layer(tokenizer_d, embedding_index,
-                                                                     params.MAX_SEQUENCE_LENGTH)
+                                                                     params.MAX_SEQUENCE_LENGTH_DOCS, params.MAX_NUM_WORDS_DOCS)
     return embedding_layer_q, embedding_layer_d
 
 

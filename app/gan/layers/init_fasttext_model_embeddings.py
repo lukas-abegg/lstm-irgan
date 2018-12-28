@@ -15,14 +15,14 @@ def load_model():
     return model
 
 
-def __build_embeddings_matrix(tokenizer: Tokenizer, model):
+def __build_embeddings_matrix(tokenizer: Tokenizer, model, max_num_words):
     print('Preparing embedding matrix.')
     word_index = tokenizer.word_index
-    num_words = min(params.MAX_NUM_WORDS, len(word_index)) + 1
+    num_words = min(max_num_words, len(word_index)) + 1
     embeddings_matrix = np.zeros((num_words, params.EMBEDDING_DIM))
 
     for word, i in word_index.items():
-        if i > params.MAX_NUM_WORDS:
+        if i > max_num_words:
             continue
         embedding_vector = model[word]
         if embedding_vector is not None:
@@ -42,7 +42,7 @@ def __build_embeddings_layer(num_words, embeddings_matrix, max_sequence_length):
     return embeddings_layer
 
 
-def init_embedding_layer(tokenizer, model, max_sequence_length):
-    num_words, embeddings_matrix = __build_embeddings_matrix(tokenizer, model)
+def init_embedding_layer(tokenizer, model, max_sequence_length, max_num_words):
+    num_words, embeddings_matrix = __build_embeddings_matrix(tokenizer, model, max_num_words)
     embeddings_layer = __build_embeddings_layer(num_words, embeddings_matrix, max_sequence_length)
     return embeddings_layer
