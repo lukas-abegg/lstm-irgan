@@ -60,17 +60,17 @@ class Generator:
                 recurrent_dropout=self.dropout))(self.lstm_d_in)
 
         self.x = Concatenate()([self.lstm_q_out, self.lstm_d_out])
-        self.x = Dropout(self.dropout)(self.x)
+        #self.x = Dropout(self.dropout)(self.x)
 
         # we stack a deep fully-connected network on top
         self.x = Dense(params.GEN_HIDDEN_SIZE_DENSE, activation='elu', kernel_regularizer=regularizers.l2(self.weight_decay), kernel_initializer='random_uniform')(self.x)
         self.x = Dense(1, kernel_regularizer=regularizers.l2(self.weight_decay), kernel_initializer='random_uniform')(self.x)
 
         # 0.2 should be replaced by self.temperature
-        self.score = Lambda(lambda z: z / 0.2, name='raw_score')(self.x)
+        #self.score = Lambda(lambda z: z / 0.2, name='raw_score')(self.x)
 
-        self.score = Reshape([-1])(self.score)
-        self.prob = Activation('sigmoid', name='prob')(self.score)
+        #self.score = Reshape([-1])(self.score)
+        self.prob = Activation('sigmoid', name='prob')(self.x)
 
         self.model = Model(inputs=[self.sequence_input_q, self.sequence_input_d, self.reward, self.important_sampling],
                            outputs=[self.prob])
@@ -78,7 +78,7 @@ class Generator:
         self.model.summary()
 
         self.model.compile(loss=self.loss(self.reward, self.important_sampling),
-                           optimizer=self.adamw,
+                           optimizer='adam',
                            metrics=['accuracy'])
 
     @staticmethod
@@ -138,7 +138,7 @@ class Generator:
         print("Loaded model from disk")
 
         self.model.compile(loss=self.loss(self.reward, self.important_sampling),
-                          optimizer=self.adamw, metrics=['accuracy'])
+                          optimizer='adam', metrics=['accuracy'])
         return self
 
     @staticmethod
@@ -154,7 +154,7 @@ class Generator:
 
         gen = Generator(model=loaded_model)
         gen.model.compile(loss=gen.loss(gen.reward, gen.important_sampling),
-                          optimizer=gen.adamw, metrics=['accuracy'])
+                          optimizer='adam', metrics=['accuracy'])
         return gen
 
     @staticmethod

@@ -46,19 +46,19 @@ class Discriminator:
         self.lstm_d_out = Bidirectional(GRU(params.DISC_HIDDEN_SIZE_LSTM, kernel_initializer='random_uniform', return_sequences=False, activation='elu', dropout=self.dropout, recurrent_dropout=self.dropout))(self.lstm_d_in)
 
         self.x = Concatenate()([self.lstm_q_out, self.lstm_d_out])
-        self.x = Dropout(self.dropout)(self.x)
+        #self.x = Dropout(self.dropout)(self.x)
 
         self.x = Dense(params.DISC_HIDDEN_SIZE_DENSE, activation='elu', kernel_regularizer=regularizers.l2(self.weight_decay), kernel_initializer='random_uniform')(self.x)
         self.x = Dense(1, kernel_regularizer=regularizers.l2(self.weight_decay), kernel_initializer='random_uniform')(self.x)
 
-        self.score = Reshape([-1])(self.x)
-        self.prob = Activation('sigmoid', name='prob')(self.score)
+        #self.score = Reshape([-1])(self.x)
+        self.prob = Activation('sigmoid', name='prob')(self.x)
 
         self.model = Model(inputs=[self.sequence_input_q, self.sequence_input_d], outputs=[self.prob])
         self.model.summary()
 
         self.model.compile(loss='binary_crossentropy',
-                      optimizer=self.adamw,
+                      optimizer='adam',
                       metrics=['accuracy'])
 
     def train(self, train_data_queries, train_data_documents, train_data_label):
@@ -77,7 +77,7 @@ class Discriminator:
         print("Loaded model from disk")
 
         disc = Discriminator(model=loaded_model)
-        disc.model.compile(loss='binary_crossentropy', optimizer=disc.adamw, metrics=['accuracy'])
+        disc.model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
         return disc
 
     @staticmethod
