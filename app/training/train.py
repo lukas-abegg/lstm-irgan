@@ -442,6 +442,7 @@ def __get_rand_batch_from_candidates_for_negatives(gen, query_id, queries_data, 
     # Importance Sampling
     prob = gen.get_prob(data_queries, data_documents)
     prob = prob.reshape([-1])
+    print("__get_rand_batch_from_candidates_for_negatives: prob = ", prob)
 
     return prob, doc_ids, data_queries, data_documents
 

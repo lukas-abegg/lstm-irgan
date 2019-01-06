@@ -57,11 +57,14 @@ class Discriminator:
         self.model.summary()
 
         self.model.compile(loss='binary_crossentropy',
-                      optimizer=self.adamw,
-                      metrics=['accuracy'])
+                           optimizer=self.adamw,
+                           metrics=['accuracy'])
 
     def train(self, train_data_queries, train_data_documents, train_data_label):
         return self.model.train_on_batch([train_data_queries, train_data_documents], train_data_label)
+
+    def get_prob(self, train_data_queries, train_data_documents):
+        return self.model.predict([train_data_queries, train_data_documents], batch_size=params.DISC_BATCH_SIZE)
 
     def get_reward(self, train_data_queries, train_data_documents):
         return (self.model.predict([train_data_queries, train_data_documents], batch_size=params.DISC_BATCH_SIZE) - 0.5) * 2
