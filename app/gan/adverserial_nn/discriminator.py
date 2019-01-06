@@ -1,7 +1,7 @@
 from keras import regularizers
 from keras.layers import Dense, Activation, Bidirectional, Embedding, GRU, Concatenate
-from keras.layers.core import Reshape, Dropout
-from keras.models import Model, Input, load_model
+from keras.layers.core import Dropout
+from keras.models import Model, Input, load_model, model_from_json
 
 from gan.optimizer.AdamW import AdamW
 
@@ -46,19 +46,18 @@ class Discriminator:
         self.lstm_d_out = Bidirectional(GRU(params.DISC_HIDDEN_SIZE_LSTM, kernel_initializer='random_uniform', return_sequences=False, activation='elu', dropout=self.dropout, recurrent_dropout=self.dropout))(self.lstm_d_in)
 
         self.x = Concatenate()([self.lstm_q_out, self.lstm_d_out])
-        #self.x = Dropout(self.dropout)(self.x)
+        self.x = Dropout(self.dropout)(self.x)
 
         self.x = Dense(params.DISC_HIDDEN_SIZE_DENSE, activation='elu', kernel_regularizer=regularizers.l2(self.weight_decay), kernel_initializer='random_uniform')(self.x)
         self.x = Dense(1, kernel_regularizer=regularizers.l2(self.weight_decay), kernel_initializer='random_uniform')(self.x)
 
-        #self.score = Reshape([-1])(self.x)
         self.prob = Activation('sigmoid', name='prob')(self.x)
 
         self.model = Model(inputs=[self.sequence_input_q, self.sequence_input_d], outputs=[self.prob])
         self.model.summary()
 
         self.model.compile(loss='binary_crossentropy',
-                      optimizer='adam',
+                      optimizer=self.adamw,
                       metrics=['accuracy'])
 
     def train(self, train_data_queries, train_data_documents, train_data_label):
@@ -71,13 +70,45 @@ class Discriminator:
         self.model.save(filepath)
         print("Saved model to disk")
 
+    def save_model_to_weights(self, filepath_json, filepath_weights):
+        # serialize model to JSON
+        model_json = self.model.to_json()
+        with open(filepath_json, "w") as json_file:
+            json_file.write(model_json)
+        # serialize weights to HDF5
+        self.model.save_weights(filepath_weights)
+        print("Saved model weights to disk")
+
     @staticmethod
     def load_model_from_file(filepath):
         loaded_model = load_model(filepath)
         print("Loaded model from disk")
 
         disc = Discriminator(model=loaded_model)
-        disc.model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+        disc.model.compile(loss='binary_crossentropy', optimizer=disc.adamw, metrics=['accuracy'])
+        return disc
+
+    def load_weights_for_model(self, filepath_weights):
+        # load weights into new model
+        self.model.load_weights(filepath_weights)
+        print("Loaded model from disk")
+
+        self.model.compile(loss='binary_crossentropy', optimizer=self.adamw, metrics=['accuracy'])
+        return self
+
+    @staticmethod
+    def load_model_from_weights(filepath_json, filepath_weights):
+        # load json and create model
+        json_file = open(filepath_json, 'r')
+        loaded_model_json = json_file.read()
+        json_file.close()
+        loaded_model = model_from_json(loaded_model_json)
+        # load weights into new model
+        loaded_model.load_weights(filepath_weights)
+        print("Loaded model from disk")
+
+        disc = Discriminator(model=loaded_model)
+        disc.model.compile(loss='binary_crossentropy', optimizer=disc.adamw, metrics=['accuracy'])
         return disc
 
     @staticmethod

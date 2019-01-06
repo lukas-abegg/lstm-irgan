@@ -2,6 +2,7 @@ import numpy as np
 import random
 
 from keras.layers import Embedding
+from keras.utils import to_categorical
 
 from sklearn.model_selection import train_test_split
 
@@ -169,8 +170,11 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
             # prepare pos and neg label
             pos_data_label = [1.0] * len(pos_data_queries)
             pos_data_label = np.asarray(pos_data_label)
+            pos_data_label = to_categorical(pos_data_label)
+
             neg_data_label = [0.0] * len(neg_data_queries)
             neg_data_label = np.asarray(neg_data_label)
+            neg_data_label = to_categorical(neg_data_label)
 
             print("Pretrain Generator epoch: ", str(g_epoch), "with batch: ", str(batch_index), " to ", str(i - 1), " of ",
                   str(pos_neg_size))
@@ -324,7 +328,7 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
                 print("Generator epoch: ", str(g_epoch), " with query: ", str(x), " of ", str(len_queries))
                 # train
                 g_loss = gen.train(choose_queries, choose_documents, choose_reward.reshape([-1]), choose_is)
-                print("g_loss:",g_loss)
+                print("g_loss:", g_loss)
 
                 # Plot the progress
                 g_acc = 100 * g_loss[1]

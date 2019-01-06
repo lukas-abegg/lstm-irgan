@@ -1,6 +1,6 @@
-from keras import backend as K, regularizers
-from keras.layers import Bidirectional, Embedding, GRU, Dense, Activation, Lambda, Concatenate
-from keras.layers.core import Reshape, Dropout
+from keras import regularizers
+from keras.layers import Bidirectional, Embedding, GRU, Dense, Activation, Concatenate
+from keras.layers.core import Dropout
 from keras.models import Model, Input, load_model, model_from_json
 
 from gan.optimizer.AdamW import AdamW
@@ -60,25 +60,21 @@ class GeneratorPretrain:
                 recurrent_dropout=self.dropout))(self.lstm_d_in)
 
         self.x = Concatenate()([self.lstm_q_out, self.lstm_d_out])
-        #self.x = Dropout(self.dropout)(self.x)
+        self.x = Dropout(self.dropout)(self.x)
 
         # we stack a deep fully-connected network on top
         self.x = Dense(params.GEN_HIDDEN_SIZE_DENSE, activation='elu', kernel_regularizer=regularizers.l2(self.weight_decay), kernel_initializer='random_uniform')(self.x)
-        self.x = Dense(1, kernel_regularizer=regularizers.l2(self.weight_decay), kernel_initializer='random_uniform')(self.x)
+        self.x = Dense(2, kernel_regularizer=regularizers.l2(self.weight_decay), kernel_initializer='random_uniform')(self.x)
 
-        # 0.2 should be replaced by self.temperature
-        #self.score = Lambda(lambda z: z / 0.2, name='raw_score')(self.x)
-
-        #self.score = Reshape([-1])(self.score)
-        self.prob = Activation('sigmoid', name='prob')(self.x)
+        self.prob = Activation('softmax', name='prob')(self.x)
 
         self.model = Model(inputs=[self.sequence_input_q, self.sequence_input_d, self.reward, self.important_sampling],
                            outputs=[self.prob])
 
         self.model.summary()
 
-        self.model.compile(loss='binary_crossentropy',
-                           optimizer='adam',
+        self.model.compile(loss='categorical_crossentropy',
+                           optimizer=self.adamw,
                            metrics=['accuracy'])
 
     def train(self, train_data_queries, train_data_documents, train_data_label):
@@ -116,9 +112,9 @@ class GeneratorPretrain:
         print("Loaded model from disk")
 
         gen = GeneratorPretrain(model=loaded_model)
-        gen.model.compile(loss='binary_crossentropy',
-                           optimizer='adam',
-                           metrics=['accuracy'])
+        gen.model.compile(loss='categorical_crossentropy',
+                          optimizer=gen.adamw,
+                          metrics=['accuracy'])
         return gen
 
     @staticmethod
@@ -133,8 +129,8 @@ class GeneratorPretrain:
         print("Loaded model from disk")
 
         gen = GeneratorPretrain(model=loaded_model)
-        gen.model.compile(loss='binary_crossentropy',
-                          optimizer='adam',
+        gen.model.compile(loss='categorical_crossentropy',
+                          optimizer=gen.adamw,
                           metrics=['accuracy'])
         return gen
 
