@@ -61,9 +61,6 @@ class Discriminator:
                            metrics=['accuracy'])
 
     def train(self, train_data_queries, train_data_documents, train_data_label):
-        print(train_data_documents[0])
-        print(train_data_documents[1])
-
         return self.model.train_on_batch([train_data_queries, train_data_documents], train_data_label)
 
     def get_prob(self, train_data_queries, train_data_documents):
