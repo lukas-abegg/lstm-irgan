@@ -113,14 +113,13 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
             # prepare pos and neg label
             pos_data_label = [1.0] * len(pos_data_queries)
             pos_data_label = np.asarray(pos_data_label)
-            pos_data_label = to_categorical(pos_data_label)
+            pos_data_label = to_categorical(pos_data_label, 2)
 
             neg_data_label = [0.0] * len(neg_data_queries)
             neg_data_label = np.asarray(neg_data_label)
-            neg_data_label = to_categorical(neg_data_label)
+            neg_data_label = to_categorical(neg_data_label, 2)
 
-            print("Pretrain Generator epoch: ", str(g_epoch), "with batch: ", str(batch_index), " to ", str(i - 1),
-                  " of ",
+            print("Pretrain Generator epoch: ", str(g_epoch), "with batch: ", str(batch_index), " to ", str(i - 1), " of ",
                   str(pos_neg_size))
             # train
             g_loss_real = gen_pretrain.train(pos_data_queries, pos_data_documents, pos_data_label)
@@ -448,7 +447,6 @@ def __get_rand_batch_from_candidates_for_negatives(gen, query_id, queries_data, 
 
     # Importance Sampling
     prob = gen.get_prob(data_queries, data_documents)
-    prob = prob.reshape([-1])
     print("__get_rand_batch_from_candidates_for_negatives: prob = ", prob)
 
     return prob, doc_ids, data_queries, data_documents
@@ -469,7 +467,6 @@ def __get_rand_batch_from_candidates_for_generator(gen, query_id, queries_data, 
 
     # Importance Sampling
     prob = gen.get_prob(data_queries, data_documents)
-    prob = prob.reshape([-1])
     print("prob of gen: "+str(prob))
 
     doc_ids_collected = []
