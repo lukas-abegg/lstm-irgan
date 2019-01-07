@@ -80,7 +80,7 @@ class Generator:
     @staticmethod
     def loss(_reward, _important_sampling):
         def _loss(y_true, y_pred):
-            log_action_prob = K.log(y_pred[1])
+            log_action_prob = K.log(y_pred[:, 1])
             loss = - K.reshape(log_action_prob, [-1]) * K.reshape(_reward, [-1]) * K.reshape(_important_sampling, [-1])
             loss = K.mean(loss)
             return loss
