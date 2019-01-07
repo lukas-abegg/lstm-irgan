@@ -80,7 +80,7 @@ class Generator:
     @staticmethod
     def loss(_reward, _important_sampling):
         def _loss(y_true, y_pred):
-            log_action_prob = K.log(y_pred)
+            log_action_prob = K.log(y_pred[1])
             loss = - K.reshape(log_action_prob, [-1]) * K.reshape(_reward, [-1]) * K.reshape(_important_sampling, [-1])
             loss = K.mean(loss)
             return loss
@@ -103,8 +103,7 @@ class Generator:
         input_important_sampling = np.asarray(input_important_sampling)
         pred_scores = self.model.predict(
             [train_data_queries, train_data_documents, input_reward, input_important_sampling], params.GEN_BATCH_SIZE)
-        print("pred_scores:", pred_scores)
-        return pred_scores
+        return pred_scores[1]
 
     def save_model_to_file(self, filepath):
         self.model.save(filepath)
