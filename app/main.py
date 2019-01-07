@@ -132,10 +132,8 @@ def main(mode, experiment):
             print(best_run)
             eval_metrics.evaluate(generator, x_val, ratings_data, documents_data, queries_data, sess)
 
-        save_model_to_weights(generator, params.SAVED_MODEL_GEN_JSON, params.SAVED_MODEL_GEN_WEIGHTS)
         save_model_to_file(generator, params.SAVED_MODEL_GEN_FILE)
-        if discriminator is not None:
-            save_model_to_file(discriminator, params.SAVED_MODEL_DISC_FILE)
+        save_model_to_file(discriminator, params.SAVED_MODEL_DISC_FILE)
 
     elif params.EVAL_MODE == mode:
         sess, x_data, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = get_env_data_not_splitted()
