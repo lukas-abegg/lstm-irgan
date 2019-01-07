@@ -91,6 +91,7 @@ class GeneratorPretrain:
         input_important_sampling = np.asarray(input_important_sampling)
         pred_scores = self.model.predict(
             [train_data_queries, train_data_documents, input_reward, input_important_sampling], params.GEN_BATCH_SIZE)
+        print("pred_scores:", pred_scores)
         return pred_scores
 
     def save_model_to_file(self, filepath):
