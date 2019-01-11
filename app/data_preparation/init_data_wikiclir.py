@@ -68,23 +68,27 @@ def __filter_stop_words(texts, stop_words):
     return texts
 
 
-def __init_tokenizer(text_data, max_sequence_length):
+def __init_tokenizer(text_data):
     texts = list(text_data.values())
-    ids = list(text_data.keys())
 
     nltk.download('stopwords')
     stop_words = set(stopwords.words('english'))
-    stop_words.update(['.', ',', '"', "'", ':', ';', '(', ')', '[', ']', '{', '’'])
+    stop_words.update(['.', ',', '"', "'", ':', ';', '(', ')', '[', ']', '{', '}', '’'])
     texts = __filter_stop_words(texts, stop_words)
 
-    # finally, vectorize the text samples into a 2D integer tensor
-    tokenizer = Tokenizer(num_words=params.MAX_NUM_WORDS)
+    tokenizer = Tokenizer()
     tokenizer.fit_on_texts(texts)
-    sequences = tokenizer.texts_to_sequences(texts)
 
     word_index = tokenizer.word_index
     print('Found %s unique tokens.' % len(word_index))
+    return tokenizer
 
+
+def __sequence_data(tokenizer, text_data, max_sequence_length):
+    texts = list(text_data.values())
+    ids = list(text_data.keys())
+
+    sequences = tokenizer.texts_to_sequences(texts)
     data = pad_sequences(sequences, maxlen=max_sequence_length)
 
     text_data_sequenced = {}
@@ -99,10 +103,16 @@ def get_data():
     queries_data, query_ids = __get_queries()
     ratings_data = __get_ratings()
 
-    print('Tokenize queries')
-    tokenizer_q, queries_data = __init_tokenizer(queries_data, params.MAX_SEQUENCE_LENGTH)
-    print('Tokenize documents')
-    tokenizer_d, documents_data = __init_tokenizer(documents_data, params.MAX_SEQUENCE_LENGTH)
+    print('Fit Tokenizer')
+    documents_queries_data = dict(documents_data.items() | queries_data.items())
+    tokenizer = __init_tokenizer(documents_queries_data)
+    tokenizer_q = tokenizer
+    tokenizer_d = tokenizer
+
+    print('Sequence queries')
+    queries_data = __sequence_data(tokenizer, queries_data, params.MAX_SEQUENCE_LENGTH_QUERIES)
+    print('Sequence documents')
+    documents_data = __sequence_data(tokenizer, documents_data, params.MAX_SEQUENCE_LENGTH_DOCS)
 
     print('Found %s training data.' % len(ratings_data))
 

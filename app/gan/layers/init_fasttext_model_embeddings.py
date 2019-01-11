@@ -2,7 +2,7 @@ import numpy as np
 
 from keras.preprocessing.text import Tokenizer
 from keras.layers import Embedding
-from gensim.models.wrappers import FastText
+import fasttext
 
 import parameters as params
 
@@ -10,8 +10,8 @@ import parameters as params
 
 
 def load_model():
-    print('load fasttext model from', params.FASTTEXT)
-    model = FastText.load_fasttext_format(params.FASTTEXT)
+    print('Loading fastText embedding model from', params.FASTTEXT)
+    model = fasttext.load_model(params.FASTTEXT)
     return model
 
 
@@ -22,11 +22,17 @@ def __build_embeddings_matrix(tokenizer: Tokenizer, model, max_num_words):
     embeddings_matrix = np.zeros((num_words, params.EMBEDDING_DIM))
 
     for word, i in word_index.items():
-        if i > max_num_words:
+        if i == 0:
+            raise ValueError("index 0 is not allowed in embedding matrix")
+        elif i > max_num_words:
             continue
-        embedding_vector = model[word]
+
+        try:
+            embedding_vector = model[word]
+        except Exception:
+            raise ValueError("no embedding vector found for word", word)
+
         if embedding_vector is not None:
-            # words not found in embedding index will be all-zeros.
             embeddings_matrix[i] = embedding_vector
     return num_words, embeddings_matrix
 
@@ -38,6 +44,7 @@ def __build_embeddings_layer(num_words, embeddings_matrix, max_sequence_length):
                                  output_dim=params.EMBEDDING_DIM,
                                  weights=[embeddings_matrix],
                                  input_length=max_sequence_length,
+                                 mask_zero=True,
                                  trainable=False)
     return embeddings_layer
 

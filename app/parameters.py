@@ -5,9 +5,9 @@ WORKDIR = '/home/abeggluk/lstm-irgan'
 USE_HYPERPARAM_OPT = False
 
 # Embeddings / Tokenizer
-USE_FASTTEXT_MODEL = False
-FASTTEXT_BINARY = True
-FASTTEXT = '/mnt/fob-wbia-vol2/wbi_stud/abeggluk/BioWordVec_PubMed_MIMICIII_d200.vec.bin'
+USE_FASTTEXT_MODEL = True
+FASTTEXT_BINARY = False
+FASTTEXT = '/mnt/fob-wbia-vol2/wbi_stud/abeggluk/embeddings/BioWordVec_PubMed_MIMICIII_d200.bin'
 
 MAX_SEQUENCE_LENGTH_QUERIES = 1000
 MAX_SEQUENCE_LENGTH_DOCS = 200
