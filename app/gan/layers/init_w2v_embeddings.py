@@ -21,7 +21,7 @@ def build_index_mapping():
 def __build_embeddings_matrix(tokenizer: Tokenizer, embeddings_index, max_num_words):
     print('Preparing embedding matrix.')
     word_index = tokenizer.word_index
-    num_words = min(max_num_words, len(word_index)) + 1
+    num_words = len(word_index) + 1
     embeddings_matrix = np.zeros((num_words, params.EMBEDDING_DIM))
 
     for word, i in word_index.items():
