@@ -53,49 +53,69 @@ def __get_ratings():
     return ratings
 
 
-def __import_documents(index, type):
+def __import_documents(index_to_import_data, type_to_import):
     print("import ", len(documents_data.items()), "documents")
     for key, value in documents_data.items():
         yield {
-                "_index": index,
-                "_type": type,
+                "_index": index_to_import_data,
+                "_type": type_to_import,
                 "_id": key,
                 "text": value
         }
 
 
-def __import_queries(index, type):
+def __import_queries(index_to_import_data, type_to_import):
     print("import ", len(queries_data.items()), "queries")
     for key, value in documents_data.items():
         yield {
-                "_index": index,
-                "_type": type,
+                "_index": index_to_import_data,
+                "_type": type_to_import,
                 "_id": key,
                 "text": value
         }
 
 
-def __import_ratings(index, type):
-    print("import ", len(documents_data.items()), "ratings")
-    for key, value in documents_data.items():
-        yield {
-                "_index": index,
-                "_type": type,
-                "_id": key,
-                "text": value
-        }
+def __import_ratings(index_to_import_data, type_to_import):
+    i = 0
+    actions = []
+    for query, value in ratings_data.items():
+        for text, rating in value.items():
+            actions.append({
+                "_index": index_to_import_data,
+                "_type": type_to_import,
+                "_id": query,
+                "query": query,
+                "text": text,
+                "rating": rating
+            })
+
+        i = i + len(value.items())
+
+    print("import ", i, "ratings")
+    return actions
 
 
-def __create_index(es, index, request_body, actions):
-    if es.indices.exists(index):
-        print("deleting '%s' index..." % index)
-        res = es.indices.delete(index=index)
+def __create_index(es, index_to_create):
+    if es.indices.exists(index_to_create):
+        print("deleting '%s' index..." % index_to_create)
+        res = es.indices.delete(index=index_to_create)
         print(" response: '%s'" % res)
 
-    print("creating '%s' index..." % index)
-    res = es.indices.create(index=index, body=request_body)
+    print("creating '%s' index..." % index_to_create)
+
+    request_body = {
+        "settings"
+        : {
+            "number_of_shards": 1,
+            "number_of_replicas": 0
+        }
+    }
+
+    res = es.indices.create(index=index_to_create, body=request_body)
     print(" response: '%s'" % res)
 
+
+def __fill_index(es, actions):
     # bulk index the data
     print("bulk indexing...")
     helpers.bulk(client=es, actions=actions, chunk_size=100)
@@ -118,14 +138,14 @@ ratings_data = __get_ratings()
 # create ES client, create index
 es_instance = Elasticsearch(hosts=[ES_HOST])
 
-request_body_basic = {
-    "settings"
-    : {
-        "number_of_shards": 1,
-        "number_of_replicas": 0
-    }
-}
+index_doc = 'documents'
+index_query = 'queries'
+index_rating = 'ratings'
 
-__create_index(es_instance, 'documents', request_body_basic, __import_documents('documents', 'document'))
-__create_index(es_instance, 'queries', request_body_basic, __import_queries('queries', 'query'))
-__create_index(es_instance, 'ratings', request_body_basic, __import_ratings('ratings', 'rating'))
+__create_index(es_instance, index_doc)
+__create_index(es_instance, index_query)
+__create_index(es_instance, index_rating)
+
+__fill_index(es_instance, __import_documents(index_doc, 'document'))
+__fill_index(es_instance, __import_queries(index_query, 'query'))
+__fill_index(es_instance, __import_ratings(index_rating, 'rating'))
