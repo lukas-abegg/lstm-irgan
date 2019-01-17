@@ -88,21 +88,18 @@ class Generator:
         return _loss
 
     def train(self, train_data_queries, train_data_documents, reward, important_sampling):
-        print("reward / imp_sampling:")
-        print(reward)
-        print(important_sampling)
         label = np.zeros(len(train_data_queries))
 
-        return self.model.train_on_batch([train_data_queries, train_data_documents, reward, important_sampling],
-                                         label)
+        return self.model.fit([train_data_queries, train_data_documents, reward, important_sampling],
+                                label, epochs=params.GEN_TRAIN_EPOCHS, batch_size=params.GEN_BATCH_SIZE)
 
     def get_prob(self, train_data_queries, train_data_documents):
         input_reward = [0.0] * len(train_data_queries)
         input_reward = np.asarray(input_reward)
         input_important_sampling = [0.0] * len(train_data_queries)
         input_important_sampling = np.asarray(input_important_sampling)
-        pred_scores = self.model.predict(
-            [train_data_queries, train_data_documents, input_reward, input_important_sampling], params.GEN_BATCH_SIZE)
+        pred_scores = self.model.predict([train_data_queries, train_data_documents, input_reward, input_important_sampling],
+                                         batch_size=params.GEN_BATCH_SIZE)
         return pred_scores[:, 1]
 
     def save_model_to_file(self, filepath):
