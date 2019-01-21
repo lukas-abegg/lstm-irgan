@@ -1,5 +1,4 @@
 import numpy as np
-import random
 
 from elasticsearch import Elasticsearch
 from keras.layers import Embedding
@@ -90,9 +89,7 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
     print('Training Generator ...')
 
     # Generator generate negative for Discriminator, then train Discriminator
-    pos_neg_data = __generate_negatives_for_discriminator_pretrain(x_train, train_ratings_data, documents_data)
-
-    input_pos, input_neg = __get_pos_neg_data(pos_neg_data)
+    input_pos, input_neg = __generate_negatives_for_discriminator_pretrain(x_train, train_ratings_data, documents_data)
 
     # prepare pos and neg data
     pos_data_queries = [queries_data[x[0]] for x in input_pos]
@@ -145,9 +142,7 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
     print('Training Discriminator ...')
 
     # Get similar negatives for Discriminator, then train Discriminator
-    pos_neg_data = __generate_negatives_for_discriminator_pretrain(x_train, train_ratings_data, documents_data)
-
-    input_pos, input_neg = __get_pos_neg_data(pos_neg_data)
+    input_pos, input_neg = __generate_negatives_for_discriminator_pretrain(x_train, train_ratings_data, documents_data)
 
     # prepare pos and neg data
     pos_data_queries = [queries_data[x[0]] for x in input_pos]
@@ -223,78 +218,29 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
         # -------------------------------------------------------------------------------------------------------------#
         print('Training Generator ...')
 
-        pos_neg_data = __generate_negatives_for_generator(best_gen, x_train, train_ratings_data, queries_data,
+        pos_neg_data, pos_neg_probs_is = __generate_negatives_for_generator(best_gen, x_train, train_ratings_data, queries_data,
                                                               documents_data)
 
-        queries_all = []
-        documents_all = []
-        doc_ids_all = []
+        # choose data
+        choose_queries = [queries_data[x[0]] for x in pos_neg_data]
+        choose_documents = [documents_data[x[1]] for x in pos_neg_data]
 
-        for query_id in x_train:
+        choose_queries = np.asarray(choose_queries)
+        choose_documents = np.asarray(choose_documents)
 
-            # get all query specific ratings
-            x_pos_list, candidate_list = __get_query_specific_data(query_id, ratings_data, documents_data)
-            x_pos_set = set(x_pos_list)
+        choose_is = np.asarray(pos_neg_probs_is)
 
-            doc_ids, data_queries, data_documents = __get_rand_batch_from_candidates_for_generator(query_id,
-                                                                                                   queries_data,
-                                                                                                   documents_data,
-                                                                                                   candidate_list,
-                                                                                                   x_pos_list)
+        # get reward((prob  - 0.5) * 2 )
+        choose_reward = disc.get_reward(choose_queries, choose_documents)
 
-            queries_all.extend(data_queries)
-            documents_all.extend(data_documents)
-            doc_ids_all.extend(doc_ids)
+        print("reward / imp_sampling:")
+        print(choose_reward)
+        print(choose_is)
 
-
-
-        # Importance Sampling
-        prob = gen.get_prob(data_queries, data_documents)
-            print("prob of gen: " + str(prob))
-
-            print('start important sampling')
-            # important sampling, change doc prob
-            prob_is = prob * (1.0 - params.GEN_LAMBDA)
-
-            for i in range(len(doc_ids)):
-                if doc_ids[i] in x_pos_set:
-                    prob_is[i] += (params.GEN_LAMBDA / (1.0 * len(x_pos_list)))
-
-            # G generate some url (2 * postive doc num)
-            prob_is_rand = np.asarray(prob_is) / np.asarray(prob_is).sum(axis=0, keepdims=1)
-            choose_index = np.random.choice(np.arange(len(doc_ids)), [2 * len(x_pos_list)], p=prob_is_rand)
-
-            # choose data
-            choose_queries = np.array(data_queries)[choose_index]
-            choose_documents = np.array(data_documents)[choose_index]
-
-            # prob / important sampling prob (loss => prob * reward * prob / important sampling prob)
-            choose_is = np.array(prob)[choose_index] / np.array(prob_is)[choose_index]
-
-            choose_queries = np.asarray(choose_queries)
-            choose_documents = np.asarray(choose_documents)
-
-            choose_is = np.asarray(choose_is)
-
-            # get reward((prob  - 0.5) * 2 )
-            choose_reward = disc.get_reward(choose_queries, choose_documents)
-
-            print("reward / imp_sampling:")
-            print(choose_reward)
-            print(choose_is)
-
-            choose_queries_all.append(choose_queries)
-            choose_documents_all.append(choose_documents)
-            choose_reward_all.append(choose_reward)
-            choose_is_all.append(choose_is)
-
-        choose_queries_all = np.asarray(choose_queries_all)
-        choose_documents_all = np.asarray(choose_documents_all)
-        choose_reward_all = np.asarray(choose_reward_all)
-        choose_is_all = np.asarray(choose_is_all)
+        print("Train Generator on batches of size: ", params.GEN_BATCH_SIZE)
 
         # train
-        g_loss = gen.train(choose_queries_all, choose_documents_all, choose_reward_all.reshape([-1]), choose_is_all)
+        g_loss = gen.train(choose_queries, choose_documents, choose_reward.reshape([-1]), choose_is)
         print("g_loss:", g_loss)
 
         # Plot the progress
@@ -310,8 +256,7 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
         print('Training Discriminator ...')
 
         # Generator generate negative for Discriminator, then train Discriminator
-        pos_neg_data = __generate_negatives_for_discriminator(best_gen, x_train, train_ratings_data, queries_data, documents_data)
-        input_pos, input_neg = __get_pos_neg_data(pos_neg_data)
+        input_pos, input_neg = __generate_negatives_for_discriminator(best_gen, x_train, train_ratings_data, queries_data, documents_data)
 
         # prepare pos and neg data
         pos_data_queries = [queries_data[x[0]] for x in input_pos]
@@ -406,18 +351,9 @@ def __get_query_specific_data(query_id, ratings_data, documents_data):
     return x_pos_list, candidate_list
 
 
-def __get_pos_neg_data(pos_neg_data):
+def __generate_negatives_for_discriminator_pretrain(x_train, ratings_data, documents_data):
     pos = []
     neg = []
-    for i in len(pos_neg_data):
-        line = pos_neg_data[i]
-        pos.append([line[0], line[1]])
-        neg.append([line[0], line[2]])
-    return pos, neg
-
-
-def __generate_negatives_for_discriminator_pretrain(x_train, ratings_data, documents_data):
-    data = []
 
     print('start negative sampling for discriminator using generator')
     for query_id in x_train:
@@ -429,15 +365,15 @@ def __generate_negatives_for_discriminator_pretrain(x_train, ratings_data, docum
         neg_list = np.random.choice(doc_ids, size=[len(x_pos_list)])
 
         for i in range(len(x_pos_list)):
-            data.append([query_id, x_pos_list[i], neg_list[i]])
+            pos.append([query_id, x_pos_list[i]])
+            neg.append([query_id, neg_list[i]])
 
-    # shuffle
-    random.shuffle(data)
-    return data
+    return pos, neg
 
 
 def __generate_negatives_for_discriminator(gen, x_train, ratings_data, queries_data, documents_data):
-    data = []
+    pos = []
+    neg = []
 
     pos_data = {}
     neg_data = {}
@@ -486,18 +422,22 @@ def __generate_negatives_for_discriminator(gen, x_train, ratings_data, queries_d
     for query_id, pos_values in pos_data.items():
         for i, pos_elem in enumerate(pos_values):
             neg_elem = neg_data[query_id][i]
-            data.append([query_id, pos_elem, neg_elem])
 
-    # shuffle
-    random.shuffle(data)
-    return data
+            pos.append([query_id, pos_elem])
+            neg.append([query_id, neg_elem])
+
+    return pos, neg
+
 
 def __generate_negatives_for_generator(gen, x_train, ratings_data, queries_data, documents_data):
     data = []
+    data_probs_is = []
 
     pos_neg_data = {}
+    pos_data = {}
 
     pos_neg_data_q_ids = []
+    pos_neg_data_d_ids = []
     pos_neg_data_queries = []
     pos_neg_data_documents = []
 
@@ -509,58 +449,58 @@ def __generate_negatives_for_generator(gen, x_train, ratings_data, queries_data,
         candidate_ids = __get_rand_batch_from_candidates_for_negatives(query_id, candidate_list, 2 * len(x_pos_list))
 
         pos_neg_data[query_id] = np.append(x_pos_list, candidate_ids)
+        pos_data[query_id] = np.append(x_pos_list)
 
         # prepare neg data
         cand_queries = [queries_data[query_id]] * len(pos_neg_data[query_id])
         cand_documents = [documents_data[x] for x in pos_neg_data[query_id]]
         cand_q_ids = [query_id] * len(pos_neg_data[query_id])
+        cand_d_ids = [x for x in pos_neg_data[query_id]]
 
         pos_neg_data_queries = np.append(pos_neg_data_queries, cand_queries)
         pos_neg_data_documents = np.append(pos_neg_data_documents, cand_documents)
         pos_neg_data_q_ids = np.append(pos_neg_data_q_ids, cand_q_ids)
-
-    # Importance Sampling
-    prob = gen.get_prob(data_queries, data_documents)
-    print("prob of gen: " + str(prob))
-
-    print('start important sampling')
-    # important sampling, change doc prob
-    prob_is = prob * (1.0 - params.GEN_LAMBDA)
-
-    for i in range(len(doc_ids)):
-        if doc_ids[i] in x_pos_set:
-            prob_is[i] += (params.GEN_LAMBDA / (1.0 * len(x_pos_list)))
-
-    # G generate some url (2 * postive doc num)
-    prob_is_rand = np.asarray(prob_is) / np.asarray(prob_is).sum(axis=0, keepdims=1)
-    choose_index = np.random.choice(np.arange(len(doc_ids)), [2 * len(x_pos_list)], p=prob_is_rand)
+        pos_neg_data_d_ids = np.append(pos_neg_data_d_ids, cand_d_ids)
 
     # Importance Sampling
     probs = gen.get_prob(pos_neg_data_queries, pos_neg_data_documents)
-    print("__get_rand_batch_from_candidates_for_negatives: prob = ", probs)
+    print("__generate_negatives_for_generator: prob = ", probs)
 
-    probs = np.asarray(probs) / np.asarray(probs).sum(axis=0, keepdims=1)
+    # important sampling, change doc prob
+    probs_is = probs * (1.0 - params.GEN_LAMBDA)
 
-    neg_data_cands = {}
-    for i, prob in enumerate(probs):
-        query_id = neg_data_q_ids[i]
-        if query_id in neg_data_cands.keys():
-            neg_data_cands[query_id] = np.append(neg_data_cands[query_id], [prob])
+    for i, query_id in enumerate(pos_neg_data_q_ids):
+        if pos_neg_data_d_ids[i] in pos_data[query_id]:
+            probs_is[i] += (params.GEN_LAMBDA / (1.0 * len(pos_data[query_id])))
+
+    # G generate some url (2 * postive doc num)
+    prob_is_rand = np.asarray(probs_is) / np.asarray(probs_is).sum(axis=0, keepdims=1)
+
+    data_cands_prob = {}
+    data_cands_prob_is = {}
+    data_cands_prob_is_rand = {}
+    for i, query_id in enumerate(pos_neg_data_q_ids):
+        if query_id in data_cands_prob.keys():
+            data_cands_prob[query_id] = np.append(data_cands_prob[query_id], [probs[i]])
+            data_cands_prob_is[query_id] = np.append(data_cands_prob_is[query_id], [probs_is[i]])
+            data_cands_prob_is_rand[query_id] = np.append(data_cands_prob_is_rand[query_id], [prob_is_rand[i]])
         else:
-            neg_data_cands[query_id] = [prob]
+            data_cands_prob[query_id] = [probs[i]]
+            data_cands_prob_is[query_id] = [probs_is[i]]
+            data_cands_prob_is_rand[query_id] = [prob_is_rand[i]]
 
-    for query_id, probs in neg_data_cands.items():
-        neg_list = np.random.choice(neg_data[query_id], size=[len(pos_data[query_id])], p=probs)
-        neg_data[query_id] = neg_list
+    for query_id, probs in data_cands_prob.items():
+        choosen_indexes = np.random.choice(np.arange(len(pos_neg_data[query_id])), size=[2 * len(pos_data[query_id])], p=data_cands_prob_is_rand[query_id])
+        choosen_data = pos_neg_data[query_id][choosen_indexes]
+        # prob / important sampling prob (loss => prob * reward * prob / important sampling prob)
+        choosen_data_prob_is = np.array(data_cands_prob[query_id])[choosen_indexes] / np.array(data_cands_prob_is[query_id])[choosen_indexes]
 
-    for query_id, pos_values in pos_data.items():
-        for i, pos_elem in enumerate(pos_values):
-            neg_elem = neg_data[query_id][i]
-            data.append([query_id, pos_elem, neg_elem])
+        for i, doc_id in enumerate(choosen_data):
+            data.append([query_id, doc_id])
+            data_probs_is.append(choosen_data_prob_is[i])
 
-    # shuffle
-    random.shuffle(data)
-    return data
+    return data, data_probs_is
+
 
 def __get_rand_batch_from_candidates_for_negatives(query_id, candidate_list, size):
     # create ES client, create index
@@ -577,39 +517,6 @@ def __get_rand_batch_from_candidates_for_negatives(query_id, candidate_list, siz
         doc_ids = np.append(doc_ids, candidates_addition)
 
     return doc_ids
-
-
-# def __get_rand_batch_from_candidates_for_generator(query_id, queries_data, documents_data, candidate_list,
-#                                                    x_pos_list):
-#     # create ES client, create index
-#     es = Elasticsearch(hosts=[params.ES_HOST])
-#     query_text = es.get(index="queries", doc_type="query", id=str(query_id))["_source"]["text"]
-#     size = 2 * len(x_pos_list)
-#     candidates = es.search(index="documents", body={"query": {"match": {"text": query_text}}}, size=size)
-#     candidates = [doc['_id'] for doc in candidates['hits']['hits']]
-#
-#     # prepare pos and neg data
-#     doc_ids = np.array(candidates)
-#
-#     if len(candidates) < size:
-#         candidates_addition = np.random.choice(candidate_list, size=[size - len(candidates)])
-#         doc_ids = np.append(doc_ids, candidates_addition)
-#
-#     # prepare pos and neg data
-#     data_queries = [queries_data[query_id]] * (3 * len(x_pos_list))
-#
-#     data_documents_cand = [documents_data[x] for x in doc_ids]
-#     data_documents_pos = [documents_data[x] for x in x_pos_list]
-#
-#     data_documents = []
-#     data_documents.extend(data_documents_cand)
-#     data_documents.extend(data_documents_pos)
-#
-#     doc_ids_collected = []
-#     doc_ids_collected.extend(doc_ids)
-#     doc_ids_collected.extend(x_pos_list)
-#
-#     return doc_ids_collected, data_queries, data_documents
 
 
 def __get_best_eval_result(disc, best_disc, gen, best_gen, p_5, p_best_val, ndcg_5, ndcg_best_val):
