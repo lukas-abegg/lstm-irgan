@@ -102,7 +102,7 @@ def __sequence_data(tokenizer, text_data, max_sequence_length):
     for i, text in enumerate(data):
         text_data_sequenced[ids[i]] = text
 
-    return tokenizer, text_data_sequenced
+    return text_data_sequenced
 
 
 def get_data():

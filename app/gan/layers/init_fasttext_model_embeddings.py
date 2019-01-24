@@ -2,7 +2,7 @@ import numpy as np
 
 from keras.preprocessing.text import Tokenizer
 from keras.layers import Embedding
-import fasttext
+import fastText as fasttext
 
 import parameters as params
 

@@ -1,5 +1,5 @@
 # Base dirs
-WORKDIR = '/home/abegg/git-projects/lstm-irgan'
+WORKDIR = '/home/lukas/git-projects/lstm-irgan'
 
 # Hyperparameter Optimization
 USE_HYPERPARAM_OPT = False

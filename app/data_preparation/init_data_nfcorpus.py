@@ -89,13 +89,19 @@ def __sequence_data(tokenizer, text_data, max_sequence_length):
     ids = list(text_data.keys())
 
     sequences = tokenizer.texts_to_sequences(texts)
+
+    for seq in sequences:
+        for elem in seq:
+            if elem == 0:
+                raise ValueError("0 was found in a sequence")
+
     data = pad_sequences(sequences, maxlen=max_sequence_length)
 
     text_data_sequenced = {}
     for i, text in enumerate(data):
         text_data_sequenced[ids[i]] = text
 
-    return tokenizer, text_data_sequenced
+    return text_data_sequenced
 
 
 def get_data():
