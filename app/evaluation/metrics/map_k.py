@@ -6,15 +6,20 @@ import evaluation.eval_utils as utils
 def measure_map(model, x_val, ratings_data, queries_data, documents_data, k, sess):
     rs = []
 
-    for query_id in x_val:
-        # get all query specific ratings
-        x_data, y_data, eval_queries, eval_documents, enough_data_for_eval = utils.get_query_specific_eval_data(query_id, ratings_data, queries_data, documents_data, k)
+    query_ids_all, x_data_all, y_data_all, eval_queries_all, eval_documents_all = utils.prepare_eval_data(
+        x_val, ratings_data, queries_data, documents_data, k)
 
-        if not enough_data_for_eval:
-            continue
+    pred_scores_all = model.get_prob(eval_queries_all, eval_documents_all)
+    print("Prediction scores for map_k: ", pred_scores_all)
 
-        # predict y-values for given x-values
-        pred_scores = model.get_prob(eval_queries, eval_documents)
+    x_data_query, y_data_query, pred_scores_query = utils.split_probs_data_by_query(
+        query_ids_all, x_data_all, y_data_all, pred_scores_all)
+
+    for query_id in x_data_query.keys():
+
+        x_data = x_data_query[query_id][:]
+        y_data = y_data_query[query_id][:]
+        pred_scores = pred_scores_query[query_id][:]
 
         pred_document_scores_order, rated_document_scores_order = utils.sort_pred_val_data(x_data, y_data, pred_scores)
 

@@ -1,23 +1,28 @@
 import evaluation.eval_utils as utils
 
 
-def measure_r_precision_at_k(model, x_val, ratings_data, queries_data, documents_data, r, sess):
+def measure_r_precision_at_k(model, x_val, ratings_data, queries_data, documents_data, r, R, sess):
     p = 0.0
     cnt = 0
 
-    for query_id in x_val:
-        # get all query specific ratings
-        x_data, y_data, eval_queries, eval_documents, enough_data_for_eval = utils.get_query_specific_eval_data(query_id, ratings_data, queries_data, documents_data, r)
+    query_ids_all, x_data_all, y_data_all, eval_queries_all, eval_documents_all = utils.prepare_eval_data(x_val, ratings_data, queries_data, documents_data, r)
 
-        if not enough_data_for_eval:
-            continue
+    pred_scores_all = model.get_prob(eval_queries_all, eval_documents_all)
+    print("Prediction scores for p_k: ", pred_scores_all)
 
-        # predict y-values for given x-values
-        pred_scores = model.get_prob(eval_queries, eval_documents)
+    x_data_query, y_data_query, pred_scores_query = utils.split_probs_data_by_query(
+        query_ids_all, x_data_all, y_data_all, pred_scores_all)
+
+    for query_id in x_data_query.keys():
+
+        x_data = x_data_query[query_id][:]
+        y_data = y_data_query[query_id][:]
+        pred_scores = pred_scores_query[query_id][:]
 
         pred_document_scores_order, rated_document_scores_order = utils.sort_pred_val_data(x_data, y_data, pred_scores)
 
-        relevant_k_rated_docs = set(rated_document_scores_order[:r])
+        # if there are r relevant documents among the top-R retrieved documents, then R-precision is r/R
+        relevant_k_rated_docs = set(rated_document_scores_order[:R])
         relevant_doc_set = [doc_id for doc_id, rating_score in relevant_k_rated_docs]
 
         num = 0.0
@@ -25,6 +30,7 @@ def measure_r_precision_at_k(model, x_val, ratings_data, queries_data, documents
             doc_id, score = pred_document_scores_order[i]
             if doc_id in relevant_doc_set:
                 num += 1.0
+
         num /= (r * 1.0)
 
         p += num

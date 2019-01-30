@@ -17,7 +17,7 @@ def evaluate(model, x_val, ratings_data, queries_data, documents_data, sess):
     ndcg_5_best = ndcg_eval.measure_ndcg_at_k(model, x_val, ratings_data, queries_data, documents_data, 5, sess)
     ndcg_10_best = ndcg_eval.measure_ndcg_at_k(model, x_val, ratings_data, queries_data, documents_data, 10, sess)
 
-    r_best = r_p_eval.measure_r_precision_at_k(model, x_val, ratings_data, queries_data, documents_data, 10, sess)
+    r_best = r_p_eval.measure_r_precision_at_k(model, x_val, ratings_data, queries_data, documents_data, 10, 10, sess)
 
     map_best = map_eval.measure_map(model, x_val, ratings_data, queries_data, documents_data, 10, sess)
 

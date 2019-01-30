@@ -2,7 +2,7 @@ import numpy as np
 import parameters as params
 
 
-def get_query_specific_eval_data(query_id, ratings_data, queries_data, documents_data, k=0):
+def __get_query_specific_eval_data(query_id, ratings_data, queries_data, documents_data, k=0):
     x_data = list(ratings_data[query_id].keys())
     y_data = list(ratings_data[query_id].values())
 
@@ -28,9 +28,6 @@ def get_query_specific_eval_data(query_id, ratings_data, queries_data, documents
         eval_queries = [queries_data[query_id]] * n_eval
         eval_documents = [documents_data[doc_id] for doc_id in x_data]
 
-    eval_queries = np.asarray(eval_queries)
-    eval_documents = np.asarray(eval_documents)
-
     return x_data, y_data, eval_queries, eval_documents, enough_data_for_eval
 
 
@@ -45,6 +42,24 @@ def __get_candidate_docs(x_pos_list, documents_data, n_candidates):
     candidate_list = np.random.choice(candidate_list, n_candidates)
 
     return candidate_list
+
+
+def split_probs_data_by_query(query_ids_all, x_data_all, y_data_all, pred_scores_all):
+    x_data_query = {}
+    y_data_query = {}
+    pred_scores_query = {}
+
+    for i, query_id in enumerate(query_ids_all):
+        if query_id in x_data_query.keys():
+            x_data_query[query_id] = np.append(x_data_query[query_id], x_data_all[i])
+            y_data_query[query_id] = np.append(y_data_query[query_id], y_data_all[i])
+            pred_scores_query[query_id] = np.append(pred_scores_query[query_id], pred_scores_all[i])
+        else:
+            x_data_query[query_id] = [x_data_all[i]]
+            y_data_query[query_id] = [y_data_all[i]]
+            pred_scores_query[query_id] = [pred_scores_all[i]]
+
+    return x_data_query, y_data_query, pred_scores_query
 
 
 def sort_pred_val_data(x_data, y_data, pred_scores):
@@ -66,3 +81,30 @@ def sort_by_pred_merge_with_val_data(x_data, y_data, pred_scores):
     document_scores_order = [rated_document_scores[doc[0]] for doc in pred_document_scores_order]
 
     return document_scores_order
+
+
+def prepare_eval_data(x_val, ratings_data, queries_data, documents_data, k):
+    query_ids_all = []
+    x_data_all = []
+    y_data_all = []
+    eval_queries_all = []
+    eval_documents_all = []
+
+    for query_id in x_val:
+        # get all query specific ratings
+        x_data, y_data, eval_queries, eval_documents, enough_data_for_eval = __get_query_specific_eval_data(query_id, ratings_data, queries_data, documents_data, k)
+
+        if not enough_data_for_eval:
+            continue
+
+        x_data_all.extend(x_data)
+        y_data_all.extend(y_data)
+        eval_queries_all.extend(eval_queries)
+        eval_documents_all.extend(eval_documents)
+        query_ids_all.extend([query_id] * len(x_data))
+
+    # predict y-values for given x-values
+    eval_queries_all = np.asarray(eval_queries_all)
+    eval_documents_all = np.asarray(eval_documents_all)
+
+    return query_ids_all, x_data_all, y_data_all, eval_queries_all, eval_documents_all
