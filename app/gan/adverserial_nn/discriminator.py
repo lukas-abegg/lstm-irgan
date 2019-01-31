@@ -60,8 +60,8 @@ class Discriminator:
                            optimizer=self.adamw,
                            metrics=['accuracy'])
 
-    def train(self, train_data_queries, train_data_documents, train_data_label):
-        return self.model.fit([train_data_queries, train_data_documents], train_data_label,
+    def train(self, train_data_queries, train_data_documents, train_data_labels):
+        return self.model.fit([train_data_queries, train_data_documents], train_data_labels,
                               batch_size=params.DISC_BATCH_SIZE, epochs=params.DISC_TRAIN_EPOCHS)
 
     def get_prob(self, train_data_queries, train_data_documents):

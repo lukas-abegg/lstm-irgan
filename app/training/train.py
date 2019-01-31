@@ -101,102 +101,100 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
     print('Training Generator ...')
 
     # Generator generate negative for Discriminator, then train Discriminator
-    input_pos, input_neg = __generate_negatives_for_discriminator_pretrain(x_train, train_ratings_data, documents_data)
+    input_pos_gen_pre, input_neg_gen_pre = __generate_negatives_for_discriminator_pretrain(x_train, train_ratings_data, documents_data)
 
     # prepare pos and neg data
-    pos_data_queries = [queries_data[x[0]] for x in input_pos]
-    pos_data_documents = [documents_data[x[1]] for x in input_pos]
-    neg_data_queries = [queries_data[x[0]] for x in input_neg]
-    neg_data_documents = [documents_data[x[1]] for x in input_neg]
+    pos_data_queries_gen_pre = [queries_data[x[0]] for x in input_pos_gen_pre]
+    pos_data_documents_gen_pre = [documents_data[x[1]] for x in input_pos_gen_pre]
+    neg_data_queries_gen_pre = [queries_data[x[0]] for x in input_neg_gen_pre]
+    neg_data_documents_gen_pre = [documents_data[x[1]] for x in input_neg_gen_pre]
 
-    pos_data_queries = np.asarray(pos_data_queries)
-    neg_data_queries = np.asarray(neg_data_queries)
-    queries_gen = np.append(pos_data_queries, neg_data_queries)
+    queries_gen_pre = pos_data_queries_gen_pre[:]
+    queries_gen_pre.extend(neg_data_queries_gen_pre)
+    queries_gen_pre = np.asarray(queries_gen_pre)
 
-    pos_data_documents = np.asarray(pos_data_documents)
-    neg_data_documents = np.asarray(neg_data_documents)
-    documents_gen = np.append(pos_data_documents, neg_data_documents)
+    documents_gen_pre = pos_data_documents_gen_pre[:]
+    documents_gen_pre.extend(neg_data_documents_gen_pre)
+    documents_gen_pre = np.asarray(documents_gen_pre)
 
     # prepare pos and neg label
-    pos_data_label = [1.0] * len(pos_data_queries)
-    pos_data_label = np.asarray(pos_data_label)
-    pos_data_label = to_categorical(pos_data_label, 2)
+    pos_data_label_gen_pre = [1.0] * len(pos_data_queries_gen_pre)
+    neg_data_label_gen_pre = [0.0] * len(neg_data_queries_gen_pre)
 
-    neg_data_label = [0.0] * len(neg_data_queries)
-    neg_data_label = np.asarray(neg_data_label)
-    neg_data_label = to_categorical(neg_data_label, 2)
+    labels_gen_pre = pos_data_label_gen_pre[:]
+    labels_gen_pre.extend(neg_data_label_gen_pre)
+    labels_gen_pre = np.asarray(labels_gen_pre)
+    labels_gen_pre = to_categorical(labels_gen_pre, 2)
 
-    labels_gen = np.append(pos_data_label, neg_data_label)
-
-    randomize = np.arange(len(queries_gen))
-    np.random.shuffle(randomize)
-    queries_gen = queries_gen[randomize]
-    documents_gen = documents_gen[randomize]
-    labels_gen = labels_gen[randomize]
+    randomize_gen_pre = np.arange(len(queries_gen_pre))
+    np.random.shuffle(randomize_gen_pre)
+    queries_gen_pre = queries_gen_pre[randomize_gen_pre]
+    documents_gen_pre = documents_gen_pre[randomize_gen_pre]
+    labels_gen_pre = labels_gen_pre[randomize_gen_pre]
 
     print("Pretrain Generator on batches of size: ", params.GEN_BATCH_SIZE)
 
     # train
-    g_loss = gen_pretrain.train(queries_gen, documents_gen, labels_gen)
-    print("g_loss:", g_loss)
+    history = gen_pretrain.train(queries_gen_pre, documents_gen_pre, labels_gen_pre)
 
     # Plot the progress
-    g_acc = 100 * g_loss[1]
-    g_loss_val = g_loss[0]
+    for i, epoch in enumerate(history.epoch):
+        print("Epoch %s [G loss: %f, acc.: %.2f%%]" % (epoch, history.history["loss"][i], history.history["acc"][i]))
+        metrics = {
+            'loss_pretrain_gen': history.history["loss"][i],
+            'accuracy_pretrain_gen': history.history["acc"][i]
+        }
+        experiment.log_metrics(metrics)
 
-    print("[G loss: %f, acc.: %.2f%%]" % (g_loss_val, g_acc))
-    experiment.log_metric("pretrain_gen_accuracy", g_acc)
-    experiment.log_metric("pretrain_gen_loss", g_loss_val)
-
-    gen_pretrain.save_model_to_weights(params.SAVED_MODEL_GEN_JSON, params.SAVED_MODEL_GEN_WEIGHTS)
+    #gen_pretrain.save_model_to_weights(params.SAVED_MODEL_GEN_JSON, params.SAVED_MODEL_GEN_WEIGHTS)
 
     # Train Discriminator
     print('Training Discriminator ...')
 
     # Get similar negatives for Discriminator, then train Discriminator
-    input_pos, input_neg = __generate_negatives_for_discriminator_pretrain(x_train, train_ratings_data, documents_data)
+    input_pos_disc_pre, input_neg_disc_pre = __generate_negatives_for_discriminator_pretrain(x_train, train_ratings_data, documents_data)
 
     # prepare pos and neg data
-    pos_data_queries = [queries_data[x[0]] for x in input_pos]
-    pos_data_documents = [documents_data[x[1]] for x in input_pos]
-    neg_data_queries = [queries_data[x[0]] for x in input_neg]
-    neg_data_documents = [documents_data[x[1]] for x in input_neg]
+    pos_data_queries_disc_pre = [queries_data[x[0]] for x in input_pos_disc_pre]
+    pos_data_documents_disc_pre = [documents_data[x[1]] for x in input_pos_disc_pre]
+    neg_data_queries_disc_pre = [queries_data[x[0]] for x in input_neg_disc_pre]
+    neg_data_documents_disc_pre = [documents_data[x[1]] for x in input_neg_disc_pre]
 
-    pos_data_queries = np.asarray(pos_data_queries)
-    neg_data_queries = np.asarray(neg_data_queries)
-    queries_disc = np.append(pos_data_queries, neg_data_queries)
+    queries_disc_pre = pos_data_queries_disc_pre[:]
+    queries_disc_pre.extend(neg_data_queries_disc_pre)
+    queries_disc_pre = np.asarray(queries_disc_pre)
 
-    pos_data_documents = np.asarray(pos_data_documents)
-    neg_data_documents = np.asarray(neg_data_documents)
-    documents_disc = np.append(pos_data_documents, neg_data_documents)
+    documents_disc_pre = pos_data_documents_disc_pre[:]
+    documents_disc_pre.extend(neg_data_documents_disc_pre)
+    documents_disc_pre = np.asarray(documents_disc_pre)
 
     # prepare pos and neg label
-    pos_data_label = [1.0] * len(pos_data_queries)
-    pos_data_label = np.asarray(pos_data_label)
-    neg_data_label = [0.0] * len(neg_data_queries)
-    neg_data_label = np.asarray(neg_data_label)
+    pos_data_label_disc_pre = [1.0] * len(pos_data_queries_disc_pre)
+    neg_data_label_disc_pre = [0.0] * len(neg_data_queries_disc_pre)
 
-    labels_disc = np.append(pos_data_label, neg_data_label)
+    labels_disc_pre = pos_data_label_disc_pre[:]
+    labels_disc_pre.extend(neg_data_label_disc_pre)
+    labels_disc_pre = np.asarray(labels_disc_pre)
 
-    randomize = np.arange(len(queries_disc))
-    np.random.shuffle(randomize)
-    queries_disc = queries_disc[randomize]
-    documents_disc = documents_disc[randomize]
-    labels_disc = labels_disc[randomize]
+    randomize_disc_pre = np.arange(len(queries_disc_pre))
+    np.random.shuffle(randomize_disc_pre)
+    queries_disc_pre = queries_disc_pre[randomize_disc_pre]
+    documents_disc_pre = documents_disc_pre[randomize_disc_pre]
+    labels_disc_pre = labels_disc_pre[randomize_disc_pre]
 
     print("Pretrain Discriminator on batches of size: ", params.DISC_BATCH_SIZE)
 
     # train
-    d_loss = disc.train(queries_disc, documents_disc, labels_disc)
-    print("d_loss:", d_loss)
+    history = disc.train(queries_disc_pre, documents_disc_pre, labels_disc_pre)
 
     # Plot the progress
-    d_acc = 100 * d_loss[1]
-    d_loss_val = d_loss[0]
-
-    print("[D loss: %f, acc.: %.2f%%]" % (d_loss_val, d_acc))
-    experiment.log_metric("pretrain_disc_accuracy", d_acc)
-    experiment.log_metric("pretrain_disc_loss", d_loss_val)
+    for i, epoch in enumerate(history.epoch):
+        print("Epoch %s [G loss: %f, acc.: %.2f%%]" % (epoch, history.history["loss"][i], history.history["acc"][i]))
+        metrics = {
+            'loss_pretrain_disc': history.history["loss"][i],
+            'accuracy_pretrain_disc': history.history["acc"][i]
+        }
+        experiment.log_metrics(metrics)
 
     return gen_pretrain, disc
 
@@ -214,7 +212,7 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
     gen = Generator.create_model(samples_per_epoc, weight_decay, learning_rate, temperature, dropout,
                                  embedding_layer_q, embedding_layer_d, sess=sess)
 
-    gen = gen.load_weights_for_model(params.SAVED_MODEL_GEN_WEIGHTS)
+    #gen = gen.load_weights_for_model(params.SAVED_MODEL_GEN_WEIGHTS)
 
     # Initialize data for eval
     p_best_val = 0.0
@@ -230,87 +228,87 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
         # -------------------------------------------------------------------------------------------------------------#
         print('Training Generator ...')
 
-        pos_neg_data, pos_neg_probs_is = __generate_negatives_for_generator(best_gen, x_train, train_ratings_data, queries_data,
+        pos_neg_data_gen, pos_neg_probs_is_gen = __generate_negatives_for_generator(best_gen, x_train, train_ratings_data, queries_data,
                                                               documents_data)
 
         # choose data
-        choose_queries = [queries_data[x[0]] for x in pos_neg_data]
-        choose_documents = [documents_data[x[1]] for x in pos_neg_data]
+        choose_queries_gen = [queries_data[x[0]] for x in pos_neg_data_gen]
+        choose_documents_gen = [documents_data[x[1]] for x in pos_neg_data_gen]
 
-        choose_queries = np.asarray(choose_queries)
-        choose_documents = np.asarray(choose_documents)
+        choose_queries_gen = np.asarray(choose_queries_gen)
+        choose_documents_gen = np.asarray(choose_documents_gen)
 
-        choose_is = np.asarray(pos_neg_probs_is)
+        choose_is_gen = np.asarray(pos_neg_probs_is_gen)
 
         # get reward((prob  - 0.5) * 2 )
-        choose_reward = disc.get_reward(choose_queries, choose_documents)
+        choose_reward_gen = disc.get_reward(choose_queries_gen, choose_documents_gen)
 
         print("reward / imp_sampling:")
-        print(choose_reward)
-        print(choose_is)
+        print(choose_reward_gen)
+        print(choose_is_gen)
 
         print("Train Generator on batches of size: ", params.GEN_BATCH_SIZE)
 
         # train
-        g_loss = gen.train(choose_queries, choose_documents, choose_reward.reshape([-1]), choose_is)
-        print("g_loss:", g_loss)
+        history = gen.train(choose_queries_gen, choose_documents_gen, choose_reward_gen.reshape([-1]), choose_is_gen)
 
         # Plot the progress
-        g_acc = 100 * g_loss[1]
-        g_loss_val = g_loss[0]
-
-        print("[G loss: %f, acc.: %.2f%%]" % (g_loss_val, g_acc))
-        experiment.log_metric("gen_accuracy", g_acc)
-        experiment.log_metric("gen_loss", g_loss_val)
+        for i, epoch in enumerate(history.epoch):
+            print("Epoch %s [G loss: %f, acc.: %.2f%%]" % (epoch, history.history["loss"][i], history.history["acc"][i]))
+            metrics = {
+                'loss_train_gen': history.history["loss"][i],
+                'accuracy_train_gen': history.history["acc"][i]
+            }
+            experiment.log_metrics(metrics)
 
         # Train Discriminator
         # -------------------------------------------------------------------------------------------------------------#
         print('Training Discriminator ...')
 
         # Generator generate negative for Discriminator, then train Discriminator
-        input_pos, input_neg = __generate_negatives_for_discriminator(best_gen, x_train, train_ratings_data, queries_data, documents_data)
+        input_pos_disc, input_neg_disc = __generate_negatives_for_discriminator(best_gen, x_train, train_ratings_data, queries_data, documents_data)
 
         # prepare pos and neg data
-        pos_data_queries = [queries_data[x[0]] for x in input_pos]
-        pos_data_documents = [documents_data[x[1]] for x in input_pos]
-        neg_data_queries = [queries_data[x[0]] for x in input_neg]
-        neg_data_documents = [documents_data[x[1]] for x in input_neg]
+        pos_data_queries_disc = [queries_data[x[0]] for x in input_pos_disc]
+        pos_data_documents_disc = [documents_data[x[1]] for x in input_pos_disc]
+        neg_data_queries_disc = [queries_data[x[0]] for x in input_neg_disc]
+        neg_data_documents_disc = [documents_data[x[1]] for x in input_neg_disc]
 
-        pos_data_queries = np.asarray(pos_data_queries)
-        neg_data_queries = np.asarray(neg_data_queries)
-        queries_disc = np.append(pos_data_queries, neg_data_queries)
+        queries_disc = pos_data_queries_disc[:]
+        queries_disc.extend(neg_data_queries_disc)
+        queries_disc = np.asarray(queries_disc)
 
-        pos_data_documents = np.asarray(pos_data_documents)
-        neg_data_documents = np.asarray(neg_data_documents)
-        documents_disc = np.append(pos_data_documents, neg_data_documents)
+        documents_disc = pos_data_documents_disc[:]
+        documents_disc.extend(neg_data_documents_disc)
+        documents_disc = np.asarray(documents_disc)
 
         # prepare pos and neg label
-        pos_data_label = [1.0] * len(pos_data_queries)
-        pos_data_label = np.asarray(pos_data_label)
-        neg_data_label = [0.0] * len(neg_data_queries)
-        neg_data_label = np.asarray(neg_data_label)
+        pos_data_label_disc = [1.0] * len(pos_data_queries_disc)
+        neg_data_label_disc = [0.0] * len(neg_data_queries_disc)
 
-        labels_disc = np.append(pos_data_label, neg_data_label)
+        labels_disc = pos_data_label_disc[:]
+        labels_disc.extend(neg_data_label_disc)
+        labels_disc = np.asarray(labels_disc)
 
-        randomize = np.arange(len(queries_disc))
-        np.random.shuffle(randomize)
-        queries_disc = queries_disc[randomize]
-        documents_disc = documents_disc[randomize]
-        labels_disc = labels_disc[randomize]
+        randomize_disc = np.arange(len(queries_disc))
+        np.random.shuffle(randomize_disc)
+        queries_disc = queries_disc[randomize_disc]
+        documents_disc = documents_disc[randomize_disc]
+        labels_disc = labels_disc[randomize_disc]
 
         print("Train Discriminator on batches of size: ", params.DISC_BATCH_SIZE)
 
         # train
-        d_loss = disc.train(queries_disc, documents_disc, labels_disc)
-        print("d_loss:", d_loss)
+        history = disc.train(queries_disc, documents_disc, labels_disc)
 
         # Plot the progress
-        d_acc = 100 * d_loss[1]
-        d_loss_val = d_loss[0]
-
-        print("[D loss: %f, acc.: %.2f%%]" % (d_loss_val, d_acc))
-        experiment.log_metric("disc_accuracy", d_acc)
-        experiment.log_metric("disc_loss", d_loss_val)
+        for i, epoch in enumerate(history.epoch):
+            print("Epoch %s [G loss: %f, acc.: %.2f%%]" % (epoch, history.history["loss"][i], history.history["acc"][i]))
+            metrics = {
+                'loss_train_disc': history.history["loss"][i],
+                'accuracy_train_disc': history.history["acc"][i]
+            }
+            experiment.log_metrics(metrics)
 
         # Evaluate
         # -------------------------------------------------------------------------------------------------------------#
@@ -409,15 +407,15 @@ def __generate_negatives_for_discriminator(gen, x_train, ratings_data, queries_d
         cand_documents = [documents_data[x] for x in candidate_ids]
         cand_q_ids = [query_id] * len(candidate_ids)
 
-        neg_data_queries = np.append(neg_data_queries, cand_queries)
-        neg_data_documents = np.append(neg_data_documents, cand_documents)
-        neg_data_q_ids = np.append(neg_data_q_ids, cand_q_ids)
+        neg_data_queries.extend(cand_queries)
+
+        neg_data_documents.extend(cand_documents)
+
+        neg_data_q_ids.extend(cand_q_ids)
 
     # Importance Sampling
     probs = gen.get_prob(neg_data_queries, neg_data_documents)
     print("__get_rand_batch_from_candidates_for_negatives: prob = ", probs)
-
-    probs = np.asarray(probs) / np.asarray(probs).sum(axis=0, keepdims=1)
 
     neg_data_cands = {}
     for i, prob in enumerate(probs):
@@ -428,7 +426,11 @@ def __generate_negatives_for_discriminator(gen, x_train, ratings_data, queries_d
             neg_data_cands[query_id] = [prob]
 
     for query_id, probs in neg_data_cands.items():
-        neg_list = np.random.choice(neg_data[query_id], size=[len(pos_data[query_id])], p=probs)
+
+        probs_rand = probs[:]
+        probs_rand /= probs_rand.sum().astype(float)
+
+        neg_list = np.random.choice(neg_data[query_id], size=[len(pos_data[query_id])], p=probs_rand)
         neg_data[query_id] = neg_list
 
     for query_id, pos_values in pos_data.items():
@@ -461,7 +463,7 @@ def __generate_negatives_for_generator(gen, x_train, ratings_data, queries_data,
         candidate_ids = __get_rand_batch_from_candidates_for_negatives(query_id, candidate_list, 2 * len(x_pos_list))
 
         pos_neg_data[query_id] = np.append(x_pos_list, candidate_ids)
-        pos_data[query_id] = np.append(x_pos_list)
+        pos_data[query_id] = np.asarray(x_pos_list)
 
         # prepare neg data
         cand_queries = [queries_data[query_id]] * len(pos_neg_data[query_id])
@@ -469,10 +471,15 @@ def __generate_negatives_for_generator(gen, x_train, ratings_data, queries_data,
         cand_q_ids = [query_id] * len(pos_neg_data[query_id])
         cand_d_ids = [x for x in pos_neg_data[query_id]]
 
-        pos_neg_data_queries = np.append(pos_neg_data_queries, cand_queries)
-        pos_neg_data_documents = np.append(pos_neg_data_documents, cand_documents)
-        pos_neg_data_q_ids = np.append(pos_neg_data_q_ids, cand_q_ids)
-        pos_neg_data_d_ids = np.append(pos_neg_data_d_ids, cand_d_ids)
+        pos_neg_data_queries.extend(cand_queries)
+        pos_neg_data_documents.extend(cand_documents)
+        pos_neg_data_q_ids.extend(cand_q_ids)
+        pos_neg_data_d_ids.extend(cand_d_ids)
+
+    pos_neg_data_queries = np.asarray(pos_neg_data_queries)
+    pos_neg_data_documents = np.asarray(pos_neg_data_documents)
+    pos_neg_data_q_ids = np.asarray(pos_neg_data_q_ids)
+    pos_neg_data_d_ids = np.asarray(pos_neg_data_d_ids)
 
     # Importance Sampling
     probs = gen.get_prob(pos_neg_data_queries, pos_neg_data_documents)
@@ -485,24 +492,22 @@ def __generate_negatives_for_generator(gen, x_train, ratings_data, queries_data,
         if pos_neg_data_d_ids[i] in pos_data[query_id]:
             probs_is[i] += (params.GEN_LAMBDA / (1.0 * len(pos_data[query_id])))
 
-    # G generate some url (2 * postive doc num)
-    prob_is_rand = np.asarray(probs_is) / np.asarray(probs_is).sum(axis=0, keepdims=1)
-
     data_cands_prob = {}
     data_cands_prob_is = {}
-    data_cands_prob_is_rand = {}
     for i, query_id in enumerate(pos_neg_data_q_ids):
         if query_id in data_cands_prob.keys():
             data_cands_prob[query_id] = np.append(data_cands_prob[query_id], [probs[i]])
             data_cands_prob_is[query_id] = np.append(data_cands_prob_is[query_id], [probs_is[i]])
-            data_cands_prob_is_rand[query_id] = np.append(data_cands_prob_is_rand[query_id], [prob_is_rand[i]])
         else:
             data_cands_prob[query_id] = [probs[i]]
             data_cands_prob_is[query_id] = [probs_is[i]]
-            data_cands_prob_is_rand[query_id] = [prob_is_rand[i]]
 
     for query_id, probs in data_cands_prob.items():
-        choosen_indexes = np.random.choice(np.arange(len(pos_neg_data[query_id])), size=[2 * len(pos_data[query_id])], p=data_cands_prob_is_rand[query_id])
+
+        probs_rand = probs[:]
+        probs_rand /= probs_rand.sum().astype(float)
+
+        choosen_indexes = np.random.choice(np.arange(len(pos_neg_data[query_id])), size=[2 * len(pos_data[query_id])], p=probs_rand)
         choosen_data = pos_neg_data[query_id][choosen_indexes]
         # prob / important sampling prob (loss => prob * reward * prob / important sampling prob)
         choosen_data_prob_is = np.array(data_cands_prob[query_id])[choosen_indexes] / np.array(data_cands_prob_is[query_id])[choosen_indexes]

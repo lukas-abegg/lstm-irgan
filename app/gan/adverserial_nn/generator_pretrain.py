@@ -77,13 +77,13 @@ class GeneratorPretrain:
                            optimizer=self.adamw,
                            metrics=['accuracy'])
 
-    def train(self, train_data_queries, train_data_documents, train_data_label):
+    def train(self, train_data_queries, train_data_documents, train_data_labels):
         input_reward = [0.0] * len(train_data_queries)
         input_reward = np.asarray(input_reward)
         input_important_sampling = [0.0] * len(train_data_queries)
         input_important_sampling = np.asarray(input_important_sampling)
         return self.model.fit([train_data_queries, train_data_documents, input_reward, input_important_sampling],
-                              train_data_label, epochs=params.GEN_TRAIN_EPOCHS, batch_size=params.GEN_BATCH_SIZE)
+                              train_data_labels, epochs=params.GEN_TRAIN_EPOCHS, batch_size=params.GEN_BATCH_SIZE)
 
     def get_prob(self, train_data_queries, train_data_documents):
         input_reward = [0.0] * len(train_data_queries)

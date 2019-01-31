@@ -88,10 +88,10 @@ class Generator:
         return _loss
 
     def train(self, train_data_queries, train_data_documents, reward, important_sampling):
-        label = np.zeros(len(train_data_queries))
+        labels = np.zeros((len(train_data_queries), 2))
 
         return self.model.fit([train_data_queries, train_data_documents, reward, important_sampling],
-                                label, epochs=params.GEN_TRAIN_EPOCHS, batch_size=params.GEN_BATCH_SIZE)
+                                labels, epochs=params.GEN_TRAIN_EPOCHS, batch_size=params.GEN_BATCH_SIZE)
 
     def get_prob(self, train_data_queries, train_data_documents):
         input_reward = [0.0] * len(train_data_queries)
