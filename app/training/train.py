@@ -42,27 +42,15 @@ def train_model(x_train, ratings_data, queries_data, documents_data, tokenizer_q
 def __get_embedding_layers(tokenizer_q, tokenizer_d) -> (Embedding, Embedding):
     if params.USE_FASTTEXT_MODEL:
         print('Load embeddings')
-        # embedding_model = init_fasttext_model_embeddings.load_model()
+        embedding_model = init_fasttext_model_embeddings.load_model()
         print('Prepare embedding-layer for queries')
-        embedding_layer_q = Embedding(input_dim=len(tokenizer_q.word_index) + 1,
-                                 output_dim=params.EMBEDDING_DIM,
-                                 weights=None,
-                                 input_length=params.MAX_SEQUENCE_LENGTH_QUERIES,
-                                 mask_zero=True,
-                                 trainable=False)
-        # embedding_layer_q = init_fasttext_model_embeddings.init_embedding_layer(tokenizer_q, embedding_model,
-        #                                                                         params.MAX_SEQUENCE_LENGTH_QUERIES,
-        #                                                                         params.MAX_NUM_WORDS_QUERIES)
+        embedding_layer_q = init_fasttext_model_embeddings.init_embedding_layer(tokenizer_q, embedding_model,
+                                                                                params.MAX_SEQUENCE_LENGTH_QUERIES,
+                                                                                params.MAX_NUM_WORDS_QUERIES)
         print('Prepare embedding-layer for documents')
-        embedding_layer_d = Embedding(input_dim=len(tokenizer_d.word_index) + 1,
-                                                         output_dim=params.EMBEDDING_DIM,
-                                                         weights=None,
-                                                         input_length=params.MAX_SEQUENCE_LENGTH_DOCS,
-                                                         mask_zero=True,
-                                                         trainable=False)
-        # embedding_layer_d = init_fasttext_model_embeddings.init_embedding_layer(tokenizer_d, embedding_model,
-        #                                                                         params.MAX_SEQUENCE_LENGTH_DOCS,
-        #                                                                         params.MAX_NUM_WORDS_DOCS)
+        embedding_layer_d = init_fasttext_model_embeddings.init_embedding_layer(tokenizer_d, embedding_model,
+                                                                                params.MAX_SEQUENCE_LENGTH_DOCS,
+                                                                                params.MAX_NUM_WORDS_DOCS)
     else:
         print('Load embeddings')
         embedding_index = init_w2v_embeddings.build_index_mapping()
@@ -146,7 +134,7 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
         }
         experiment.log_metrics(metrics)
 
-    #gen_pretrain.save_model_to_weights(params.SAVED_MODEL_GEN_JSON, params.SAVED_MODEL_GEN_WEIGHTS)
+    gen_pretrain.save_model_to_weights(params.SAVED_MODEL_GEN_JSON, params.SAVED_MODEL_GEN_WEIGHTS)
 
     # Train Discriminator
     print('Training Discriminator ...')
@@ -212,9 +200,9 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
     gen = Generator.create_model(samples_per_epoc, weight_decay, learning_rate, temperature, dropout,
                                  embedding_layer_q, embedding_layer_d, sess=sess)
 
-    #gen = gen.load_weights_for_model(params.SAVED_MODEL_GEN_WEIGHTS)
+    gen = gen.load_weights_for_model(params.SAVED_MODEL_GEN_WEIGHTS)
 
-    # Initialize data for eval
+    # initialize data for eval
     p_best_val = 0.0
     ndcg_best_val = 0.0
 
@@ -413,7 +401,7 @@ def __generate_negatives_for_discriminator(gen, x_train, ratings_data, queries_d
 
         neg_data_q_ids.extend(cand_q_ids)
 
-    # Importance Sampling
+    # importance Sampling
     probs = gen.get_prob(neg_data_queries, neg_data_documents)
     print("__get_rand_batch_from_candidates_for_negatives: prob = ", probs)
 
@@ -481,11 +469,11 @@ def __generate_negatives_for_generator(gen, x_train, ratings_data, queries_data,
     pos_neg_data_q_ids = np.asarray(pos_neg_data_q_ids)
     pos_neg_data_d_ids = np.asarray(pos_neg_data_d_ids)
 
-    # Importance Sampling
+    # importance sampling
     probs = gen.get_prob(pos_neg_data_queries, pos_neg_data_documents)
     print("__generate_negatives_for_generator: prob = ", probs)
 
-    # important sampling, change doc prob
+    # importance sampling, change doc prob
     probs_is = probs * (1.0 - params.GEN_LAMBDA)
 
     for i, query_id in enumerate(pos_neg_data_q_ids):
