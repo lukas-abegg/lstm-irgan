@@ -28,7 +28,7 @@ def __build_embeddings_matrix(tokenizer: Tokenizer, model, max_num_words):
             continue
 
         try:
-            embedding_vector = model[word]
+            embedding_vector = model.get_word_vector(word)
         except Exception:
             raise ValueError("no embedding vector found for word", word)
 
