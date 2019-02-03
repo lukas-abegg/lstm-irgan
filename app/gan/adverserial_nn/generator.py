@@ -60,12 +60,6 @@ class Generator:
                 recurrent_dropout=self.dropout))(self.lstm_d_in)
 
         self.x = Concatenate()([self.lstm_q_out, self.lstm_d_out])
-
-        self.x = Bidirectional(
-            GRU(params.GEN_HIDDEN_SIZE_LSTM, kernel_initializer='random_uniform', return_sequences=False,
-                activation='elu', dropout=self.dropout,
-                recurrent_dropout=self.dropout))(self.x)
-
         self.x = Dropout(self.dropout)(self.x)
 
         # we stack a deep fully-connected network on top
