@@ -112,7 +112,7 @@ def __fill_index(es, actions):
     helpers.bulk(client=es, actions=actions, chunk_size=100)
 
 
-WORKDIR = '/Users/lukas/git-projects/lstm-irgan'
+WORKDIR = '/home/abeggluk/lstm-irgan'
 DOCUMENTS_DIR = WORKDIR + '/data/nfcorpus/all_docs/train.docs'
 QUERIES = WORKDIR + '/data/nfcorpus/all_queries/train.all.queries'
 LABELLED_DATA = WORKDIR + '/data/nfcorpus/all_qrels/3-2-1/train.3-2-1.qrel'
