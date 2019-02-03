@@ -511,6 +511,9 @@ def __get_rand_batch_from_candidates_for_negatives(query_id, candidate_list, siz
     # create ES client, create index
     es = Elasticsearch(hosts=[params.ES_HOST])
     query_text = es.get(index="queries", doc_type="query", id=str(query_id))["_source"]["text"]
+    query_text = query_text.replace("\n", " ")
+    query_text = query_text.replace("\"", " ")
+    query_text = query_text[0:9999]
     candidates = es.search(index="documents", body={"query": {"match": {"text": query_text}}}, size=size)
     candidates = [doc['_id'] for doc in candidates['hits']['hits']]
 
