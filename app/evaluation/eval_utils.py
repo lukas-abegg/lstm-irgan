@@ -50,14 +50,36 @@ def split_probs_data_by_query(query_ids_all, x_data_all, y_data_all, pred_scores
     pred_scores_query = {}
 
     for i, query_id in enumerate(query_ids_all):
-        if query_id in x_data_query.keys():
-            x_data_query[query_id] = np.append(x_data_query[query_id], x_data_all[i])
-            y_data_query[query_id] = np.append(y_data_query[query_id], y_data_all[i])
-            pred_scores_query[query_id] = np.append(pred_scores_query[query_id], pred_scores_all[i])
+
+        if 0 <= i < len(x_data_all):
+            x_val = x_data_all[i]
         else:
-            x_data_query[query_id] = [x_data_all[i]]
-            y_data_query[query_id] = [y_data_all[i]]
-            pred_scores_query[query_id] = [pred_scores_all[i]]
+            x_val = 0
+
+        if query_id in x_data_query.keys():
+            x_data_query[query_id] = np.append(x_data_query[query_id], x_val)
+        else:
+            x_data_query[query_id] = [x_val]
+
+        if 0 <= i < len(y_data_all):
+            y_val = y_data_all[i]
+        else:
+            y_val = 0
+
+        if query_id in y_data_query.keys():
+            y_data_query[query_id] = np.append(y_data_query[query_id], y_val)
+        else:
+            y_data_query[query_id] = [y_val]
+
+        if 0 <= i < len(pred_scores_all):
+            pred_score = pred_scores_all[i]
+        else:
+            pred_score = 0
+
+        if query_id in pred_scores_query.keys():
+            pred_scores_query[query_id] = np.append(pred_scores_query[query_id], pred_score)
+        else:
+            pred_scores_query[query_id] = [pred_score]
 
     return x_data_query, y_data_query, pred_scores_query
 
