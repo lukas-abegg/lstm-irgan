@@ -212,6 +212,8 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
     print('Start adversarial training')
     for epoch in range(params.DISC_TRAIN_EPOCHS):
 
+        print('Start adversial training for epoch:', epoch)
+
         # Train Generator
         # -------------------------------------------------------------------------------------------------------------#
         print('Training Generator ...')
@@ -241,8 +243,8 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
         history = gen.train(choose_queries_gen, choose_documents_gen, choose_reward_gen.reshape([-1]), choose_is_gen)
 
         # Plot the progress
-        for i, epoch in enumerate(history.epoch):
-            print("Epoch %s [G loss: %f, acc.: %.2f%%]" % (epoch, history.history["loss"][i], history.history["acc"][i]))
+        for i, epoch_gen in enumerate(history.epoch):
+            print("Epoch %s [G loss: %f, acc.: %.2f%%]" % (epoch_gen, history.history["loss"][i], history.history["acc"][i]))
             metrics = {
                 'loss_train_gen': history.history["loss"][i],
                 'accuracy_train_gen': history.history["acc"][i]
@@ -290,8 +292,8 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
         history = disc.train(queries_disc, documents_disc, labels_disc)
 
         # Plot the progress
-        for i, epoch in enumerate(history.epoch):
-            print("Epoch %s [G loss: %f, acc.: %.2f%%]" % (epoch, history.history["loss"][i], history.history["acc"][i]))
+        for i, epoch_disc in enumerate(history.epoch):
+            print("Epoch %s [G loss: %f, acc.: %.2f%%]" % (epoch_disc, history.history["loss"][i], history.history["acc"][i]))
             metrics = {
                 'loss_train_disc': history.history["loss"][i],
                 'accuracy_train_disc': history.history["acc"][i]
