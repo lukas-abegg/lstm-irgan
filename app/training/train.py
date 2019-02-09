@@ -209,6 +209,8 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
     best_disc = disc_pre
     best_gen = gen_pre
 
+    last_gen = gen_pre
+
     print('Start adversarial training')
     for epoch in range(params.TRAIN_EPOCHS):
 
@@ -218,7 +220,7 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
         # -------------------------------------------------------------------------------------------------------------#
         print('Training Generator ...')
 
-        pos_neg_data_gen, pos_neg_probs_is_gen = __generate_negatives_for_generator(best_gen, x_train, train_ratings_data, queries_data,
+        pos_neg_data_gen, pos_neg_probs_is_gen = __generate_negatives_for_generator(last_gen, x_train, train_ratings_data, queries_data,
                                                               documents_data)
 
         # choose data
@@ -256,7 +258,7 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
         print('Training Discriminator ...')
 
         # Generator generate negative for Discriminator, then train Discriminator
-        input_pos_disc, input_neg_disc = __generate_negatives_for_discriminator(best_gen, x_train, train_ratings_data, queries_data, documents_data)
+        input_pos_disc, input_neg_disc = __generate_negatives_for_discriminator(last_gen, x_train, train_ratings_data, queries_data, documents_data)
 
         # prepare pos and neg data
         pos_data_queries_disc = [queries_data[x[0]] for x in input_pos_disc]
@@ -313,6 +315,9 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
         print("Epoch", epoch, "measure:", "disc p@5 =", p_step, "disc ndcg@5 =", ndcg_step)
         experiment.log_metric("disc_p5", p_step, epoch)
         experiment.log_metric("disc_ndcg5", ndcg_step, epoch)
+
+        last_disc = disc
+        last_gen = gen
 
         best_disc, best_gen, p_best_val, ndcg_best_val = __get_best_eval_result(disc, best_disc, gen, best_gen, p_step,
                                                                                 p_best_val, ndcg_step, ndcg_best_val)
