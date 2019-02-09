@@ -80,11 +80,8 @@ class Generator:
     def loss(self, _reward, _important_sampling):
         def _loss(y_true, y_pred):
             log_action_prob = K.log(y_pred[:, 1])
-            loss = - K.reshape(log_action_prob, [-1]) * K.reshape(_reward, [-1]) * K.reshape(_important_sampling, [-1])
-            loss_mean = K.mean(loss)
-            total_loss = loss_mean * 1.  # copy tensor
-            for reg_loss in self.model.losses:
-                total_loss = total_loss + reg_loss
+            loss = K.reshape(log_action_prob, [-1]) * K.reshape(_reward, [-1]) * K.reshape(_important_sampling, [-1])
+            total_loss = - K.mean(loss)
             return total_loss
 
         return _loss

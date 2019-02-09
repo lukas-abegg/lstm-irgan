@@ -210,7 +210,7 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
     best_gen = gen_pre
 
     print('Start adversarial training')
-    for epoch in range(params.DISC_TRAIN_EPOCHS):
+    for epoch in range(params.TRAIN_EPOCHS):
 
         print('Start adversial training for epoch:', epoch)
 
