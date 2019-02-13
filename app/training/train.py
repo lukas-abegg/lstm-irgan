@@ -128,11 +128,9 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
     # Plot the progress
     for i, epoch in enumerate(history.epoch):
         print("Epoch %s [G loss: %f, acc.: %.2f%%]" % (epoch, history.history["loss"][i], history.history["acc"][i]))
-        metrics = {
-            'loss_pretrain_gen': history.history["loss"][i],
-            'accuracy_pretrain_gen': history.history["acc"][i]
-        }
-        experiment.log_metrics(metrics)
+        step = "pretrain_" + str(epoch)
+        experiment.log_metric('loss_pretrain_gen', history.history["loss"][i], step=step)
+        experiment.log_metric('accuracy_pretrain_gen', history.history["acc"][i], step=step)
 
     gen_pretrain.save_model_to_weights(params.SAVED_MODEL_GEN_JSON, params.SAVED_MODEL_GEN_WEIGHTS)
 
@@ -178,11 +176,9 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
     # Plot the progress
     for i, epoch in enumerate(history.epoch):
         print("Epoch %s [G loss: %f, acc.: %.2f%%]" % (epoch, history.history["loss"][i], history.history["acc"][i]))
-        metrics = {
-            'loss_pretrain_disc': history.history["loss"][i],
-            'accuracy_pretrain_disc': history.history["acc"][i]
-        }
-        experiment.log_metrics(metrics)
+        step = "pretrain_" + str(epoch)
+        experiment.log_metric('loss_pretrain_disc', history.history["loss"][i], step=step)
+        experiment.log_metric('accuracy_pretrain_disc', history.history["acc"][i], step=step)
 
     return gen_pretrain, disc
 
@@ -247,11 +243,9 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
         # Plot the progress
         for i, epoch_gen in enumerate(history.epoch):
             print("Epoch %s [G loss: %f, acc.: %.2f%%]" % (epoch_gen, history.history["loss"][i], history.history["acc"][i]))
-            metrics = {
-                'loss_train_gen': history.history["loss"][i],
-                'accuracy_train_gen': history.history["acc"][i]
-            }
-            experiment.log_metrics(metrics)
+            step = str(epoch) + "_" + str(epoch_gen)
+            experiment.log_metric('loss_train_gen', history.history["loss"][i], step=step)
+            experiment.log_metric('accuracy_train_gen', history.history["acc"][i], step=step)
 
         # Train Discriminator
         # -------------------------------------------------------------------------------------------------------------#
@@ -296,11 +290,9 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
         # Plot the progress
         for i, epoch_disc in enumerate(history.epoch):
             print("Epoch %s [G loss: %f, acc.: %.2f%%]" % (epoch_disc, history.history["loss"][i], history.history["acc"][i]))
-            metrics = {
-                'loss_train_disc': history.history["loss"][i],
-                'accuracy_train_disc': history.history["acc"][i]
-            }
-            experiment.log_metrics(metrics)
+            step = str(epoch) + "_" + str(epoch_disc)
+            experiment.log_metric('loss_train_disc', history.history["loss"][i], step=step)
+            experiment.log_metric('accuracy_train_disc', history.history["acc"][i], step=step)
 
         # Evaluate
         # -------------------------------------------------------------------------------------------------------------#
@@ -420,9 +412,9 @@ def __generate_negatives_for_discriminator(gen, x_train, ratings_data, queries_d
         else:
             neg_data_cands[query_id] = [prob]
 
-    for query_id, probs in neg_data_cands.items():
+    for query_id, neg_data_probs in neg_data_cands.items():
 
-        probs_rand = probs[:]
+        probs_rand = neg_data_probs[:]
         probs_rand /= probs_rand.sum().astype(float)
 
         neg_list = np.random.choice(neg_data[query_id], size=[len(pos_data[query_id])], p=probs_rand)
@@ -479,6 +471,9 @@ def __generate_negatives_for_generator(gen, x_train, ratings_data, queries_data,
     # importance sampling
     probs = gen.get_prob(pos_neg_data_queries, pos_neg_data_documents)
     print("__generate_negatives_for_generator: prob = ", probs)
+
+    exp_rating = np.exp(probs - np.max(probs))
+    probs = exp_rating / np.sum(exp_rating)
 
     # importance sampling, change doc prob
     probs_is = probs * (1.0 - params.GEN_LAMBDA)

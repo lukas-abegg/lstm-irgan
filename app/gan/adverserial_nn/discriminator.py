@@ -48,8 +48,8 @@ class Discriminator:
         self.x = Concatenate()([self.lstm_q_out, self.lstm_d_out])
         self.x = Dropout(self.dropout)(self.x)
 
-        self.x = Dense(params.DISC_HIDDEN_SIZE_DENSE, activation='elu', kernel_regularizer=regularizers.l2(self.weight_decay), kernel_initializer='random_uniform')(self.x)
-        self.prob = Dense(1, kernel_regularizer=regularizers.l2(self.weight_decay), kernel_initializer='random_uniform', activation='sigmoid', name='prob')(self.x)
+        self.x = Dense(params.DISC_HIDDEN_SIZE_DENSE, activation='elu', kernel_initializer='random_uniform')(self.x)
+        self.prob = Dense(1, kernel_initializer='random_uniform', activation='sigmoid', name='prob')(self.x)
 
         self.model = Model(inputs=[self.sequence_input_q, self.sequence_input_d], outputs=[self.prob])
         self.model.summary()

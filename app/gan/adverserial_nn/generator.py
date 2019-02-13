@@ -63,8 +63,8 @@ class Generator:
         self.x = Dropout(self.dropout)(self.x)
 
         # we stack a deep fully-connected network on top
-        self.x = Dense(params.GEN_HIDDEN_SIZE_DENSE, activation='elu', kernel_regularizer=regularizers.l2(self.weight_decay), kernel_initializer='random_uniform')(self.x)
-        self.prob = Dense(2, kernel_regularizer=regularizers.l2(self.weight_decay), kernel_initializer='random_uniform', activation='softmax', name='prob')(self.x)
+        self.x = Dense(params.GEN_HIDDEN_SIZE_DENSE, activation='elu', kernel_initializer='random_uniform')(self.x)
+        self.prob = Dense(2, kernel_initializer='random_uniform', activation='softmax', name='prob')(self.x)
 
         self.model = Model(inputs=[self.sequence_input_q, self.sequence_input_d, self.reward, self.important_sampling],
                            outputs=[self.prob])
