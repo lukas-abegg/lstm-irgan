@@ -128,7 +128,7 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
     # Plot the progress
     for i, epoch in enumerate(history.epoch):
         print("Epoch %s [G loss: %f, acc.: %.2f%%]" % (epoch, history.history["loss"][i], history.history["acc"][i]))
-        step = "pretrain_" + str(epoch)
+        step = int(epoch)
         experiment.log_metric('loss_pretrain_gen', history.history["loss"][i], step=step)
         experiment.log_metric('accuracy_pretrain_gen', history.history["acc"][i], step=step)
 
@@ -176,7 +176,7 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
     # Plot the progress
     for i, epoch in enumerate(history.epoch):
         print("Epoch %s [G loss: %f, acc.: %.2f%%]" % (epoch, history.history["loss"][i], history.history["acc"][i]))
-        step = "pretrain_" + str(epoch)
+        step = int(epoch)
         experiment.log_metric('loss_pretrain_disc', history.history["loss"][i], step=step)
         experiment.log_metric('accuracy_pretrain_disc', history.history["acc"][i], step=step)
 
@@ -243,7 +243,7 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
         # Plot the progress
         for i, epoch_gen in enumerate(history.epoch):
             print("Epoch %s [G loss: %f, acc.: %.2f%%]" % (epoch_gen, history.history["loss"][i], history.history["acc"][i]))
-            step = str(epoch) + "_" + str(epoch_gen)
+            step = int(epoch * 10 + epoch_gen)
             experiment.log_metric('loss_train_gen', history.history["loss"][i], step=step)
             experiment.log_metric('accuracy_train_gen', history.history["acc"][i], step=step)
 
@@ -290,7 +290,7 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
         # Plot the progress
         for i, epoch_disc in enumerate(history.epoch):
             print("Epoch %s [G loss: %f, acc.: %.2f%%]" % (epoch_disc, history.history["loss"][i], history.history["acc"][i]))
-            step = str(epoch) + "_" + str(epoch_disc)
+            step = int(epoch * 10 + epoch_disc)
             experiment.log_metric('loss_train_disc', history.history["loss"][i], step=step)
             experiment.log_metric('accuracy_train_disc', history.history["acc"][i], step=step)
 
