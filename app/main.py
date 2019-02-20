@@ -6,10 +6,6 @@ from comet_ml import Experiment
 import tensorflow as tf
 from keras import backend
 
-from hyperopt import Trials, STATUS_OK, tpe
-from hyperas import optim
-from hyperas.distributions import uniform
-
 import data_preparation.init_data_example as init_example
 import data_preparation.init_data_wikiclir as init_wikiclir
 import data_preparation.init_data_nfcorpus as init_nfcorpus
@@ -76,18 +72,6 @@ def train_model_without_hyperparam_opt(x_train, ratings_data, queries_data, docu
     return best_gen, best_disc
 
 
-def train_model_with_hyperparam_opt(x_train, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess):
-    weight_decay = params.WEIGHT_DECAY
-    learning_rate = {{uniform(params.OPT_MIN_LEARNING_RATE, params.OPT_MAX_LEARNING_RATE)}}
-    temperature = {{uniform(params.OPT_MIN_TEMPERATURE, params.OPT_MAX_TEMPERATURE)}}
-    dropout = {{uniform(params.OPT_MIN_DROPOUT, params.OPT_MAX_DROPOUT)}}
-
-    best_gen, best_disc, validation_acc, validation_ndcg = train.train_model(x_train, ratings_data, queries_data, documents_data, tokenizer_q,
-                                                 tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout)
-
-    return {'loss': -validation_acc, 'status': STATUS_OK, 'model': best_gen}
-
-
 def evaluate(gen, x_data, ratings_data, queries_data, documents_data, sess):
     eval_metrics.evaluate(gen, x_data, ratings_data, queries_data, documents_data, sess)
 
@@ -114,26 +98,14 @@ def plot_model(gen):
 
 def main(mode, experiment):
     if params.TRAIN_MODE == mode:
-        if not params.USE_HYPERPARAM_OPT:
-            sess, x_train, x_val, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = get_env_data_with_x_data_splitted()
-            generator, discriminator = train_model_without_hyperparam_opt(x_train, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, experiment)
 
-        else:
-            best_run, best_model = optim.minimize(model=train_model_with_hyperparam_opt,
-                                                  data=get_env_data_with_x_data_splitted,
-                                                  algo=tpe.suggest,
-                                                  max_evals=5,
-                                                  trials=Trials())
+        sess, x_train, x_val, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = get_env_data_with_x_data_splitted()
+        generator, discriminator = train_model_without_hyperparam_opt(x_train, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, experiment)
 
-            sess, x_train, x_val, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = get_env_data_with_x_data_splitted()
-            generator = best_model
-            discriminator = None
-            print("Best performing model chosen hyper-parameters:")
-            print(best_run)
-            eval_metrics.evaluate(generator, x_val, ratings_data, documents_data, queries_data, sess)
-
-        save_model_to_file(generator, params.SAVED_MODEL_GEN_FILE)
-        save_model_to_file(discriminator, params.SAVED_MODEL_DISC_FILE)
+        if generator is not None:
+            save_model_to_file(generator, params.SAVED_MODEL_GEN_FILE)
+        if discriminator is not None:
+            save_model_to_file(discriminator, params.SAVED_MODEL_DISC_FILE)
 
     elif params.EVAL_MODE == mode:
         sess, x_data, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = get_env_data_not_splitted()

@@ -39,32 +39,32 @@ class Generator:
         self.embedded_sequences_q = self.embeddings_layer_q(self.sequence_input_q)
 
         self.lstm_q_in = Bidirectional(
-            GRU(params.GEN_HIDDEN_SIZE_LSTM, kernel_initializer='random_uniform', return_sequences=True, activation='elu', dropout=self.dropout,
+            GRU(params.GEN_HIDDEN_SIZE_LSTM, kernel_regularizer=regularizers.l2(self.weight_decay), kernel_initializer='random_uniform', return_sequences=True, activation='elu', dropout=self.dropout,
                 recurrent_dropout=self.dropout))(self.embedded_sequences_q)
         # this LSTM will transform the vector sequence into a single vector,
         # containing information about the entire sequence
         self.lstm_q_out = Bidirectional(
-            GRU(params.GEN_HIDDEN_SIZE_LSTM, kernel_initializer='random_uniform', return_sequences=False, activation='elu', dropout=self.dropout,
+            GRU(params.GEN_HIDDEN_SIZE_LSTM, kernel_regularizer=regularizers.l2(self.weight_decay), kernel_initializer='random_uniform', return_sequences=False, activation='elu', dropout=self.dropout,
                 recurrent_dropout=self.dropout))(self.lstm_q_in)
 
         self.sequence_input_d = Input(shape=(params.MAX_SEQUENCE_LENGTH_DOCS,), dtype='int32', name='input_doc')
         self.embedded_sequences_d = self.embeddings_layer_d(self.sequence_input_d)
 
         self.lstm_d_in = Bidirectional(
-            GRU(params.GEN_HIDDEN_SIZE_LSTM, kernel_initializer='random_uniform', return_sequences=True, activation='elu', dropout=self.dropout,
+            GRU(params.GEN_HIDDEN_SIZE_LSTM, kernel_regularizer=regularizers.l2(self.weight_decay), kernel_initializer='random_uniform', return_sequences=True, activation='elu', dropout=self.dropout,
                 recurrent_dropout=self.dropout))(self.embedded_sequences_d)
         # this LSTM will transform the vector sequence into a single vector,
         # containing information about the entire sequence
         self.lstm_d_out = Bidirectional(
-            GRU(params.GEN_HIDDEN_SIZE_LSTM, kernel_initializer='random_uniform', return_sequences=False, activation='elu', dropout=self.dropout,
+            GRU(params.GEN_HIDDEN_SIZE_LSTM, kernel_regularizer=regularizers.l2(self.weight_decay), kernel_initializer='random_uniform', return_sequences=False, activation='elu', dropout=self.dropout,
                 recurrent_dropout=self.dropout))(self.lstm_d_in)
 
         self.x = Concatenate()([self.lstm_q_out, self.lstm_d_out])
         self.x = Dropout(self.dropout)(self.x)
 
         # we stack a deep fully-connected network on top
-        self.x = Dense(params.GEN_HIDDEN_SIZE_DENSE, activation='elu', kernel_initializer='random_uniform')(self.x)
-        self.prob = Dense(2, kernel_initializer='random_uniform', activation='softmax', name='prob')(self.x)
+        self.x = Dense(params.GEN_HIDDEN_SIZE_DENSE, activation='elu', kernel_regularizer=regularizers.l2(self.weight_decay), kernel_initializer='random_uniform')(self.x)
+        self.prob = Dense(2, kernel_regularizer=regularizers.l2(self.weight_decay), kernel_initializer='random_uniform', activation='softmax', name='prob')(self.x)
 
         self.model = Model(inputs=[self.sequence_input_q, self.sequence_input_d, self.reward, self.important_sampling],
                            outputs=[self.prob])
@@ -87,8 +87,15 @@ class Generator:
     def train(self, train_data_queries, train_data_documents, reward, important_sampling):
         labels = np.zeros((len(train_data_queries), 2))
 
+        from keras import callbacks
+
+        stop_nan = callbacks.TerminateOnNaN()
+
         return self.model.fit([train_data_queries, train_data_documents, reward, important_sampling],
-                                labels, epochs=params.GEN_TRAIN_EPOCHS, batch_size=params.GEN_BATCH_SIZE)
+                              labels,
+                              epochs=params.GEN_TRAIN_EPOCHS,
+                              batch_size=params.GEN_BATCH_SIZE,
+                              callbacks=[stop_nan])
 
     def get_prob(self, train_data_queries, train_data_documents):
         input_reward = [0.0] * len(train_data_queries)

@@ -67,8 +67,7 @@ def __get_embedding_layers(tokenizer_q, tokenizer_d) -> (Embedding, Embedding):
 
 def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay,
                      learning_rate, temperature, dropout, experiment=None):
-    train_ratings_data, train_queries_data, train_documents_data = __build_train_data(x_train, ratings_data,
-                                                                                      queries_data, documents_data)
+    train_ratings_data, train_queries_data = __build_train_data(x_train, ratings_data, queries_data, documents_data)
 
     # Clear models, and reinitialize them
     embedding_layer_q, embedding_layer_d = __get_embedding_layers(tokenizer_q, tokenizer_d)
@@ -185,8 +184,7 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
 
 def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data, documents_data, tokenizer_q,
                   tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout, experiment=None):
-    train_ratings_data, train_queries_data, train_documents_data = __build_train_data(x_train, ratings_data,
-                                                                                      queries_data, documents_data)
+    train_ratings_data, train_queries_data = __build_train_data(x_train, ratings_data, queries_data, documents_data)
 
     disc = disc_pre
 
@@ -321,17 +319,13 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
 
 def __build_train_data(x_train, ratings_data, queries_data, documents_data):
     train_queries_data = {}
-    train_documents_data = {}
     train_ratings_data = {}
 
     for query_id in x_train:
         train_ratings_data[query_id] = ratings_data[query_id]
         train_queries_data[query_id] = queries_data[query_id]
-        for key in ratings_data.keys():
-            if key in documents_data.keys():
-                train_documents_data[key] = documents_data[key]
 
-    return train_ratings_data, train_queries_data, train_documents_data
+    return train_ratings_data, train_queries_data
 
 
 def __get_query_specific_data(query_id, ratings_data, documents_data):
