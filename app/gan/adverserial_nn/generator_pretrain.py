@@ -84,7 +84,7 @@ class GeneratorPretrain:
         from keras import callbacks
 
         reduce_lr = callbacks.EarlyStopping(monitor='val_loss', min_delta=0.001, patience=3, verbose=0, mode='auto',
-                                            baseline=None, restore_best_weights=False)
+                                            baseline=None)
 
         return self.model.fit([train_data_queries, train_data_documents, input_reward, input_important_sampling],
                               train_data_labels,

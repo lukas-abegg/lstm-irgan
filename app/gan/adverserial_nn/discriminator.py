@@ -62,8 +62,8 @@ class Discriminator:
 
         from keras import callbacks
 
-        reduce_lr = callbacks.EarlyStopping(monitor='val_loss', min_delta=0.001, patience=3, verbose=0, mode='auto',
-                                            baseline=None, restore_best_weights=False)
+        reduce_lr = callbacks.EarlyStopping(monitor='val_loss', patience=3, verbose=0, mode='auto',
+                                            baseline=None)
 
         return self.model.fit([train_data_queries, train_data_documents],
                               train_data_labels,
