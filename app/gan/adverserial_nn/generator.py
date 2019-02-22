@@ -1,5 +1,5 @@
-from keras import backend as K, regularizers
-from keras.layers import Bidirectional, Embedding, GRU, Dense, Activation, Concatenate
+from keras import backend as K
+from keras.layers import Bidirectional, Embedding, GRU, Dense, Concatenate
 from keras.layers.core import Dropout
 from keras.models import Model, Input, load_model, model_from_json
 
@@ -39,32 +39,32 @@ class Generator:
         self.embedded_sequences_q = self.embeddings_layer_q(self.sequence_input_q)
 
         self.lstm_q_in = Bidirectional(
-            GRU(params.GEN_HIDDEN_SIZE_LSTM, kernel_regularizer=regularizers.l2(self.weight_decay), kernel_initializer='random_uniform', return_sequences=True, activation='elu', dropout=self.dropout,
+            GRU(params.GEN_HIDDEN_SIZE_LSTM, kernel_initializer='random_uniform', return_sequences=True, activation='elu', dropout=self.dropout,
                 recurrent_dropout=self.dropout))(self.embedded_sequences_q)
         # this LSTM will transform the vector sequence into a single vector,
         # containing information about the entire sequence
         self.lstm_q_out = Bidirectional(
-            GRU(params.GEN_HIDDEN_SIZE_LSTM, kernel_regularizer=regularizers.l2(self.weight_decay), kernel_initializer='random_uniform', return_sequences=False, activation='elu', dropout=self.dropout,
+            GRU(params.GEN_HIDDEN_SIZE_LSTM, kernel_initializer='random_uniform', return_sequences=False, activation='elu', dropout=self.dropout,
                 recurrent_dropout=self.dropout))(self.lstm_q_in)
 
         self.sequence_input_d = Input(shape=(params.MAX_SEQUENCE_LENGTH_DOCS,), dtype='int32', name='input_doc')
         self.embedded_sequences_d = self.embeddings_layer_d(self.sequence_input_d)
 
         self.lstm_d_in = Bidirectional(
-            GRU(params.GEN_HIDDEN_SIZE_LSTM, kernel_regularizer=regularizers.l2(self.weight_decay), kernel_initializer='random_uniform', return_sequences=True, activation='elu', dropout=self.dropout,
+            GRU(params.GEN_HIDDEN_SIZE_LSTM, kernel_initializer='random_uniform', return_sequences=True, activation='elu', dropout=self.dropout,
                 recurrent_dropout=self.dropout))(self.embedded_sequences_d)
         # this LSTM will transform the vector sequence into a single vector,
         # containing information about the entire sequence
         self.lstm_d_out = Bidirectional(
-            GRU(params.GEN_HIDDEN_SIZE_LSTM, kernel_regularizer=regularizers.l2(self.weight_decay), kernel_initializer='random_uniform', return_sequences=False, activation='elu', dropout=self.dropout,
+            GRU(params.GEN_HIDDEN_SIZE_LSTM, kernel_initializer='random_uniform', return_sequences=False, activation='elu', dropout=self.dropout,
                 recurrent_dropout=self.dropout))(self.lstm_d_in)
 
         self.x = Concatenate()([self.lstm_q_out, self.lstm_d_out])
         self.x = Dropout(self.dropout)(self.x)
 
         # we stack a deep fully-connected network on top
-        self.x = Dense(params.GEN_HIDDEN_SIZE_DENSE, activation='elu', kernel_regularizer=regularizers.l2(self.weight_decay), kernel_initializer='random_uniform')(self.x)
-        self.prob = Dense(2, kernel_regularizer=regularizers.l2(self.weight_decay), kernel_initializer='random_uniform', activation='softmax', name='prob')(self.x)
+        self.x = Dense(params.GEN_HIDDEN_SIZE_DENSE, activation='elu', kernel_initializer='random_uniform')(self.x)
+        self.prob = Dense(2, kernel_initializer='random_uniform', activation='softmax', name='prob')(self.x)
 
         self.model = Model(inputs=[self.sequence_input_q, self.sequence_input_d, self.reward, self.important_sampling],
                            outputs=[self.prob])
@@ -77,7 +77,7 @@ class Generator:
 
     def loss(self, _reward, _important_sampling):
         def _loss(y_true, y_pred):
-            log_action_prob = K.log(y_pred[:, 1])
+            log_action_prob = K.log(y_pred[:, 1]) + 1e-08
             loss = K.reshape(log_action_prob, [-1]) * K.reshape(_reward, [-1]) * K.reshape(_important_sampling, [-1])
             total_loss = - K.mean(loss)
             return total_loss
@@ -104,7 +104,16 @@ class Generator:
         input_important_sampling = np.asarray(input_important_sampling)
         pred_scores = self.model.predict([train_data_queries, train_data_documents, input_reward, input_important_sampling],
                                          batch_size=params.GEN_BATCH_SIZE)
-        return pred_scores[:, 1]
+
+        # If you're training for cross entropy, you want to add a small number like 1e-8 to your output probability.
+        scores = pred_scores[:, 1]
+        scores_adapted = []
+        for score in scores:
+            scores_adapted.append(score + 1e-08)
+
+        scores_adapted = np.asarray(scores_adapted)
+
+        return scores_adapted
 
     def save_model_to_file(self, filepath):
         self.model.save(filepath)
