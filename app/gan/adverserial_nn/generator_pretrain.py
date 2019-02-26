@@ -1,6 +1,7 @@
 from keras.layers import Bidirectional, Embedding, GRU, Dense, Concatenate
 from keras.layers.core import Dropout
 from keras.models import Model, Input, load_model, model_from_json
+from keras.optimizers import Adam, Adadelta
 
 from gan.optimizer.AdamW import AdamW
 
@@ -22,6 +23,8 @@ class GeneratorPretrain:
         self.important_sampling = Input(shape=(None,), name='input_imp_sampling')
         self.adamw = AdamW(lr=self.learning_rate, batch_size=params.GEN_BATCH_SIZE,
                            samples_per_epoch=self.samples_per_epoch, epochs=params.GEN_TRAIN_EPOCHS)
+        self.adam = Adam(lr=self.learning_rate)
+        self.adadelta = Adadelta(lr=self.learning_rate)
         self.sess = sess
         self.__get_model(model)
 
@@ -71,7 +74,7 @@ class GeneratorPretrain:
         self.model.summary()
 
         self.model.compile(loss='categorical_crossentropy',
-                           optimizer=self.adamw,
+                           optimizer=self.adadelta,
                            metrics=['accuracy'])
 
     def train(self, train_data_queries, train_data_documents, train_data_labels):
@@ -100,14 +103,8 @@ class GeneratorPretrain:
                                          batch_size=params.GEN_BATCH_SIZE)
 
         # If you're training for cross entropy, you want to add a small number like 1e-8 to your output probability.
-        scores = pred_scores[:, 1]
-        scores_adapted = []
-        for score in scores:
-            scores_adapted.append(score + 1e-08)
-
-        scores_adapted = np.asarray(scores_adapted)
-
-        return scores_adapted
+        scores = pred_scores[:, 1] + 1e-08
+        return scores
 
     def save_model_to_file(self, filepath):
         self.model.save(filepath)

@@ -1,6 +1,7 @@
 from keras.layers import Dense, Bidirectional, Embedding, GRU, Concatenate
 from keras.layers.core import Dropout
 from keras.models import Model, Input, load_model, model_from_json
+from keras.optimizers import Adam, Adadelta
 
 from gan.optimizer.AdamW import AdamW
 
@@ -17,6 +18,8 @@ class Discriminator:
         self.embeddings_layer_d: Embedding = embedding_layer_d
         self.adamw = AdamW(lr=self.learning_rate, batch_size=params.DISC_BATCH_SIZE,
                             samples_per_epoch=self.samples_per_epoch, epochs=params.DISC_TRAIN_EPOCHS)
+        self.adam = Adam(lr=self.learning_rate)
+        self.adadelta = Adadelta(lr=self.learning_rate)
         self.sess = sess
         self.__get_model(model)
 
@@ -54,7 +57,7 @@ class Discriminator:
         self.model.summary()
 
         self.model.compile(loss='binary_crossentropy',
-                           optimizer=self.adamw,
+                           optimizer=self.adadelta,
                            metrics=['accuracy'])
 
     def train(self, train_data_queries, train_data_documents, train_data_labels):

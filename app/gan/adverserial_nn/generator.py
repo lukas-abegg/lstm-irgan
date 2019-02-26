@@ -2,6 +2,7 @@ from keras import backend as K
 from keras.layers import Bidirectional, Embedding, GRU, Dense, Concatenate
 from keras.layers.core import Dropout
 from keras.models import Model, Input, load_model, model_from_json
+from keras.optimizers import Adam, Adadelta
 
 from gan.optimizer.AdamW import AdamW
 
@@ -23,6 +24,8 @@ class Generator:
         self.important_sampling = Input(shape=(None,), name='input_imp_sampling')
         self.adamw = AdamW(lr=self.learning_rate, batch_size=params.GEN_BATCH_SIZE,
                            samples_per_epoch=self.samples_per_epoch, epochs=params.GEN_TRAIN_EPOCHS)
+        self.adam = Adam(lr=self.learning_rate)
+        self.adadelta = Adadelta(lr=self.learning_rate)
         self.sess = sess
         self.__get_model(model)
 
@@ -72,14 +75,18 @@ class Generator:
         self.model.summary()
 
         self.model.compile(loss=self.loss(self.reward, self.important_sampling),
-                           optimizer=self.adamw,
+                           optimizer=self.adadelta,
                            metrics=['accuracy'])
 
     def loss(self, _reward, _important_sampling):
         def _loss(y_true, y_pred):
+            print("y_true = " + str(y_true.eval(session=self.sess)))
+            print("y_pred = " + str(y_pred.eval(session=self.sess)))
             log_action_prob = K.log(y_pred[:, 1]) + 1e-08
+            print("log_action_prob = " + str(log_action_prob.eval(session=self.sess)))
             loss = K.reshape(log_action_prob, [-1]) * K.reshape(_reward, [-1]) * K.reshape(_important_sampling, [-1])
             total_loss = - K.mean(loss)
+            print("total_loss = " + str(total_loss.eval(session=self.sess)))
             return total_loss
 
         return _loss
@@ -90,6 +97,12 @@ class Generator:
         from keras import callbacks
 
         stop_nan = callbacks.TerminateOnNaN()
+
+        for q in train_data_queries:
+            assert not np.any(np.isnan(q))
+
+        for d in train_data_queries:
+            assert not np.any(np.isnan(d))
 
         return self.model.fit([train_data_queries, train_data_documents, reward, important_sampling],
                               labels,
@@ -106,14 +119,8 @@ class Generator:
                                          batch_size=params.GEN_BATCH_SIZE)
 
         # If you're training for cross entropy, you want to add a small number like 1e-8 to your output probability.
-        scores = pred_scores[:, 1]
-        scores_adapted = []
-        for score in scores:
-            scores_adapted.append(score + 1e-08)
-
-        scores_adapted = np.asarray(scores_adapted)
-
-        return scores_adapted
+        scores = pred_scores[:, 1] + 1e-08
+        return scores
 
     def save_model_to_file(self, filepath):
         self.model.save(filepath)
