@@ -80,13 +80,14 @@ class Generator:
 
     def loss(self, _reward, _important_sampling):
         def _loss(y_true, y_pred):
-            print("y_true = " + str(y_true.eval(session=self.sess)))
-            print("y_pred = " + str(y_pred.eval(session=self.sess)))
+            y_true = K.print_tensor(y_true, message="y_true is: ")
+            y_true = y_true
+            y_pred = K.print_tensor(y_pred, message="y_pred is: ")
             log_action_prob = K.log(y_pred[:, 1]) + 1e-08
-            print("log_action_prob = " + str(log_action_prob.eval(session=self.sess)))
+            log_action_prob = K.print_tensor(log_action_prob, message="log_action_prob is: ")
             loss = K.reshape(log_action_prob, [-1]) * K.reshape(_reward, [-1]) * K.reshape(_important_sampling, [-1])
             total_loss = - K.mean(loss)
-            print("total_loss = " + str(total_loss.eval(session=self.sess)))
+            total_loss = K.print_tensor(total_loss, message="total_loss is: ")
             return total_loss
 
         return _loss
