@@ -6,6 +6,7 @@ from keras.optimizers import Adam, Adadelta
 from gan.optimizer.AdamW import AdamW
 
 import parameters as params
+import numpy as np
 
 
 class Discriminator:
@@ -61,6 +62,12 @@ class Discriminator:
                            metrics=['accuracy'])
 
     def train(self, train_data_queries, train_data_documents, train_data_labels):
+
+        for q in train_data_queries:
+            assert not np.any(np.isnan(q))
+
+        for d in train_data_queries:
+            assert not np.any(np.isnan(d))
 
         from keras import callbacks
 

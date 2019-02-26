@@ -94,15 +94,15 @@ class Generator:
     def train(self, train_data_queries, train_data_documents, reward, important_sampling):
         labels = np.zeros((len(train_data_queries), 2))
 
-        from keras import callbacks
-
-        stop_nan = callbacks.TerminateOnNaN()
-
         for q in train_data_queries:
             assert not np.any(np.isnan(q))
 
         for d in train_data_queries:
             assert not np.any(np.isnan(d))
+
+        from keras import callbacks
+
+        stop_nan = callbacks.TerminateOnNaN()
 
         return self.model.fit([train_data_queries, train_data_documents, reward, important_sampling],
                               labels,

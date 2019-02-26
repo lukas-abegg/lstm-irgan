@@ -83,6 +83,12 @@ class GeneratorPretrain:
         input_important_sampling = [0.0] * len(train_data_queries)
         input_important_sampling = np.asarray(input_important_sampling)
 
+        for q in train_data_queries:
+            assert not np.any(np.isnan(q))
+
+        for d in train_data_queries:
+            assert not np.any(np.isnan(d))
+
         from keras import callbacks
 
         reduce_lr = callbacks.EarlyStopping(monitor='loss', patience=3, verbose=0, mode='auto',
