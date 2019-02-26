@@ -98,7 +98,7 @@ class Generator:
         for q in train_data_queries:
             assert not np.any(np.isnan(q))
 
-        for d in train_data_queries:
+        for d in train_data_documents:
             assert not np.any(np.isnan(d))
 
         from keras import callbacks
