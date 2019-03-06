@@ -109,7 +109,7 @@ class GeneratorPretrain:
                                          batch_size=params.GEN_BATCH_SIZE)
 
         # If you're training for cross entropy, you want to add a small number like 1e-8 to your output probability.
-        scores = pred_scores[:, 1] + 1e-08
+        scores = (pred_scores[:, 1] + 1e-08) / self.temperature
         return scores
 
     def save_model_to_file(self, filepath):

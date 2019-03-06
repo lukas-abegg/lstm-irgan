@@ -21,19 +21,19 @@ def get_x_data_splitted(query_ids):
 
 
 def train_model(x_train, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay,
-                learning_rate, temperature, dropout, experiment=None):
+                learning_rate_d, learning_rate_g, temperature, dropout, experiment=None):
     train_x_indices, test_x_indices = get_x_data_splitted(x_train)
 
     # Generate batches from indices
     x_train_k, x_test_k = np.array(train_x_indices), np.array(test_x_indices)
 
     gen_pre, disc_pre = __pretrain_model(x_train_k, ratings_data, queries_data, documents_data, tokenizer_q,
-                                         tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout,
+                                         tokenizer_d, sess, weight_decay, learning_rate_d, learning_rate_d, temperature, dropout,
                                          experiment)
 
     gen, disc, p_val, ndcg_val = __train_model(gen_pre, disc_pre, x_train_k, x_test_k, ratings_data, queries_data,
                                                documents_data,
-                                               tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate, temperature,
+                                               tokenizer_q, tokenizer_d, sess, weight_decay, learning_rate_d, learning_rate_g, temperature,
                                                dropout, experiment)
 
     return gen, disc, p_val, ndcg_val
@@ -66,7 +66,7 @@ def __get_embedding_layers(tokenizer_q, tokenizer_d) -> (Embedding, Embedding):
 
 
 def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokenizer_q, tokenizer_d, sess, weight_decay,
-                     learning_rate, temperature, dropout, experiment=None):
+                     learning_rate_d, learning_rate_g, temperature, dropout, experiment=None):
     train_ratings_data, train_queries_data = __build_train_data(x_train, ratings_data, queries_data)
 
     # Clear models, and reinitialize them
@@ -74,12 +74,12 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
 
     print('Build discriminator network')
     samples_per_epoc = len(x_train) * params.POS_TRAINING_DATA_PER_QUERY * 2
-    disc = Discriminator.create_model(samples_per_epoc, weight_decay, learning_rate, dropout, embedding_layer_q,
+    disc = Discriminator.create_model(samples_per_epoc, weight_decay, learning_rate_d, dropout, embedding_layer_q,
                                       embedding_layer_d, sess=sess)
 
     print('Build generator network')
     samples_per_epoc = len(x_train) * params.POS_TRAINING_DATA_PER_QUERY * 2
-    gen_pretrain = GeneratorPretrain.create_model(samples_per_epoc, weight_decay, learning_rate, temperature, dropout,
+    gen_pretrain = GeneratorPretrain.create_model(samples_per_epoc, weight_decay, learning_rate_g, temperature, dropout,
                                                   embedding_layer_q, embedding_layer_d, sess=sess)
 
     print('Start pre-model training')
@@ -183,7 +183,7 @@ def __pretrain_model(x_train, ratings_data, queries_data, documents_data, tokeni
 
 
 def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data, documents_data, tokenizer_q,
-                  tokenizer_d, sess, weight_decay, learning_rate, temperature, dropout, experiment=None):
+                  tokenizer_d, sess, weight_decay, learning_rate_d, learning_rate_g, temperature, dropout, experiment=None):
     train_ratings_data, train_queries_data = __build_train_data(x_train, ratings_data, queries_data)
 
     disc = disc_pre
@@ -191,7 +191,7 @@ def __train_model(gen_pre, disc_pre, x_train, x_val, ratings_data, queries_data,
     samples_per_epoc = len(x_train) * params.POS_TRAINING_DATA_PER_QUERY * 2
     embedding_layer_q, embedding_layer_d = __get_embedding_layers(tokenizer_q, tokenizer_d)
 
-    gen = Generator.create_model(samples_per_epoc, weight_decay, learning_rate, temperature, dropout,
+    gen = Generator.create_model(samples_per_epoc, weight_decay, learning_rate_g, temperature, dropout,
                                  embedding_layer_q, embedding_layer_d, sess=sess)
 
     gen = gen.load_weights_for_model(params.SAVED_MODEL_GEN_WEIGHTS)
@@ -486,10 +486,9 @@ def __generate_negatives_for_generator(gen, x_train, ratings_data, queries_data,
             data_cands_prob[query_id] = [probs[i]]
             data_cands_prob_is[query_id] = [probs_is[i]]
 
-    for query_id, probs in data_cands_prob.items():
+    for query_id, probs in data_cands_prob_is.items():
 
         probs_rand = probs[:]
-        probs_rand /= probs_rand.sum().astype(float)
 
         choosen_indexes = np.random.choice(np.arange(len(pos_neg_data[query_id])), size=[2 * len(pos_data[query_id])], p=probs_rand)
         choosen_data = pos_neg_data[query_id][choosen_indexes]
