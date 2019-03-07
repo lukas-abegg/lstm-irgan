@@ -489,6 +489,7 @@ def __generate_negatives_for_generator(gen, x_train, ratings_data, queries_data,
     for query_id, probs in data_cands_prob_is.items():
 
         probs_rand = probs[:]
+        probs_rand /= probs_rand.sum().astype(float)
 
         choosen_indexes = np.random.choice(np.arange(len(pos_neg_data[query_id])), size=[2 * len(pos_data[query_id])], p=probs_rand)
         choosen_data = pos_neg_data[query_id][choosen_indexes]
