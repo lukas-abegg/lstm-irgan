@@ -86,7 +86,7 @@ class Generator:
             log_action_prob = K.log(y_pred[:, 1]) + 1e-08
             log_action_prob = K.print_tensor(log_action_prob, message="log_action_prob is: ")
             loss = K.reshape(log_action_prob, [-1]) * K.reshape(_reward, [-1]) * K.reshape(_important_sampling, [-1])
-            total_loss = - K.mean(loss)
+            total_loss = - K.log(K.mean(loss))
             total_loss = K.print_tensor(total_loss, message="total_loss is: ")
             return total_loss
 
