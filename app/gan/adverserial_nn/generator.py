@@ -23,7 +23,7 @@ class Generator:
         self.reward = Input(shape=(None,), name='input_reward')
         self.important_sampling = Input(shape=(None,), name='input_imp_sampling')
         self.adamw = AdamW(lr=self.learning_rate, batch_size=params.GEN_BATCH_SIZE,
-                           samples_per_epoch=self.samples_per_epoch, epochs=params.GEN_TRAIN_EPOCHS)
+                           samples_per_epoch=self.samples_per_epoch, epochs=params.GEN_TRAIN_EPOCHS, clipnorm=1.)
         self.adam = Adam(lr=self.learning_rate)
         self.adadelta = Adadelta(lr=self.learning_rate)
         self.sess = sess
@@ -80,13 +80,11 @@ class Generator:
 
     def loss(self, _reward, _important_sampling):
         def _loss(y_true, y_pred):
-            y_true = K.print_tensor(y_true, message="y_true is: ")
-            y_true = y_true
             y_pred = K.print_tensor(y_pred, message="y_pred is: ")
-            log_action_prob = K.log(y_pred[:, 1]) + 1e-08
+            log_action_prob = K.log(y_pred[:, 1])
             log_action_prob = K.print_tensor(log_action_prob, message="log_action_prob is: ")
             loss = K.reshape(log_action_prob, [-1]) * K.reshape(_reward, [-1]) * K.reshape(_important_sampling, [-1])
-            total_loss = - K.log(K.mean(loss))
+            total_loss = -K.mean(loss)
             total_loss = K.print_tensor(total_loss, message="total_loss is: ")
             return total_loss
 
@@ -120,7 +118,7 @@ class Generator:
                                          batch_size=params.GEN_BATCH_SIZE)
 
         # If you're training for cross entropy, you want to add a small number like 1e-8 to your output probability.
-        scores = (pred_scores[:, 1] + 1e-08) / self.temperature
+        scores = (pred_scores[:, 1]) / self.temperature
         return scores
 
     def save_model_to_file(self, filepath):

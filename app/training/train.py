@@ -47,10 +47,23 @@ def __get_embedding_layers(tokenizer_q, tokenizer_d) -> (Embedding, Embedding):
         embedding_layer_q = init_fasttext_model_embeddings.init_embedding_layer(tokenizer_q, embedding_model,
                                                                                 params.MAX_SEQUENCE_LENGTH_QUERIES,
                                                                                 params.MAX_NUM_WORDS_QUERIES)
+        # embedding_layer_q = Embedding(input_dim=len(tokenizer_q.word_index) + 1,
+        #                               output_dim=params.EMBEDDING_DIM,
+        #                               weights=None,
+        #                               input_length=params.MAX_SEQUENCE_LENGTH_QUERIES,
+        #                               mask_zero=True,
+        #                               trainable=False)
+
         print('Prepare embedding-layer for documents')
         embedding_layer_d = init_fasttext_model_embeddings.init_embedding_layer(tokenizer_d, embedding_model,
                                                                                 params.MAX_SEQUENCE_LENGTH_DOCS,
                                                                                 params.MAX_NUM_WORDS_DOCS)
+        # embedding_layer_d = Embedding(input_dim=len(tokenizer_q.word_index) + 1,
+        #                               output_dim=params.EMBEDDING_DIM,
+        #                               weights=None,
+        #                               input_length=params.MAX_SEQUENCE_LENGTH_DOCS,
+        #                               mask_zero=True,
+        #                               trainable=False)
     else:
         print('Load embeddings')
         embedding_index = init_w2v_embeddings.build_index_mapping()
