@@ -58,7 +58,7 @@ class Discriminator:
         self.model.summary()
 
         self.model.compile(loss='binary_crossentropy',
-                           optimizer=self.adadelta,
+                           optimizer=self.adamw,
                            metrics=['accuracy'])
 
     def train(self, train_data_queries, train_data_documents, train_data_labels):

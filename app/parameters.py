@@ -53,7 +53,7 @@ LABELLED_DATA = WORKDIR + '/data/nfcorpus/all_qrels/3-2-1/train.3-2-1.qrel'
 # Training
 POS_TRAINING_DATA_PER_QUERY = 5
 MAX_RELEVANCE = 3
-TRAIN_EPOCHS = 5
+TRAIN_EPOCHS = 10
 
 # Evaluation
 EVAL_K = 5

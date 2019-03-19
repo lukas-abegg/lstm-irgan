@@ -75,7 +75,7 @@ class Generator:
         self.model.summary()
 
         self.model.compile(loss=self.loss(self.reward, self.important_sampling),
-                           optimizer=self.adadelta,
+                           optimizer=self.adamw,
                            metrics=['accuracy'])
 
     def loss(self, _reward, _important_sampling):
