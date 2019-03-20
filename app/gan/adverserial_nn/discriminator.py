@@ -58,7 +58,7 @@ class Discriminator:
         self.model.summary()
 
         self.model.compile(loss='binary_crossentropy',
-                           optimizer=self.adamw,
+                           optimizer=self.adam,
                            metrics=['accuracy'])
 
     def train(self, train_data_queries, train_data_documents, train_data_labels):
@@ -105,7 +105,7 @@ class Discriminator:
         print("Loaded model from disk")
 
         disc = Discriminator(model=loaded_model)
-        disc.model.compile(loss='binary_crossentropy', optimizer=disc.adamw, metrics=['accuracy'])
+        disc.model.compile(loss='binary_crossentropy', optimizer=disc.adam, metrics=['accuracy'])
         return disc
 
     def load_weights_for_model(self, filepath_weights):
@@ -113,7 +113,7 @@ class Discriminator:
         self.model.load_weights(filepath_weights)
         print("Loaded model from disk")
 
-        self.model.compile(loss='binary_crossentropy', optimizer=self.adamw, metrics=['accuracy'])
+        self.model.compile(loss='binary_crossentropy', optimizer=self.adam, metrics=['accuracy'])
         return self
 
     @staticmethod
@@ -128,7 +128,7 @@ class Discriminator:
         print("Loaded model from disk")
 
         disc = Discriminator(model=loaded_model)
-        disc.model.compile(loss='binary_crossentropy', optimizer=disc.adamw, metrics=['accuracy'])
+        disc.model.compile(loss='binary_crossentropy', optimizer=disc.adam, metrics=['accuracy'])
         return disc
 
     @staticmethod

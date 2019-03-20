@@ -74,7 +74,7 @@ class GeneratorPretrain:
         self.model.summary()
 
         self.model.compile(loss='categorical_crossentropy',
-                           optimizer=self.adamw,
+                           optimizer=self.adam,
                            metrics=['accuracy'])
 
     def train(self, train_data_queries, train_data_documents, train_data_labels):
@@ -132,7 +132,7 @@ class GeneratorPretrain:
 
         gen = GeneratorPretrain(model=loaded_model)
         gen.model.compile(loss='categorical_crossentropy',
-                          optimizer=gen.adamw,
+                          optimizer=gen.adam,
                           metrics=['accuracy'])
         return gen
 
@@ -149,7 +149,7 @@ class GeneratorPretrain:
 
         gen = GeneratorPretrain(model=loaded_model)
         gen.model.compile(loss='categorical_crossentropy',
-                          optimizer=gen.adamw,
+                          optimizer=gen.adam,
                           metrics=['accuracy'])
         return gen
 

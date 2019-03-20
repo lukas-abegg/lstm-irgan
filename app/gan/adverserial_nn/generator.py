@@ -75,7 +75,7 @@ class Generator:
         self.model.summary()
 
         self.model.compile(loss=self.loss(self.reward, self.important_sampling),
-                           optimizer=self.adamw,
+                           optimizer=self.adam,
                            metrics=['accuracy'])
 
     def loss(self, _reward, _important_sampling):
@@ -141,7 +141,7 @@ class Generator:
 
         gen = Generator(model=loaded_model)
         gen.model.compile(loss=gen.loss(gen.reward, gen.important_sampling),
-                          optimizer=gen.adamw, metrics=['accuracy'])
+                          optimizer=gen.adam, metrics=['accuracy'])
         return gen
 
     def load_weights_for_model(self, filepath_weights):
@@ -150,7 +150,7 @@ class Generator:
         print("Loaded model from disk")
 
         self.model.compile(loss=self.loss(self.reward, self.important_sampling),
-                          optimizer=self.adamw, metrics=['accuracy'])
+                          optimizer=self.adam, metrics=['accuracy'])
         return self
 
     @staticmethod
@@ -166,7 +166,7 @@ class Generator:
 
         gen = Generator(model=loaded_model)
         gen.model.compile(loss=gen.loss(gen.reward, gen.important_sampling),
-                          optimizer=gen.adamw, metrics=['accuracy'])
+                          optimizer=gen.adam, metrics=['accuracy'])
         return gen
 
     @staticmethod
