@@ -18,22 +18,24 @@ def build_index_mapping():
     return embeddings_index
 
 
-def __build_embeddings_matrix(tokenizer: Tokenizer, embeddings_index):
+def __build_embeddings_matrix(tokenizer: Tokenizer, embeddings_index, max_num_words):
     print('Preparing embedding matrix.')
     word_index = tokenizer.word_index
-    num_words = min(params.MAX_NUM_WORDS, len(word_index)) + 1
+    num_words = len(word_index) + 1
     embeddings_matrix = np.zeros((num_words, params.EMBEDDING_DIM))
 
     for word, i in word_index.items():
-        if i > params.MAX_NUM_WORDS:
+        if i == 0:
+            raise ValueError("index 0 is not allowed in embedding matrix")
+        if i > max_num_words:
             continue
-        embedding_vector = None
+
         try:
             embedding_vector = embeddings_index[word]
-        except:
-            pass
+        except Exception:
+            raise ValueError("no embedding vector found for word", word)
+
         if embedding_vector is not None:
-            # words not found in embedding index will be all-zeros.
             embeddings_matrix[i] = embedding_vector
     return num_words, embeddings_matrix
 
@@ -45,11 +47,12 @@ def __build_embeddings_layer(num_words, embeddings_matrix, max_sequence_length):
                                  output_dim=params.EMBEDDING_DIM,
                                  weights=[embeddings_matrix],
                                  input_length=max_sequence_length,
+                                 mask_zero=True,
                                  trainable=False)
     return embeddings_layer
 
 
-def init_embedding_layer(tokenizer, embeddings_index, max_sequence_length):
-    num_words, embeddings_matrix = __build_embeddings_matrix(tokenizer, embeddings_index)
+def init_embedding_layer(tokenizer, embeddings_index, max_sequence_length, max_num_words):
+    num_words, embeddings_matrix = __build_embeddings_matrix(tokenizer, embeddings_index, max_num_words)
     embeddings_layer = __build_embeddings_layer(num_words, embeddings_matrix, max_sequence_length)
     return embeddings_layer
