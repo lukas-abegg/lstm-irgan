@@ -527,12 +527,21 @@ def __generate_negatives_for_generator(gen, x_train, ratings_data, queries_data,
 def __get_rand_batch_from_candidates_for_negatives(query_id, candidate_list, size):
     # create ES client, create index
     es = Elasticsearch(hosts=[params.ES_HOST])
-    query_text = es.get(index="queries", doc_type="query", id=str(query_id))["_source"]["text"]
-    query_text = query_text.replace("\n", " ")
-    query_text = query_text.replace("\"", " ")
-    query_text = query_text[0:9999]
-    candidates = es.search(index="documents", body={"query": {"match": {"text": query_text}}}, size=size)
-    candidates = [doc['_id'] for doc in candidates['hits']['hits']]
+
+    if params.DATA_SOURCE == params.DATA_SOURCE_TREC_CDS_2017:
+        query_text = es.get(index="queries_trec", doc_type="query", id=str(query_id))["_source"]["text"]
+        query_text = query_text.replace("\n", " ")
+        query_text = query_text.replace("\"", " ")
+        query_text = query_text[0:9999]
+        candidates = es.search(index="documents_trec", body={"query": {"match": {"text": query_text}}}, size=size)
+        candidates = [doc['_id'] for doc in candidates['hits']['hits']]
+    else:
+        query_text = es.get(index="queries", doc_type="query", id=str(query_id))["_source"]["text"]
+        query_text = query_text.replace("\n", " ")
+        query_text = query_text.replace("\"", " ")
+        query_text = query_text[0:9999]
+        candidates = es.search(index="documents", body={"query": {"match": {"text": query_text}}}, size=size)
+        candidates = [doc['_id'] for doc in candidates['hits']['hits']]
 
     # prepare pos and neg data
     doc_ids = np.array(candidates)

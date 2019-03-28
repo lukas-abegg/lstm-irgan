@@ -4,14 +4,11 @@ from nltk.corpus import stopwords
 import xml.etree.ElementTree as ET
 
 from pathlib import Path
-import os.path
 
 import parameters as params
 
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
-
-from data_preparation.preprocessing.preprocess_tokenizer import TokenizePreprocessor
 
 
 def __read_document(path):
