@@ -9,6 +9,7 @@ from keras import backend
 import data_preparation.init_data_example as init_example
 import data_preparation.init_data_wikiclir as init_wikiclir
 import data_preparation.init_data_nfcorpus as init_nfcorpus
+import data_preparation.init_data_trec as init_trec
 import evaluation.eval_all_metrics as eval_metrics
 import parameters as params
 import plotting.plot_model as plotting
@@ -40,6 +41,9 @@ def __prepare_data():
     elif params.DATA_SOURCE == params.DATA_SOURCE_NFCORPUS:
         print("Init NFCorpus")
         query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = init_nfcorpus.get_data()
+    elif params.DATA_SOURCE == params.DATA_SOURCE_TREC_CDS_2017:
+        print("Init TREC CDS 2017")
+        query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = init_trec.get_data()
     else:
         print("Init Example")
         query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = init_example.get_data()

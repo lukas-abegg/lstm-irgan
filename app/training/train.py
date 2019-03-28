@@ -343,7 +343,15 @@ def __build_train_data(x_train, ratings_data, queries_data):
 
 def __get_query_specific_data(query_id, ratings_data, documents_data):
     # get all query specific ratings
-    x_pos_list = list(ratings_data[query_id].keys())[:params.POS_TRAINING_DATA_PER_QUERY]
+    if params.DATA_SOURCE == params.DATA_SOURCE_TREC_CDS_2017:
+        x_pos_relevant = []
+        for i, rating in enumerate(ratings_data[query_id]):
+            if ratings_data[query_id][rating] > 0:
+                x_pos_relevant.append(rating)
+
+        x_pos_list = list(x_pos_relevant)[:params.POS_TRAINING_DATA_PER_QUERY]
+    else:
+        x_pos_list = list(ratings_data[query_id].keys())[:params.POS_TRAINING_DATA_PER_QUERY]
 
     # get all other ratings
     docs_pos_ids = np.unique(x_pos_list)

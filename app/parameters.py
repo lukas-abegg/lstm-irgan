@@ -41,14 +41,20 @@ GEN_BATCH_SIZE = 200
 GEN_LAMBDA = 0.5
 
 # Data
-DATA_SOURCE = 'nfcorpus'
+DATA_SOURCE = 'trec_2017'
 DATA_SOURCE_NFCORPUS = 'nfcorpus'
 DATA_SOURCE_WIKICLIR = 'wikiclir'
 DATA_SOURCE_EXAMPLE = 'example'
+DATA_SOURCE_TREC_CDS_2017 = 'trec_2017'
 
 DOCUMENTS_DIR = WORKDIR + '/data/nfcorpus/all_docs/train.docs'
 QUERIES = WORKDIR + '/data/nfcorpus/all_queries/train.all.queries'
 LABELLED_DATA = WORKDIR + '/data/nfcorpus/all_qrels/3-2-1/train.3-2-1.qrel'
+
+TREC_CDS_2017_DATA = WORKDIR + '/data/trec_pm_2017/data'
+TREC_CDS_2017_QUERIES = TREC_CDS_2017_DATA + '/topics2017.xml'
+TREC_CDS_2017_LABELLED_DATA = TREC_CDS_2017_DATA + '/qrels-final-trials.txt'
+TREC_CDS_2017_DOCUMENTS = '/mnt/fob-wbia-vol2/wbi_stud/abeggluk/trec_2017/clinicaltrials_txt/'
 
 # Training
 POS_TRAINING_DATA_PER_QUERY = 5
