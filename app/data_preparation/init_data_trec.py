@@ -3,6 +3,8 @@ from nltk.corpus import stopwords
 
 import xml.etree.ElementTree as ET
 
+import pandas as pd
+
 from pathlib import Path
 
 import parameters as params
@@ -14,28 +16,35 @@ from keras.preprocessing.sequence import pad_sequences
 def __read_document(path):
     my_file = Path(path)
     if my_file.is_file():
-        my_file.read_text()
+        return my_file.read_text()
     else:
         return ""
 
 
 def __get_documents():
-    path = params.TREC_CDS_2017_LABELLED_DATA
+    trials_judgements = params.TREC_CDS_2017_LABELLED_DATA
+
+    with open(trials_judgements) as f:
+        judgements = f.readlines()
+
+    judgements = [x.split() for x in judgements]
+
+    judgements = pd.DataFrame(judgements)
+    judgements.columns = ['topic', 'q0', 'trial', 'relevance']
+    trials = judgements.trial.drop_duplicates().values
+
+    path = params.TREC_CDS_2017_DOCUMENTS
     documents = {}
     doc_ids = []
 
-    with open(path) as f:
-        content = f.readlines()
-        for line in content:
-            values = line.split(" ")
-            id = values[2]
-            # /000/00000/NCT00000102.txt
-            folder = id.split("NCT")[1][:3]
-            subfolder = id.split("NCT")[1][:5]
-            path = params.TREC_CDS_2017_DOCUMENTS + "/" + folder + "/" + subfolder + "/" + id + ".txt"
-            text = __read_document(path)
-            documents[id] = text
-            doc_ids.append(id)
+    for trial in trials:
+        path_trial = path + "/" + trial + ".txt"
+
+        print(path_trial)
+        text = __read_document(path_trial)
+        documents[trial] = text
+        doc_ids.append(trial)
+
     return documents, doc_ids
 
 
