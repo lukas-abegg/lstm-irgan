@@ -4,32 +4,41 @@ import xml.etree.ElementTree as ET
 
 from pathlib import Path
 
+import pandas as pd
+
 
 def __read_document(path):
     my_file = Path(path)
     if my_file.is_file():
-        my_file.read_text()
+        return my_file.read_text()
     else:
         return ""
 
 
 def __get_documents():
-    path = LABELLED_DATA
+    trials_judgements = LABELLED_DATA
+
+    with open(trials_judgements) as f:
+        judgements = f.readlines()
+
+    judgements = [x.split() for x in judgements]
+
+    judgements = pd.DataFrame(judgements)
+    judgements.columns = ['topic', 'q0', 'trial', 'relevance']
+    trials = judgements.trial.drop_duplicates().values
+
+    path = DOCUMENTS_DIR
     documents = {}
     doc_ids = []
 
-    with open(path) as f:
-        content = f.readlines()
-        for line in content:
-            values = line.split(" ")
-            id = values[2]
-            # /000/00000/NCT00000102.txt
-            folder = id.split("NCT")[1][:3]
-            subfolder = id.split("NCT")[1][:5]
-            path = DOCUMENTS_DIR + "/" + folder + "/" + subfolder + "/" + id + ".txt"
-            text = __read_document(path)
-            documents[id] = text
-            doc_ids.append(id)
+    for trial in trials:
+        path_trial = path + "/" + trial + ".txt"
+
+        print(path_trial)
+        text = __read_document(path_trial)
+        documents[trial] = text
+        doc_ids.append(trial)
+
     return documents, doc_ids
 
 
@@ -137,9 +146,9 @@ def __fill_index(es, actions):
     helpers.bulk(client=es, actions=actions, chunk_size=100)
 
 
-WORKDIR = '/home/abeggluk/lstm-irgan'
+WORKDIR = '/mnt/fob-wbia-vol2/wbi_stud/abeggluk/lstm-irgan-disc_as_pred_shrinked'
 TREC_CDS_2017_DATA = WORKDIR + '/data/trec_pm_2017/data'
-DOCUMENTS_DIR = '/mnt/fob-wbia-vol2/wbi_stud/abeggluk/trec_2017/clinicaltrials_txt/'
+DOCUMENTS_DIR = '/mnt/fob-wbia-vol2/wbi_stud/abeggluk/trec_2017/final'
 QUERIES = TREC_CDS_2017_DATA + '/topics2017.xml'
 LABELLED_DATA = TREC_CDS_2017_DATA + '/qrels-final-trials.txt'
 
