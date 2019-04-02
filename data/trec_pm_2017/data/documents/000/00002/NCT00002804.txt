@@ -1,0 +1,64 @@
+TITLE:
+Combination Chemotherapy, Surgery, and Radiation Therapy in Treating Children With Advanced Soft Tissue Sarcoma
+
+CONDITION:
+Sarcoma
+
+INTERVENTION:
+filgrastim
+
+SUMMARY:
+
+      RATIONALE: Drugs used in chemotherapy use different ways to stop tumor cells from dividing
+      so they stop growing or die. Radiation therapy uses high-energy x-rays to damage tumor
+      cells. Combining more than one chemotherapy drug with radiation therapy may kill more tumor
+      cells.
+
+      PURPOSE: Phase II trial to study the effectiveness of combination chemotherapy, surgery, and
+      radiation therapy in treating children who have advanced soft tissue sarcoma.
+
+
+DETAILED DESCRIPTION:
+
+      OBJECTIVES: I. Assess the response to vincristine/ifosfamide/doxorubicin (VID) with
+      granulocyte colony-stimulating factor support in children with newly diagnosed, inoperable
+      or metastatic non-rhabdomyosarcoma soft tissue sarcomas. II. Estimate the 2-year and
+      event-free survival rates in children treated with VID plus radiotherapy and/or surgery.
+      III. Establish a bank of frozen tumor and peripheral blood tissue for use in further
+      molecular studies.
+
+      OUTLINE: The following acronyms are used: DOX Doxorubicin, NSC-123127 G-CSF Granulocyte
+      Colony-Stimulating Factor (Amgen), NSC-614629 IFF Ifosfamide, NSC-109724 Mesna
+      Mercaptoethane sulfonate, NSC-113891 VCR Vincristine, NSC-67574 VID VCR/IFF/DOX Induction:
+      3-Drug Combination Chemotherapy. VID. Local Control: Surgery and/or Radiotherapy plus 3-Drug
+      Combination Chemotherapy. Excision of the primary tumor and pulmonary metastases; and/or
+      irradiation of the primary tumor and pulmonary metastases using x-rays or Co60 beam energies
+      of at least 4 MV (electrons or iridium-192 implant allowed for boost); plus VID.
+      Continuation: 3-Drug Combination Chemotherapy. VID.
+
+      PROJECTED ACCRUAL: A total of 40 patients will be entered over 2.7 years if there are at
+      least 7 responses in the first 20 patients.
+
+
+ELIGIBILITY:
+Gender: All
+Age: N/A to 21 Years
+Criteria:
+
+        DISEASE CHARACTERISTICS: Biopsy proven non-rhabdomyosarcoma soft tissue sarcoma (NRSTS)
+        Evaluable residual tumor after initial biopsy or excision required Registration required
+        within 42 days of definitive diagnosis Grade II/III, unresectable or metastatic disease
+        The following histologies exclude: Angiofibroma of the nasopharynx Mesothelioma Desmoid
+        tumor Peripheral neuroepithelioma Desmoplastic small cell tumor Rhabdomyosarcoma
+        Extraosseous Ewing's sarcoma Undifferentiated sarcoma Kaposi's sarcoma Grade 1 NRSTS,
+        including: Angiomatoid malignant fibrous histiocytoma Dermatofibrosarcoma protuberans
+        Myxoid and well-differentiated liposarcoma Well-differentiated and infantile
+        hemangiopericytoma Well-differentiated malignant peripheral nerve sheath tumor
+
+        PATIENT CHARACTERISTICS: Age: 21 and under Performance status: Not specified
+        Hematopoietic: Not specified Hepatic: Not specified Renal: Creatinine normal for age No
+        hydronephrosis Cardiovascular: Shortening fraction greater than 28% Other: No HIV
+        infection Not pregnant or nursing Effective contraception required of fertile women
+
+        PRIOR CONCURRENT THERAPY: No prior chemotherapy or radiotherapy No prior nephrectomy
+        (surgical correction of hydronephrosis allowed)

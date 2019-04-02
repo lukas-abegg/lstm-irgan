@@ -1,0 +1,91 @@
+TITLE:
+A Pilot, Open-Label, Phase II, Randomized Study to Determine the Effects of Viracept on the Outcome of Cutaneous and Mucosal KS in AIDS Patients With CD4 <= 500 Cells/mm3
+
+CONDITION:
+Sarcoma, Kaposi
+
+INTERVENTION:
+Nelfinavir mesylate
+
+SUMMARY:
+
+      To determine the effect of Viracept in combination with modified antiretroviral therapy on
+      the outcome of cutaneous and mucosal Kaposi's Sarcoma (KS).
+
+
+DETAILED DESCRIPTION:
+
+      This is an open-label, randomized, pilot, Phase II study of the safety and efficacy of
+      Viracept in combination with modified antiretroviral therapy as treatment in patients with
+      cutaneous and mucosal KS. Patients will be randomized to modify (add or switch or initiate)
+      their current antiretroviral therapy and will add Viracept or remain on their current
+      background antiretroviral therapy for a 2 month period. Initially 20 patients will be
+      randomized in a 2:1 ratio (i.e., 14 Viracept, 6 control) for a 2 month period. Response to
+      therapy will be evaluated at the end of the 2 month control phase. At this point, patients
+      who were initially assigned to the control arm will continue on open label Viracept for an
+      additional 10 month period.
+
+
+ELIGIBILITY:
+Gender: All
+Age: 13 Years to N/A
+Criteria:
+
+        Inclusion Criteria
+
+        Patients must have:
+
+          -  HIV-positivity.
+
+          -  Diagnosed KS proven by biopsy.
+
+          -  NOTE:
+
+          -  Patients must not opt for immediate topical, systemic or radiation treatment.
+
+          -  At least 4 cutaneous lesions not treated within the previous 4 weeks.
+
+          -  Life expectancy > 6 months.
+
+          -  Signed, informed consent from parent or legal guardian for those patients < 18 years
+             of age.
+
+        Exclusion Criteria
+
+        Co-existing Condition:
+
+        Patients with the following conditions and symptoms are excluded:
+
+          -  Neoplastic disease (excluding KS) requiring systemic cytotoxic or radiation therapy
+             or who have had these therapies within 1 month of baseline and have not completely
+             recovered from the effects of these therapies.
+
+          -  Unstable or severe intercurrent medical conditions, including but not limited to,
+             significant symptomatic visceral KS.
+
+          -  Clinically significant malabsorption syndrome.
+
+          -  Renal insufficiency.
+
+        Patients with any of the following prior conditions are excluded:
+
+        Significant Fever (> 101 degrees F (38 degrees C) for >= 7 days) and/or diarrhea (> 6
+        loose stools/day for >= 7 days) within one month of baseline.
+
+        1. Immediate topical or systemic treatment for KS lesions.
+
+          -  Use of Retinoid class drugs, either topically or systemically, or beta-carotene
+             compounds or Vitamin A doses of more than 15,000 IU (5,000 mcg) per day concurrently.
+
+        Immediate radiation treatment.
+
+        1. Treatment of KS lesions with intra-lesional chemotherapy within 4 weeks of entry.
+
+          -  History of > 2 weeks of prior therapy with Indinavir or Ritonavir.
+
+          -  Use of Retinoid class drugs, either topically or systemically, or beta-carotene
+             compounds or Vitamin A doses of more than 15,000 IU (5,000 mcg) per day within 4
+             weeks of entry.
+
+        Treatment of KS lesions with radiation within 4 weeks of entry. Active substance abusers;
+        urine drug tests may be performed if drug abuse is suspected.

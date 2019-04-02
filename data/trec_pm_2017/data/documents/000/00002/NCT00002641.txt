@@ -1,0 +1,204 @@
+TITLE:
+Surgery With or Without Chemotherapy in Treating Patients With Soft Tissue Sarcoma
+
+CONDITION:
+Endometrial Cancer
+
+INTERVENTION:
+filgrastim
+
+SUMMARY:
+
+      RATIONALE: Drugs used in chemotherapy use different ways to stop tumor cells from dividing
+      so they stop growing or die. It is not yet known whether giving chemotherapy after surgery
+      is more effective than surgery alone in treating soft tissue sarcoma.
+
+      PURPOSE: Randomized phase III trial to compare the effectiveness of surgery with or without
+      chemotherapy in treating patients who have soft tissue sarcoma.
+
+
+DETAILED DESCRIPTION:
+
+      OBJECTIVES:
+
+        -  Compare the local disease control, overall survival, and relapse-free survival in
+           patients with high-grade soft tissue sarcoma treated with adjuvant high-dose
+           doxorubicin and ifosfamide plus filgrastim (G-CSF) vs no adjuvant chemotherapy and
+           G-CSF after definitive surgery.
+
+        -  Compare the toxicity and morbidity of these regimens in these patients.
+
+      OUTLINE: This is a randomized, multicenter study. Patients are stratified according to
+      center, site of primary tumor (extremity vs trunk, including shoulder, pelvic girdle, head,
+      or neck vs central, including intrathoracic, visceral, uterine, or retroperitoneal), size of
+      primary tumor (less than 5 cm vs 5 cm or greater in largest diameter), postoperative
+      radiotherapy (yes vs no), and isolated limb perfusion therapy (yes vs no).
+
+      Some patients undergo isolated limb perfusion therapy with cytotoxics and/or cytokines.
+
+      No more than 8 weeks after biopsy or inadequate surgery, patients undergo definitive
+      surgery. Patients with complete resection undergo radiotherapy assessment and then
+      randomization. Patients with incomplete or marginal resection (except for central lesions)
+      undergo re-excision and, in the absence of macroscopic disease, assessment for postoperative
+      radiotherapy followed by randomization.
+
+        -  Randomization: Patients are randomized to 1 of 2 treatment arms.
+
+             -  Arm I: Patients receive no adjuvant chemotherapy or filgrastim (G-CSF). Beginning
+                within 6 weeks after surgery, eligible patients undergo radiotherapy as outlined
+                below.
+
+             -  Arm II: Beginning within 4 weeks after surgery, patients receive high-dose
+                doxorubicin IV over 20 minutes followed by ifosfamide IV over 24 hours and G-CSF
+                subcutaneously daily beginning 24 hours after completion of ifosfamide infusion
+                and continuing for 10 days. Treatment continues every 3 weeks for 5 courses.
+                Beginning within 6 weeks after completion of chemotherapy, eligible patients
+                undergo radiotherapy as outlined below.
+
+        -  Radiotherapy: Patients with incomplete or marginal resection undergo radiotherapy 5
+           days a week for 6-6.6 weeks. Patients with complete microscopic resection undergo
+           radiotherapy 5 days a week for 5 weeks followed by boost radiotherapy 5 days a week for
+           1 week.
+
+      Patients are followed every 2 months for 1 year, every 3 months for 2 years, every 6 months
+      for 1 year, and then annually thereafter.
+
+      PROJECTED ACCRUAL: A total of 350 patients will be accrued for this study within 3.5 years.
+
+
+ELIGIBILITY:
+Gender: All
+Age: 16 Years to 69 Years
+Criteria:
+
+        DISEASE CHARACTERISTICS:
+
+          -  Histologically proven soft tissue sarcoma that is amenable to definitive surgery no
+             more than 8 weeks after biopsy or inadequate surgery
+
+               -  Eligible subtypes:
+
+                    -  Alveolar soft part sarcoma
+
+                    -  Angiosarcoma
+
+                    -  Fibrosarcoma
+
+                    -  Leiomyosarcoma
+
+                    -  Malignant fibrous histiocytoma
+
+                    -  Liposarcoma (round cell and pleomorphic)
+
+                    -  Miscellaneous sarcoma (including pelvic mixed mesodermal tumors)
+
+                    -  Malignant paraganglioma
+
+                    -  Neurogenic sarcoma
+
+                    -  Rhabdomyosarcoma
+
+                    -  Synovial sarcoma
+
+                    -  Unclassifiable sarcoma
+
+               -  Ineligible subtypes:
+
+                    -  Chondrosarcoma
+
+                    -  Dermatofibrosarcoma
+
+                    -  Embryonal rhabdomyosarcoma
+
+                    -  Ewing's sarcoma
+
+                    -  Kaposi's sarcoma
+
+                    -  Liposarcoma (myxoid and well differentiated)
+
+                    -  Malignant mesothelioma
+
+                    -  Neuroblastoma
+
+                    -  Osteosarcoma
+
+          -  Confirmed high-grade tumor (i.e., Trojani Grade II or III)
+
+          -  No metastases on staging with chest x-ray and thoracic CT scan
+
+          -  No regional lymph node involvement
+
+          -  Locally recurrent disease allowed
+
+               -  Interval of 3 months or more between definitive surgery and recurrence
+
+        PATIENT CHARACTERISTICS:
+
+        Age:
+
+          -  16 to 69
+
+        Performance status:
+
+          -  WHO 0-1
+
+        Life expectancy:
+
+          -  Not specified
+
+        Hematopoietic:
+
+          -  WBC greater than 4,000/mm^3
+
+          -  Platelet count greater than 120,000/mm^3
+
+          -  No bleeding disorders
+
+        Hepatic:
+
+          -  Bilirubin no greater than 1.25 times normal
+
+          -  No severe hepatic dysfunction
+
+        Renal:
+
+          -  Creatinine less than 1.6 mg/dL OR
+
+          -  Creatinine clearance greater than 60 mL/min
+
+        Cardiovascular:
+
+          -  No clear history of angina
+
+          -  No documented myocardial infarction
+
+          -  No existing cardiac failure
+
+        Other:
+
+          -  No serious infection
+
+          -  No other malignancy except adequately treated carcinoma in situ of the cervix or
+             basal cell or squamous cell skin cancer
+
+        PRIOR CONCURRENT THERAPY:
+
+        Biologic therapy:
+
+          -  Not specified
+
+        Chemotherapy:
+
+          -  No prior systemic chemotherapy
+
+        Endocrine therapy:
+
+          -  Not specified
+
+        Radiotherapy:
+
+          -  No prior radiotherapy to affected area
+
+        Surgery:
+
+          -  See Disease Characteristics

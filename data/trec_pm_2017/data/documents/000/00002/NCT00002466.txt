@@ -1,0 +1,64 @@
+TITLE:
+Combination Chemotherapy and Radiation Therapy in Treating Patients With Peripheral Neuroectodermal Tumors, Ewing's Sarcoma, Wilms' Tumor, or Bone Cancer
+
+CONDITION:
+Kidney Cancer
+
+INTERVENTION:
+cyclophosphamide
+
+SUMMARY:
+
+      RATIONALE: Drugs used in chemotherapy use different ways to stop tumor cells from dividing
+      so they stop growing or die. Combining more than one drug or combining chemotherapy with
+      radiation therapy may kill more tumor cells.
+
+      PURPOSE: Phase II trial to study the effectiveness of combination chemotherapy followed by
+      radiation therapy in treating patients with peripheral neuroectodermal tumors, Ewing's
+      sarcoma, Wilms' tumor, or bone cancer.
+
+
+DETAILED DESCRIPTION:
+
+      OBJECTIVES: I. Determine the response rate and event-free survival of patients with
+      peripheral primitive neuroectodermal tumors or Ewing's sarcoma treated with
+      cyclophosphamide, doxorubicin, vincristine, etoposide, and ifosfamide, followed by surgery
+      (if feasible) and radiotherapy. II. Determine the response to a uniform treatment regimen in
+      order to clarify whether these disease categories each have a different prognosis.
+
+      OUTLINE: Patients are stratified according to disease category (primitive neuroectodermal
+      tumor vs Ewing's sarcoma). Patients receive treatment on regimen A as outlined below during
+      courses 1-3 and 6 and regimen B as outlined below during courses 4, 5, and 7 in the absence
+      of disease progression or unacceptable toxicity. Each course lasts 3-4 weeks. Patients
+      without metastatic disease after completion of course 3 undergo complete tumor resection, if
+      feasible. Patients achieving complete response with or without microscopic residual disease
+      after completion of course 7 undergo radiotherapy twice daily, 5 days a week, for 3 weeks.
+      Patients with gross residual disease after completion of course 7 undergo radiotherapy twice
+      daily, 5 days a week, for 3.6 weeks. Regimens A and B are defined below: Regimen A: Patients
+      receive cyclophosphamide IV over 6 hours on days 1 and 2, doxorubicin IV continuously and
+      vincristine IV continuously on days 1-3, and vincristine IV on day 9. Regimen B: Patients
+      receive etoposide IV over 1 hour, followed immediately by ifosfamide IV over 1 hour on days
+      1-5. Patients are followed monthly for 18 months and then every 6 months for 18 months.
+
+      PROJECTED ACCRUAL: A maximum of 50 patients (25 per stratum) will be accrued for this study
+      within 5 years.
+
+
+ELIGIBILITY:
+Gender: All
+Age: N/A to N/A
+Criteria:
+
+        DISEASE CHARACTERISTICS: Diagnosis of peripheral primitive neuroectodermal tumor,
+        including peripheral neuroepithelioma or Askin tumor OR Diagnosis of localized or
+        metastatic Ewing's sarcoma, including the following: Unresectable or metastatic small cell
+        osteosarcoma Unresectable or metastatic other nonrhabdomyosarcomatous soft-tissue sarcomas
+        Unresectable or metastatic other non-osteosarcomatous bone sarcomas Desmoplastic small
+        round-cell tumor Metastatic or non-metastatic Wilms' tumor Immunocytochemistry, electron
+        microscopy, and/or chromosomal analysis may be required to rule out other small round cell
+        neoplasms
+
+        PATIENT CHARACTERISTICS: Age: Any age Performance status: Not specified Life expectancy:
+        Not specified Hematopoietic: Not specified Hepatic: Not specified Renal: Not specified
+
+        PRIOR CONCURRENT THERAPY: Not specified
