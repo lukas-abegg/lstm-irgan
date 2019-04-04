@@ -18,6 +18,7 @@ def __read_document(path):
     if my_file.is_file():
         return my_file.read_text()
     else:
+        print("File:", str(path), "is empty")
         return ""
 
 
@@ -40,7 +41,6 @@ def __get_documents():
     for trial in trials:
         path_trial = path + "/" + trial + ".txt"
 
-        print(path_trial)
         text = __read_document(path_trial)
         documents[trial] = text
         doc_ids.append(trial)
