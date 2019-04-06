@@ -53,12 +53,6 @@
     <demographic>49-year-old female</demographic>
     <other>None</other>
   </topic>
-  <topic number="10">
-    <disease>Lung adenocarcinoma</disease>
-    <gene>KRAS (G12C)</gene>
-    <demographic>61-year-old female</demographic>
-    <other>Hypertension, Hypercholesterolemia</other>
-  </topic>
   <topic number="11">
     <disease>Gastric cancer</disease>
     <gene>PIK3CA (E545K)</gene>

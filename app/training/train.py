@@ -335,8 +335,11 @@ def __build_train_data(x_train, ratings_data, queries_data):
     train_ratings_data = {}
 
     for query_id in x_train:
-        train_ratings_data[query_id] = ratings_data[query_id]
-        train_queries_data[query_id] = queries_data[query_id]
+        try:
+            train_ratings_data[query_id] = ratings_data[query_id]
+            train_queries_data[query_id] = queries_data[query_id]
+        except KeyError:
+            print("No rating data exist for query-id:", query_id)
 
     return train_ratings_data, train_queries_data
 
