@@ -375,9 +375,11 @@ def __generate_negatives_for_discriminator_pretrain(x_train, ratings_data, docum
         # get query specific rating and all relevant docs
         x_pos_list, candidate_list = __get_query_specific_data(query_id, ratings_data, documents_data)
 
-        doc_ids = __get_rand_batch_from_candidates_for_negatives(query_id, candidate_list, 3 * len(x_pos_list))
-
-        neg_list = np.random.choice(doc_ids, size=[len(x_pos_list)])
+        if params.DATA_SOURCE == params.DATA_SOURCE_TREC_CDS_2017:
+            neg_list = __get_rand_batch_from_candidates_for_negatives(query_id, candidate_list, 3 * len(x_pos_list))
+        else:
+            doc_ids = __get_rand_batch_from_candidates_for_negatives(query_id, candidate_list, 3 * len(x_pos_list))
+            neg_list = np.random.choice(doc_ids, size=[len(x_pos_list)])
 
         for i in range(len(x_pos_list)):
             pos.append([query_id, x_pos_list[i]])
@@ -435,7 +437,11 @@ def __generate_negatives_for_discriminator(gen, x_train, ratings_data, queries_d
         probs_rand = neg_data_probs[:]
         probs_rand /= probs_rand.sum().astype(float)
 
-        neg_list = np.random.choice(neg_data[query_id], size=[len(pos_data[query_id])], p=probs_rand)
+        if params.DATA_SOURCE == params.DATA_SOURCE_TREC_CDS_2017:
+            neg_list = np.asarray(neg_data[query_id])
+        else:
+            neg_list = np.random.choice(neg_data[query_id], size=[len(pos_data[query_id])], p=probs_rand)
+
         neg_data[query_id] = neg_list
 
     for query_id, pos_values in pos_data.items():
