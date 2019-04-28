@@ -17,10 +17,16 @@ class Discriminator:
         self.dropout = dropout
         self.embeddings_layer_q: Embedding = embedding_layer_q
         self.embeddings_layer_d: Embedding = embedding_layer_d
-        self.adamw = AdamW(lr=self.learning_rate, batch_size=params.DISC_BATCH_SIZE,
-                            samples_per_epoch=self.samples_per_epoch, epochs=params.DISC_TRAIN_EPOCHS)
-        self.adam = Adam(lr=self.learning_rate)
-        self.adadelta = Adadelta(lr=self.learning_rate)
+        if self.learning_rate:
+            self.adam = Adam(lr=self.learning_rate)
+        else:
+            self.adam = Adam()
+        #self.adamw = AdamW(lr=self.learning_rate, batch_size=params.DISC_BATCH_SIZE,
+        #                    samples_per_epoch=self.samples_per_epoch, epochs=params.DISC_TRAIN_EPOCHS)
+        if self.learning_rate:
+            self.adadelta = Adadelta(lr=self.learning_rate)
+        else:
+            self.adadelta = Adadelta()
         self.sess = sess
         self.__get_model(model)
 
