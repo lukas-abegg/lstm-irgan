@@ -10,7 +10,7 @@ import numpy as np
 
 
 class Discriminator:
-    def __init__(self, samples_per_epoch=0, weight_decay=None, learning_rate=None, dropout=0.2, embedding_layer_q=None, embedding_layer_d=None, model=None, sess=None):
+    def __init__(self, samples_per_epoch=2000, weight_decay=None, learning_rate=None, dropout=0.2, embedding_layer_q=None, embedding_layer_d=None, model=None, sess=None):
         self.weight_decay = weight_decay
         self.samples_per_epoch = samples_per_epoch
         self.learning_rate = learning_rate
