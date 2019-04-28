@@ -7,9 +7,9 @@ FASTTEXT_BINARY = False
 FASTTEXT = '/mnt/fob-wbia-vol2/wbi_stud/abeggluk/embeddings/BioWordVec_PubMed_MIMICIII_d200.bin'
 
 MAX_SEQUENCE_LENGTH_QUERIES = 1000
-MAX_SEQUENCE_LENGTH_DOCS = 1000
+MAX_SEQUENCE_LENGTH_DOCS = 200
 MAX_NUM_WORDS_QUERIES = 1000
-MAX_NUM_WORDS_DOCS = 1000
+MAX_NUM_WORDS_DOCS = 200
 EMBEDDING_DIM = 200
 
 # NN General
@@ -43,7 +43,7 @@ GEN_BATCH_SIZE = 200
 GEN_LAMBDA = 0.5
 
 # Data
-DATA_SOURCE = 'trec_2017'
+DATA_SOURCE = 'nfcorpus'
 DATA_SOURCE_NFCORPUS = 'nfcorpus'
 DATA_SOURCE_WIKICLIR = 'wikiclir'
 DATA_SOURCE_EXAMPLE = 'example'
@@ -66,23 +66,23 @@ TRAIN_EPOCHS = 30
 
 # Evaluation
 EVAL_K = 5
-EVAL_N_DOCS = 100
+EVAL_N_DOCS = 1000
 
 # Save models
-#SAVED_MODEL_DISC_FILE = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/softmax/disc_model.h5"
-SAVED_MODEL_DISC_FILE = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/trec_softmax/disc_model.h5"
-#SAVED_MODEL_GEN_FILE = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/softmax/gen_model.h5"
-SAVED_MODEL_GEN_FILE = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/trec_softmax/gen_model.h5"
-#SAVED_MODEL_GEN_JSON = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/softmax/gen_model_json.json"
-SAVED_MODEL_GEN_JSON = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/trec_softmax/gen_model_json.json"
-#SAVED_MODEL_GEN_WEIGHTS = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/softmax/gen_model_weights.h5"
-SAVED_MODEL_GEN_WEIGHTS = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/trec_softmax/gen_model_weights.h5"
+SAVED_MODEL_DISC_FILE = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/softmax/disc_model.h5"
+#SAVED_MODEL_DISC_FILE = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/trec_softmax/disc_model.h5"
+SAVED_MODEL_GEN_FILE = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/softmax/gen_model.h5"
+#SAVED_MODEL_GEN_FILE = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/trec_softmax/gen_model.h5"
+SAVED_MODEL_GEN_JSON = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/softmax/gen_model_json.json"
+#SAVED_MODEL_GEN_JSON = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/trec_softmax/gen_model_json.json"
+SAVED_MODEL_GEN_WEIGHTS = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/softmax/gen_model_weights.h5"
+#SAVED_MODEL_GEN_WEIGHTS = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/trec_softmax/gen_model_weights.h5"
 
 # Plotting
 PLOTTED_MODEL_FILE = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/plot_model.png"
 
 # General
-USED_MODE = 'train'
+USED_MODE = 'eval'
 
 TRAIN_MODE = 'train'
 EVAL_MODE = 'eval'

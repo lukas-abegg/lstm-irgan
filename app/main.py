@@ -13,7 +13,7 @@ import data_preparation.init_data_trec as init_trec
 import evaluation.eval_all_metrics as eval_metrics
 import parameters as params
 import plotting.plot_model as plotting
-from gan.adverserial_nn.generator import Generator
+from gan.adverserial_nn.discriminator import Discriminator
 from training import train
 
 with warnings.catch_warnings():
@@ -77,8 +77,8 @@ def train_model_without_hyperparam_opt(x_train, ratings_data, queries_data, docu
     return best_gen, best_disc
 
 
-def evaluate(gen, x_data, ratings_data, queries_data, documents_data, sess):
-    eval_metrics.evaluate(gen, x_data, ratings_data, queries_data, documents_data, sess)
+def evaluate(gen, x_data, ratings_data, queries_data, documents_data, sess, experiment: Experiment):
+    eval_metrics.evaluate(gen, x_data, ratings_data, queries_data, documents_data, sess, experiment)
 
 
 def save_model_to_file(model, path):
@@ -101,7 +101,7 @@ def plot_model(gen):
     plotting.plot_model(gen)
 
 
-def main(mode, experiment):
+def main(mode, experiment: Experiment):
     if params.TRAIN_MODE == mode:
 
         sess, x_train, x_val, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = get_env_data_with_x_data_splitted()
@@ -114,14 +114,14 @@ def main(mode, experiment):
 
     elif params.EVAL_MODE == mode:
         sess, x_data, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = get_env_data_not_splitted()
-        generator = Generator
-        generator = load_model_from_file(generator, params.SAVED_MODEL_GEN_FILE)
-        evaluate(generator, x_data, ratings_data, queries_data, documents_data, sess)
+        disc = Discriminator
+        disc = load_model_from_file(disc, params.SAVED_MODEL_DISC_FILE)
+        evaluate(disc, x_data, ratings_data, queries_data, documents_data, sess, experiment)
 
     elif params.PLOT_MODEL_MODE == mode:
-        generator = Generator
-        generator = load_model_from_file(generator, params.SAVED_MODEL_GEN_FILE)
-        plot_model(generator)
+        disc = Discriminator
+        disc = load_model_from_file(disc, params.SAVED_MODEL_DISC_FILE)
+        plot_model(disc)
 
     else:
         print("unknown MODE")
