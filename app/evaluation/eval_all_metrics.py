@@ -10,38 +10,39 @@ from comet_ml import Experiment
 def evaluate(model, x_val, ratings_data, queries_data, documents_data, sess, experiment: Experiment):
 
     p_1_best = p_eval.measure_precision_at_k(model, x_val, ratings_data, queries_data, documents_data, 1, sess)
+    experiment.log_metric("p@1", p_1_best)
+    print("Best", "p@1", p_1_best)
     p_3_best = p_eval.measure_precision_at_k(model, x_val, ratings_data, queries_data, documents_data, 3, sess)
+    experiment.log_metric("p@3", p_3_best)
+    print("Best", "p@3", p_3_best)
     p_5_best = p_eval.measure_precision_at_k(model, x_val, ratings_data, queries_data, documents_data, 5, sess)
+    experiment.log_metric("p@5", p_5_best)
+    print("Best", "p@5", p_5_best)
     p_10_best = p_eval.measure_precision_at_k(model, x_val, ratings_data, queries_data, documents_data, 10, sess)
+    experiment.log_metric("p@10", p_10_best)
+    print("Best", "p@10", p_10_best)
 
     ndcg_1_best = ndcg_eval.measure_ndcg_at_k(model, x_val, ratings_data, queries_data, documents_data, 1, sess)
+    experiment.log_metric("ndcg@1", ndcg_1_best)
+    print("Best", "ndcg@1", ndcg_1_best)
     ndcg_3_best = ndcg_eval.measure_ndcg_at_k(model, x_val, ratings_data, queries_data, documents_data, 3, sess)
+    experiment.log_metric("ndcg@3", ndcg_3_best)
+    print("Best", "ndcg@3", ndcg_3_best)
     ndcg_5_best = ndcg_eval.measure_ndcg_at_k(model, x_val, ratings_data, queries_data, documents_data, 5, sess)
+    experiment.log_metric("ndcg@5", ndcg_5_best)
+    print("Best", "ndcg@5", ndcg_5_best)
     ndcg_10_best = ndcg_eval.measure_ndcg_at_k(model, x_val, ratings_data, queries_data, documents_data, 10, sess)
+    experiment.log_metric("ndcg@10", ndcg_10_best)
+    print("Best", "ndcg@10", ndcg_10_best)
 
     r_best = r_p_eval.measure_r_precision_at_k(model, x_val, ratings_data, queries_data, documents_data, 10, 10, sess)
+    experiment.log_metric("R@" + str(len(ratings_data)), r_best)
+    print("Best R@" + str(len(ratings_data)), r_best)
 
     map_best = map_eval.measure_map(model, x_val, ratings_data, queries_data, documents_data, 10, sess)
-
-    mrr_best = mrr_eval.measure_mrr(model, x_val, ratings_data, queries_data, documents_data, 10, sess)
-
-    experiment.log_metric("p@1", p_1_best)
-    experiment.log_metric("p@3", p_3_best)
-    experiment.log_metric("p@5", p_5_best)
-    experiment.log_metric("p@10", p_10_best)
-    print("Best", "p@1", p_1_best, "p@3", p_3_best, "p@5", p_5_best, "p@10", p_10_best)
-
-    experiment.log_metric("ndcg@1", ndcg_1_best)
-    experiment.log_metric("ndcg@3", ndcg_3_best)
-    experiment.log_metric("ndcg@5", ndcg_5_best)
-    experiment.log_metric("ndcg@10", ndcg_10_best)
-    print("Best", "ndcg@1", ndcg_1_best, "ndcg@3", ndcg_3_best, "ndcg@5", ndcg_5_best, "p@10", ndcg_10_best)
-
-    experiment.log_metric("R@"+str(len(ratings_data)), r_best)
-    print("Best R@"+str(len(ratings_data)), r_best)
-
     experiment.log_metric("MAP", map_best)
     print("Best MAP", map_best)
 
+    mrr_best = mrr_eval.measure_mrr(model, x_val, ratings_data, queries_data, documents_data, 10, sess)
     experiment.log_metric("MRR", mrr_best)
     print("Best MRR", mrr_best)

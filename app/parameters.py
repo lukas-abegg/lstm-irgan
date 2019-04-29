@@ -66,7 +66,7 @@ TRAIN_EPOCHS = 30
 
 # Evaluation
 EVAL_K = 5
-EVAL_N_DOCS = 1000
+EVAL_N_DOCS = 100
 
 # Save models
 SAVED_MODEL_DISC_FILE = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/softmax/disc_model.h5"
