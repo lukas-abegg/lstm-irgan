@@ -10,7 +10,7 @@ def measure_ndcg_at_k(model, x_val, ratings_data, queries_data, documents_data, 
     query_ids_all, x_data_all, y_data_all, eval_queries_all, eval_documents_all = utils.prepare_eval_data(x_val, ratings_data, queries_data, documents_data, k)
 
     pred_scores_all = model.get_prob(eval_queries_all, eval_documents_all)
-    print("Prediction scores for ndcg_"+k+": ", pred_scores_all)
+    print("Prediction scores for ndcg_"+str(k)+": ", pred_scores_all)
 
     x_data_query, y_data_query, pred_scores_query = utils.split_probs_data_by_query(
         query_ids_all, x_data_all, y_data_all, pred_scores_all)
