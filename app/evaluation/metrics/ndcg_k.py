@@ -3,11 +3,30 @@ import numpy as np
 import evaluation.eval_utils as utils
 
 
+def measure_ndcg_at_k_eval_all(x_data_query, y_data_query, pred_scores_query, k, sess):
+    ndcg = 0.0
+    cnt = 0
+
+    for query_id in x_data_query.keys():
+
+        x_data = x_data_query[query_id][:]
+        y_data = y_data_query[query_id][:]
+        pred_scores = pred_scores_query[query_id][:]
+
+        pred_document_scores_order = utils.sort_by_pred_merge_with_val_data(x_data, y_data, pred_scores)
+
+        if len(pred_document_scores_order) >= k:
+            ndcg += __ndcg_at_k(pred_document_scores_order, k)
+            cnt += 1
+
+    return ndcg / float(cnt)
+
+
 def measure_ndcg_at_k(model, x_val, ratings_data, queries_data, documents_data, k, sess):
     ndcg = 0.0
     cnt = 0
 
-    query_ids_all, x_data_all, y_data_all, eval_queries_all, eval_documents_all = utils.prepare_eval_data(x_val, ratings_data, queries_data, documents_data, k)
+    query_ids_all, x_data_all, y_data_all, eval_queries_all, eval_documents_all = utils.prepare_eval_data(x_val, ratings_data, queries_data, documents_data)
 
     pred_scores_all = model.get_prob(eval_queries_all, eval_documents_all)
     print("Prediction scores for ndcg_"+str(k)+": ", pred_scores_all)
@@ -22,8 +41,10 @@ def measure_ndcg_at_k(model, x_val, ratings_data, queries_data, documents_data, 
         pred_scores = pred_scores_query[query_id][:]
 
         pred_document_scores_order = utils.sort_by_pred_merge_with_val_data(x_data, y_data, pred_scores)
-        ndcg += __ndcg_at_k(pred_document_scores_order, k)
-        cnt += 1
+
+        if len(pred_document_scores_order) >= k:
+            ndcg += __ndcg_at_k(pred_document_scores_order, k)
+            cnt += 1
 
     return ndcg / float(cnt)
 

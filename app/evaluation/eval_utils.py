@@ -2,17 +2,9 @@ import numpy as np
 import parameters as params
 
 
-def __get_query_specific_eval_data(query_id, ratings_data, queries_data, documents_data, k=0):
+def __get_query_specific_eval_data(query_id, ratings_data, queries_data, documents_data):
     x_data = list(ratings_data[query_id].keys())
     y_data = list(ratings_data[query_id].values())
-
-    if k != 0:
-        enough_data_for_eval: bool = len(x_data) >= k
-    else:
-        enough_data_for_eval = True
-
-    eval_queries = []
-    eval_documents = []
 
     n_eval = params.EVAL_N_DOCS
     if len(x_data) < n_eval:
@@ -20,15 +12,14 @@ def __get_query_specific_eval_data(query_id, ratings_data, queries_data, documen
     else:
         n_candidates = 0
 
-    if enough_data_for_eval:
-        candidates = __get_candidate_docs(x_data, documents_data, n_candidates)
-        x_data.extend(candidates)
-        y_data.extend([0.0] * n_candidates)
+    candidates = __get_candidate_docs(x_data, documents_data, n_candidates)
+    x_data.extend(candidates)
+    y_data.extend([0.0] * n_candidates)
 
-        eval_queries = [queries_data[query_id]] * n_eval
-        eval_documents = [documents_data[doc_id] for doc_id in x_data]
+    eval_queries = [queries_data[query_id]] * n_eval
+    eval_documents = [documents_data[doc_id] for doc_id in x_data]
 
-    return x_data, y_data, eval_queries, eval_documents, enough_data_for_eval
+    return x_data, y_data, eval_queries, eval_documents
 
 
 def __get_candidate_docs(x_pos_list, documents_data, n_candidates):
@@ -105,7 +96,7 @@ def sort_by_pred_merge_with_val_data(x_data, y_data, pred_scores):
     return document_scores_order
 
 
-def prepare_eval_data(x_val, ratings_data, queries_data, documents_data, k):
+def prepare_eval_data(x_val, ratings_data, queries_data, documents_data):
     query_ids_all = []
     x_data_all = []
     y_data_all = []
@@ -114,10 +105,7 @@ def prepare_eval_data(x_val, ratings_data, queries_data, documents_data, k):
 
     for query_id in x_val:
         # get all query specific ratings
-        x_data, y_data, eval_queries, eval_documents, enough_data_for_eval = __get_query_specific_eval_data(query_id, ratings_data, queries_data, documents_data, k)
-
-        if not enough_data_for_eval:
-            continue
+        x_data, y_data, eval_queries, eval_documents = __get_query_specific_eval_data(query_id, ratings_data, queries_data, documents_data)
 
         x_data_all.extend(x_data)
         y_data_all.extend(y_data)
