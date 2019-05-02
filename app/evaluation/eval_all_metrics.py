@@ -72,9 +72,9 @@ def evaluate(model, x_val, ratings_data, queries_data, documents_data, sess, exp
             p_5 = p_5_best
             p_10 = p_10_best
 
-            ndcg_3 = ndcg_3
-            ndcg_5 = ndcg_5
-            ndcg_10 = ndcg_10
+            ndcg_3 = ndcg_3_best
+            ndcg_5 = ndcg_5_best
+            ndcg_10 = ndcg_10_best
 
             r = r_best
             map = map_best
