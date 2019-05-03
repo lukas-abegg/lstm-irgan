@@ -43,7 +43,7 @@ GEN_BATCH_SIZE = 200
 GEN_LAMBDA = 0.5
 
 # Data
-DATA_SOURCE = 'nfcorpus'
+DATA_SOURCE = 'trec_2017'
 DATA_SOURCE_NFCORPUS = 'nfcorpus'
 DATA_SOURCE_WIKICLIR = 'wikiclir'
 DATA_SOURCE_EXAMPLE = 'example'
