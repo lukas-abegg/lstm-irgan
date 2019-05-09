@@ -97,8 +97,10 @@ def load_model_from_weights(model_class, path_json, path_weights):
     return model_class.load_model_from_weights(path_json, path_weights)
 
 
-def plot_model(gen):
-    plotting.plot_model(gen)
+def plot_model(disc, exp):
+    path = params.PLOTTED_MODEL_FILE
+    plotting.plot_model(disc, path)
+    exp.log_image(file_name="Model_TREC2017", file_path=path)
 
 
 def main(mode, experiment: Experiment):
@@ -121,7 +123,7 @@ def main(mode, experiment: Experiment):
     elif params.PLOT_MODEL_MODE == mode:
         disc = Discriminator
         disc = load_model_from_file(disc, params.SAVED_MODEL_DISC_FILE)
-        plot_model(disc)
+        plot_model(disc, experiment)
 
     else:
         print("unknown MODE")

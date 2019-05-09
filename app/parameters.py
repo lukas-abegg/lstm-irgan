@@ -84,7 +84,7 @@ SAVED_MODEL_GEN_WEIGHTS = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/trec_softmax/gen
 PLOTTED_MODEL_FILE = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/plot_model.png"
 
 # General
-USED_MODE = 'eval'
+USED_MODE = 'print_model'
 
 TRAIN_MODE = 'train'
 EVAL_MODE = 'eval'
