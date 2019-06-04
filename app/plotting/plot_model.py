@@ -1,5 +1,5 @@
-from keras.utils import plot_model
+from keras.utils.vis_utils import plot_model
 
 
-def plot_model(model, path):
-    plot_model(model, path=path)
+def plotting(model, path):
+    plot_model(model, to_file=path, show_shapes=True, show_layer_names=True)

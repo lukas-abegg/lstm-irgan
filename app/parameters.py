@@ -1,5 +1,6 @@
 # Base dirs
-WORKDIR = '/home/abeggluk/lstm-irgan'
+#WORKDIR = '/home/abeggluk/lstm-irgan'
+WORKDIR = '/Users/lukas/git-projects/lstm-irgan'
 
 # Embeddings / Tokenizer
 USE_FASTTEXT_MODEL = True
@@ -45,11 +46,12 @@ GEN_BATCH_SIZE = 200
 GEN_LAMBDA = 0.5
 
 # Data
-DATA_SOURCE = 'trec_2017'
+DATA_SOURCE = 'trec_2017_ltr'
 DATA_SOURCE_NFCORPUS = 'nfcorpus'
 DATA_SOURCE_WIKICLIR = 'wikiclir'
 DATA_SOURCE_EXAMPLE = 'example'
 DATA_SOURCE_TREC_CDS_2017 = 'trec_2017'
+DATA_SOURCE_TREC_CDS_2017_LTR = 'trec_2017_ltr'
 
 DOCUMENTS_DIR = WORKDIR + '/data/nfcorpus/all_docs/train.docs'
 QUERIES = WORKDIR + '/data/nfcorpus/all_queries/train.all.queries'
@@ -59,6 +61,18 @@ TREC_CDS_2017_DATA = WORKDIR + '/data/trec_pm_2017/data'
 TREC_CDS_2017_QUERIES = TREC_CDS_2017_DATA + '/topics2017.xml'
 TREC_CDS_2017_LABELLED_DATA = TREC_CDS_2017_DATA + '/qrels-final-trials.txt'
 TREC_CDS_2017_DOCUMENTS = '/mnt/fob-wbia-vol2/wbi_stud/abeggluk/trec_2017/final'
+
+TREC_CDS_2017_DATA_LTR = WORKDIR + '/data/trec_pm_2017/'
+TREC_CDS_2017_QUERIES_LTR = TREC_CDS_2017_DATA_LTR + 'data/topics2017.xml'
+TREC_CDS_2017_LABELLED_DATA_LTR = [
+                                    TREC_CDS_2017_DATA_LTR + 'eval_ltr/input.UD_GU_CT_1',
+                                    TREC_CDS_2017_DATA_LTR + 'eval_ltr/input.UD_GU_CT_2',
+                                    TREC_CDS_2017_DATA_LTR + 'eval_ltr/input.UD_GU_CT_3',
+                                    TREC_CDS_2017_DATA_LTR + 'eval_ltr/input.UD_GU_CT_4',
+                                    TREC_CDS_2017_DATA_LTR + 'eval_ltr/input.UD_GU_CT_5'
+                                    ]
+#TREC_CDS_2017_DOCUMENTS_LTR = '/mnt/fob-wbia-vol2/wbi_stud/abeggluk/trec_2017/final'
+TREC_CDS_2017_DOCUMENTS_LTR = TREC_CDS_2017_DATA_LTR + 'data/documents/final'
 
 # Training
 POS_TRAINING_DATA_PER_QUERY = 5
@@ -84,10 +98,11 @@ SAVED_MODEL_GEN_WEIGHTS = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/trec_softmax/gen
 PLOTTED_MODEL_FILE = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/plot_model.png"
 
 # General
-USED_MODE = 'print_model'
+USED_MODE = 'eval_ltr'
 
 TRAIN_MODE = 'train'
 EVAL_MODE = 'eval'
+EVAL_LTR_MODE = 'eval_ltr'
 PLOT_MODEL_MODE = 'print_model'
 
 ES_HOST = {

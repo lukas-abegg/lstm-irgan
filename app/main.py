@@ -10,7 +10,9 @@ import data_preparation.init_data_example as init_example
 import data_preparation.init_data_wikiclir as init_wikiclir
 import data_preparation.init_data_nfcorpus as init_nfcorpus
 import data_preparation.init_data_trec as init_trec
+import data_preparation.init_data_trec_ltr as init_trec_ltr
 import evaluation.eval_all_metrics as eval_metrics
+import evaluation.eval_ltr as eval_ltr
 import parameters as params
 import plotting.plot_model as plotting
 from gan.adverserial_nn.discriminator import Discriminator
@@ -44,6 +46,9 @@ def __prepare_data():
     elif params.DATA_SOURCE == params.DATA_SOURCE_TREC_CDS_2017:
         print("Init TREC CDS 2017")
         query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = init_trec.get_data()
+    elif params.DATA_SOURCE == params.DATA_SOURCE_TREC_CDS_2017_LTR:
+        print("Init TREC CDS 2017 LTR")
+        query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = init_trec_ltr.get_data()
     else:
         print("Init Example")
         query_ids, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = init_example.get_data()
@@ -77,8 +82,12 @@ def train_model_without_hyperparam_opt(x_train, ratings_data, queries_data, docu
     return best_gen, best_disc
 
 
-def evaluate(gen, x_data, ratings_data, queries_data, documents_data, sess, experiment: Experiment):
-    eval_metrics.evaluate(gen, x_data, ratings_data, queries_data, documents_data, sess, experiment)
+def evaluate(model, x_data, ratings_data, queries_data, documents_data, sess, experiment: Experiment):
+    eval_metrics.evaluate(model, x_data, ratings_data, queries_data, documents_data, sess, experiment)
+
+
+def evaluate_ltr(model, x_data, ratings_data, queries_data, documents_data, sess, experiment: Experiment):
+    eval_ltr.evaluate(model, x_data, ratings_data, queries_data, documents_data, sess, experiment)
 
 
 def save_model_to_file(model, path):
@@ -99,7 +108,7 @@ def load_model_from_weights(model_class, path_json, path_weights):
 
 def plot_model(disc, exp):
     path = params.PLOTTED_MODEL_FILE
-    plotting.plot_model(disc, path)
+    plotting.plotting(disc, path)
     exp.log_image(file_name="Model_TREC2017", file_path=path)
 
 
@@ -120,6 +129,13 @@ def main(mode, experiment: Experiment):
         disc = load_model_from_file(disc, params.SAVED_MODEL_DISC_FILE)
         evaluate(disc, x_data, ratings_data, queries_data, documents_data, sess, experiment)
 
+    elif params.EVAL_LTR_MODE == mode:
+        sess, x_data, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = get_env_data_not_splitted()
+        #disc = Discriminator
+        #disc = load_model_from_file(disc, params.SAVED_MODEL_DISC_FILE)
+        #evaluate_ltr(disc, x_data, ratings_data, queries_data, documents_data, sess, experiment)
+        evaluate_ltr("", x_data, ratings_data, queries_data, documents_data, sess, experiment)
+
     elif params.PLOT_MODEL_MODE == mode:
         disc = Discriminator
         disc = load_model_from_file(disc, params.SAVED_MODEL_DISC_FILE)
@@ -130,7 +146,7 @@ def main(mode, experiment: Experiment):
 
 
 if __name__ == '__main__':
-    experiment = Experiment(api_key="tgrD5ElfTdvaGEmJB7AEZG8Ra",
-                            project_name="general", workspace="abeggluk")
-
+    #experiment = Experiment(api_key="tgrD5ElfTdvaGEmJB7AEZG8Ra",
+    #                        project_name="general", workspace="abeggluk")
+    experiment = ""
     main(params.USED_MODE, experiment)
