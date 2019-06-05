@@ -90,7 +90,6 @@ def measure_ndcg_at_k_eval_all(ratings, pred_ratings, k):
 
 
 def __dcg_at_k(r, k):
-    r = np.asfarray(r)[:k]
     if r.size:
         return np.sum(np.subtract(np.power(2, r), 1) / np.log2(np.arange(2, r.size + 2)))
     return 0.
@@ -99,6 +98,7 @@ def __dcg_at_k(r, k):
 def __ndcg_at_k(r, k):
     print("predicted sort:", r)
     print("origin sort:", sorted(r, reverse=False))
+    r = np.asfarray(r)[:k]
     idcg = __dcg_at_k(sorted(r, reverse=False), k)
     if not idcg:
         return 0.
