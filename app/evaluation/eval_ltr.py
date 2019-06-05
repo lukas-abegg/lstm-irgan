@@ -3,12 +3,12 @@ from comet_ml import Experiment
 import parameters as params
 import pandas as pd
 
-import random
 
 import numpy as np
 
 
 def evaluate(model, x_val, ratings_data, queries_data, documents_data, sess, experiment: Experiment):
+    ndcg_2 = 0
     ndcg_3 = 0
     ndcg_5 = 0
     ndcg_10 = 0
@@ -19,15 +19,21 @@ def evaluate(model, x_val, ratings_data, queries_data, documents_data, sess, exp
 
         ratings, pred_ratings = prepare_data(model, queries_data, documents_data)
 
+        ndcg_2_best = measure_ndcg_at_k_eval_all(ratings, pred_ratings, 2)
+        experiment.log_metric("ndcg@2", ndcg_2_best)
+        print("ndcg@2", ndcg_2_best)
         ndcg_3_best = measure_ndcg_at_k_eval_all(ratings, pred_ratings, 3)
-        #experiment.log_metric("ndcg@3", ndcg_3_best)
+        experiment.log_metric("ndcg@3", ndcg_3_best)
         print("ndcg@3", ndcg_3_best)
         ndcg_5_best = measure_ndcg_at_k_eval_all(ratings, pred_ratings, 5)
-        #experiment.log_metric("ndcg@5", ndcg_5_best)
+        experiment.log_metric("ndcg@5", ndcg_5_best)
         print("ndcg@5", ndcg_5_best)
         ndcg_10_best = measure_ndcg_at_k_eval_all(ratings, pred_ratings, 10)
-        #experiment.log_metric("ndcg@10", ndcg_10_best)
+        experiment.log_metric("ndcg@10", ndcg_10_best)
         print("ndcg@10", ndcg_10_best)
+
+        if ndcg_2_best >= ndcg_2:
+            ndcg_2 = ndcg_2_best
 
         if ndcg_3_best >= ndcg_3:
             ndcg_3 = ndcg_3_best
@@ -41,11 +47,13 @@ def evaluate(model, x_val, ratings_data, queries_data, documents_data, sess, exp
     print("------------------------")
     print("Final Best Result:")
     print("------------------------")
-    #experiment.log_metric("Best ndcg@3", ndcg_3)
+    experiment.log_metric("Best ndcg@2", ndcg_2)
+    print("Best", "ndcg@2", ndcg_2)
+    experiment.log_metric("Best ndcg@3", ndcg_3)
     print("Best", "ndcg@3", ndcg_3)
-    #experiment.log_metric("Best ndcg@5", ndcg_5)
+    experiment.log_metric("Best ndcg@5", ndcg_5)
     print("Best", "ndcg@5", ndcg_5)
-    #experiment.log_metric("Best ndcg@10", ndcg_10)
+    experiment.log_metric("Best ndcg@10", ndcg_10)
     print("Best", "ndcg@10", ndcg_10)
 
 
@@ -103,10 +111,6 @@ def prepare_data(model, queries_data, documents_data):
 
     pred_queries, pred_trials = prepare_prediction_data(ratings, trials_with_content, queries_with_content)
 
-    # pred_scores_all = []
-    # for i in pred_queries:
-    #     pred_scores_all.append(random.randint(0, 100))
-
     pred_scores_all = model.get_prob(pred_queries, pred_trials)
 
     pred_ratings = split_probs_data_by_query(pred_queries, pred_trials, pred_scores_all)
@@ -120,8 +124,8 @@ def prepare_prediction_data(ratings, trials_with_content, queries_with_content):
 
     for query_key in ratings.keys():
         for trial_key in ratings[query_key].keys():
-            queries.append(query_key)
-            trials.append(trial_key)
+            queries.append(queries_with_content[query_key])
+            trials.append(trials_with_content[trial_key])
 
     return queries, trials
 

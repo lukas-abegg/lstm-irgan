@@ -1,6 +1,6 @@
 # Base dirs
-#WORKDIR = '/home/abeggluk/lstm-irgan'
-WORKDIR = '/Users/lukas/git-projects/lstm-irgan'
+WORKDIR = '/home/abeggluk/lstm-irgan'
+#WORKDIR = '/Users/lukas/git-projects/lstm-irgan'
 
 # Embeddings / Tokenizer
 USE_FASTTEXT_MODEL = True
@@ -71,8 +71,8 @@ TREC_CDS_2017_LABELLED_DATA_LTR = [
                                     TREC_CDS_2017_DATA_LTR + 'eval_ltr/input.UD_GU_CT_4',
                                     TREC_CDS_2017_DATA_LTR + 'eval_ltr/input.UD_GU_CT_5'
                                     ]
-#TREC_CDS_2017_DOCUMENTS_LTR = '/mnt/fob-wbia-vol2/wbi_stud/abeggluk/trec_2017/final'
-TREC_CDS_2017_DOCUMENTS_LTR = TREC_CDS_2017_DATA_LTR + 'data/documents/final'
+TREC_CDS_2017_DOCUMENTS_LTR = '/mnt/fob-wbia-vol2/wbi_stud/abeggluk/trec_2017/final'
+#TREC_CDS_2017_DOCUMENTS_LTR = TREC_CDS_2017_DATA_LTR + 'data/documents/final'
 
 # Training
 POS_TRAINING_DATA_PER_QUERY = 5
