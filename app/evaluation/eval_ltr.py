@@ -3,7 +3,6 @@ from comet_ml import Experiment
 import parameters as params
 import pandas as pd
 
-import random
 import numpy as np
 
 
@@ -98,6 +97,8 @@ def __dcg_at_k(r, k):
 
 
 def __ndcg_at_k(r, k):
+    print("predicted sort:", r)
+    print("origin sort:", sorted(r, reverse=False))
     idcg = __dcg_at_k(sorted(r, reverse=False), k)
     if not idcg:
         return 0.
@@ -114,12 +115,7 @@ def prepare_data(model, gold_std_path, queries_data, documents_data):
 
     pred_queries, pred_query_ids, pred_trials, pred_trial_ids = prepare_prediction_data(ratings, trials_with_content, queries_with_content)
 
-    # pred_scores_all = model.get_prob(pred_queries, pred_trials)
-
-    pred_scores_all = []
-
-    for i in pred_query_ids:
-        pred_scores_all.append(random.randint(0, 100))
+    pred_scores_all = model.get_prob(pred_queries, pred_trials)
 
     pred_ratings = split_probs_data_by_query(pred_query_ids, pred_trial_ids, pred_scores_all)
 
