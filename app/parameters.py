@@ -71,7 +71,7 @@ TREC_CDS_2017_LABELLED_DATA_LTR = [
                                     TREC_CDS_2017_DATA_LTR + 'eval_ltr/input.UD_GU_CT_4',
                                     TREC_CDS_2017_DATA_LTR + 'eval_ltr/input.UD_GU_CT_5'
                                     ]
-TREC_CDS_2017_DOCUMENTS_LTR = '/mnt/fob-wbia-vol2/wbi_stud/abeggluk/clinicaltrials_txt'
+TREC_CDS_2017_DOCUMENTS_LTR = '/mnt/fob-wbia-vol2/wbi_stud/abeggluk/trec_2017/clinicaltrials_txt'
 #TREC_CDS_2017_DOCUMENTS_LTR = TREC_CDS_2017_DATA_LTR + 'data/documents/final'
 
 # Training
