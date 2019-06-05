@@ -131,10 +131,9 @@ def main(mode, experiment: Experiment):
 
     elif params.EVAL_LTR_MODE == mode:
         sess, x_data, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = get_env_data_not_splitted()
-        #disc = Discriminator
-        #disc = load_model_from_file(disc, params.SAVED_MODEL_DISC_FILE)
-        #evaluate_ltr(disc, x_data, ratings_data, queries_data, documents_data, sess, experiment)
-        evaluate_ltr("", x_data, ratings_data, queries_data, documents_data, sess, experiment)
+        disc = Discriminator
+        disc = load_model_from_file(disc, params.SAVED_MODEL_DISC_FILE)
+        evaluate_ltr(disc, x_data, ratings_data, queries_data, documents_data, sess, experiment)
 
     elif params.PLOT_MODEL_MODE == mode:
         disc = Discriminator
@@ -146,7 +145,6 @@ def main(mode, experiment: Experiment):
 
 
 if __name__ == '__main__':
-    #experiment = Experiment(api_key="tgrD5ElfTdvaGEmJB7AEZG8Ra",
-    #                        project_name="general", workspace="abeggluk")
-    experiment = ""
+    experiment = Experiment(api_key="tgrD5ElfTdvaGEmJB7AEZG8Ra",
+                            project_name="general", workspace="abeggluk")
     main(params.USED_MODE, experiment)

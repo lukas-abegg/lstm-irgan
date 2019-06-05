@@ -41,7 +41,9 @@ def __get_documents():
     doc_ids = []
 
     for trial in trials:
-        path_trial = path + "/" + trial + ".txt"
+        level1 = trial[3:6]
+        level2 = trial[3:8]
+        path_trial = path + "/" + level1 + "/" + level2 + "/" + trial + ".txt"
 
         text = __read_document(path_trial)
         documents[trial] = text
