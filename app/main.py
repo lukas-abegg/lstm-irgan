@@ -146,5 +146,5 @@ def main(mode, experiment: Experiment):
 
 if __name__ == '__main__':
     experiment = Experiment(api_key="tgrD5ElfTdvaGEmJB7AEZG8Ra",
-                            project_name="general", workspace="abeggluk")
+                            project_name="ltr-evals", workspace="abeggluk")
     main(params.USED_MODE, experiment)

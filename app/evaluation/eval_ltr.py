@@ -64,7 +64,12 @@ def sort_by_pred_merge_with_val_data(x_data, y_data, pred_scores):
     pred_document_scores = zip(x_data, pred_scores)
     pred_document_scores_order = sorted(pred_document_scores, key=lambda x: x[1], reverse=True)
 
-    rated_document_scores = zip(x_data, y_data)
+    rel_y_data = []
+    len_y_data = len(y_data)
+    for i in y_data:
+        rel_y_data.append(1 - (i / len_y_data))
+
+    rated_document_scores = zip(x_data, rel_y_data)
     rated_document_scores = dict(rated_document_scores)
     document_scores_order = [rated_document_scores[doc[0]] for doc in pred_document_scores_order]
 
@@ -89,20 +94,24 @@ def measure_ndcg_at_k_eval_all(ratings, pred_ratings, k):
     return ndcg / float(cnt)
 
 
-def __dcg_at_k(r, k):
+def __dcg_at_k(r):
     if r.size:
         return np.sum(np.subtract(np.power(2, r), 1) / np.log2(np.arange(2, r.size + 2)))
     return 0.
 
 
 def __ndcg_at_k(r, k):
+    r = np.asarray(r)[:k]
     print("predicted sort:", r)
-    print("origin sort:", sorted(r, reverse=False))
-    r = np.asfarray(r)[:k]
-    idcg = __dcg_at_k(sorted(r, reverse=False), k)
+    print("origin sort:", sorted(r, reverse=True))
+    r_rev = sorted(r, reverse=True)
+    r_rev = np.asfarray(r_rev)
+    r = np.asfarray(r)
+    idcg = __dcg_at_k(r_rev)
     if not idcg:
         return 0.
-    return __dcg_at_k(r, k) / idcg
+    dcg = __dcg_at_k(r)
+    return dcg / idcg
 
 
 def prepare_data(model, gold_std_path, queries_data, documents_data):
