@@ -13,6 +13,7 @@ import data_preparation.init_data_trec as init_trec
 import data_preparation.init_data_trec_ltr as init_trec_ltr
 import evaluation.eval_all_metrics as eval_metrics
 import evaluation.eval_ltr as eval_ltr
+import evaluation.eval_ltr_p5 as eval_ltr_p5
 import parameters as params
 import plotting.plot_model as plotting
 from gan.adverserial_nn.discriminator import Discriminator
@@ -90,6 +91,10 @@ def evaluate_ltr(model, x_data, ratings_data, queries_data, documents_data, sess
     eval_ltr.evaluate(model, x_data, ratings_data, queries_data, documents_data, sess, experiment)
 
 
+def evaluate_ltr_p5(model, x_data, ratings_data, queries_data, documents_data, sess, experiment: Experiment):
+    eval_ltr_p5.evaluate(model, x_data, ratings_data, queries_data, documents_data, sess, experiment)
+
+
 def save_model_to_file(model, path):
     model.save_model_to_file(path)
 
@@ -133,7 +138,7 @@ def main(mode, experiment: Experiment):
         sess, x_data, ratings_data, documents_data, queries_data, tokenizer_q, tokenizer_d = get_env_data_not_splitted()
         disc = Discriminator
         disc = load_model_from_file(disc, params.SAVED_MODEL_DISC_FILE)
-        evaluate_ltr(disc, x_data, ratings_data, queries_data, documents_data, sess, experiment)
+        evaluate_ltr_p5(disc, x_data, ratings_data, queries_data, documents_data, sess, experiment)
 
     elif params.PLOT_MODEL_MODE == mode:
         disc = Discriminator
