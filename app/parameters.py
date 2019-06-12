@@ -46,7 +46,7 @@ GEN_BATCH_SIZE = 200
 GEN_LAMBDA = 0.5
 
 # Data
-DATA_SOURCE = 'trec_2017_ltr'
+DATA_SOURCE = 'trec_2017'
 DATA_SOURCE_NFCORPUS = 'nfcorpus'
 DATA_SOURCE_WIKICLIR = 'wikiclir'
 DATA_SOURCE_EXAMPLE = 'example'
@@ -98,7 +98,7 @@ SAVED_MODEL_GEN_WEIGHTS = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/softmax/gen_mode
 PLOTTED_MODEL_FILE = "/mnt/fob-wbia-vol2/wbi_stud/abeggluk/plot_model.png"
 
 # General
-USED_MODE = 'eval_ltr'
+USED_MODE = 'eval'
 
 TRAIN_MODE = 'train'
 EVAL_MODE = 'eval'
