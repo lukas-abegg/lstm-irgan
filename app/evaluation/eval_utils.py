@@ -93,7 +93,12 @@ def sort_by_pred_merge_with_val_data(x_data, y_data, pred_scores):
     rated_document_scores = dict(rated_document_scores)
     document_scores_order = [rated_document_scores[doc[0]] for doc in pred_document_scores_order]
 
-    return document_scores_order
+    filtered_document_scores_order = []
+    for i in document_scores_order:
+        if i > 0:
+            filtered_document_scores_order.append(i)
+
+    return filtered_document_scores_order
 
 
 def prepare_eval_data(x_val, ratings_data, queries_data, documents_data):

@@ -1,6 +1,7 @@
 # Base dirs
 WORKDIR = '/home/abeggluk/lstm-irgan'
 #WORKDIR = '/Users/lukas/git-projects/lstm-irgan'
+#WORKDIR = '/home/lukas/git-projects/lstm-irgan'
 
 # Embeddings / Tokenizer
 USE_FASTTEXT_MODEL = True
